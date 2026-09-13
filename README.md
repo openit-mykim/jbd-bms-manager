@@ -121,7 +121,7 @@ The repository is in an early executable alpha state. Current work focuses on:
 5. Five-tab information architecture — shell and content in place for this alpha line.
 6. Reproducible APK CI/release packaging.
 
-The next major product work is physical verification of the five-tab alpha, then the Control/Maintenance write-transaction framework (Read → Edit → Validate → Review → Apply → Read-back).
+The next major product work is physical verification of the current alpha and protocol evidence capture on supported hardware; the Control/Maintenance write-transaction framework (Read → Edit → Validate → Review → Apply → Read-back) is implemented and awaits verified operations.
 
 See `PROJECT_STATUS.md` and `docs/development-plan.md` for the live execution state.
 
