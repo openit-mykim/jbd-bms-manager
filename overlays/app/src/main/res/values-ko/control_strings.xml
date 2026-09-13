@@ -19,4 +19,10 @@
     <string name="control_section_diagnostics">진단</string>
     <string name="control_planned">준비 중</string>
     <string name="control_future_notice">쓰기·보정 기능은 이후 업데이트에서 단계적으로 제공됩니다.</string>
+    <string name="control_diagnostics_title">진단 정보</string>
+    <string name="control_diagnostics_connection_state">연결 상태</string>
+    <string name="control_diagnostics_section_device">펌웨어 / 디바이스</string>
+    <string name="control_diagnostics_section_extension">확장 정보</string>
+    <string name="control_diagnostics_empty">진단 정보를 읽으려면 BMS를 연결하세요.</string>
+    <string name="control_diagnostics_footer">추가 레지스터 및 프로토콜 수준 진단은 이후 단계에서 확장됩니다.</string>
 </resources>

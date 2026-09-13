@@ -19,4 +19,10 @@
     <string name="control_section_diagnostics">Diagnostics</string>
     <string name="control_planned">Planned</string>
     <string name="control_future_notice">Write and calibration features will be delivered incrementally in later updates.</string>
+    <string name="control_diagnostics_title">Diagnostic information</string>
+    <string name="control_diagnostics_connection_state">Connection state</string>
+    <string name="control_diagnostics_section_device">Firmware / device</string>
+    <string name="control_diagnostics_section_extension">Extended information</string>
+    <string name="control_diagnostics_empty">Connect a BMS to read diagnostic information.</string>
+    <string name="control_diagnostics_footer">Additional register- and protocol-level diagnostics will be added in later steps.</string>
 </resources>
