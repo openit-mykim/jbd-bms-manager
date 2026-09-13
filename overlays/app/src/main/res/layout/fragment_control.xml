@@ -169,12 +169,13 @@
                     </LinearLayout>
 
                     <LinearLayout
+                        android:id="@+id/control_protection_row"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:alpha="0.55"
-                        android:clickable="false"
-                        android:enabled="false"
-                        android:focusable="false"
+                        android:background="?attr/selectableItemBackground"
+                        android:clickable="true"
+                        android:enabled="true"
+                        android:focusable="true"
                         android:gravity="center_vertical"
                         android:minHeight="@dimen/touch_target_min"
                         android:orientation="horizontal"
@@ -183,29 +184,42 @@
                         android:paddingEnd="@dimen/space_12"
                         android:paddingBottom="@dimen/space_8">
 
-                        <TextView
+                        <LinearLayout
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
-                            android:text="@string/control_section_protection"
-                            android:textAppearance="@style/TextAppearance.OpenJbd.ListItemTitle" />
+                            android:orientation="vertical">
 
-                        <com.google.android.material.chip.Chip
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:clickable="false"
-                            android:enabled="false"
-                            android:text="@string/control_planned"
-                            app:ensureMinTouchTargetSize="false" />
+                            <TextView
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:text="@string/control_section_protection"
+                                android:textAppearance="@style/TextAppearance.OpenJbd.ListItemTitle" />
+
+                            <TextView
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:text="@string/control_settings_available"
+                                android:textAppearance="@style/TextAppearance.OpenJbd.ListItemSubtitle" />
+                        </LinearLayout>
+
+                        <ImageView
+                            android:layout_width="@dimen/icon_size_24"
+                            android:layout_height="@dimen/icon_size_24"
+                            android:contentDescription="@null"
+                            android:importantForAccessibility="no"
+                            android:src="@drawable/ic_chevron_right_24"
+                            app:tint="@color/icon_default" />
                     </LinearLayout>
 
                     <LinearLayout
+                        android:id="@+id/control_balance_settings_row"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:alpha="0.55"
-                        android:clickable="false"
-                        android:enabled="false"
-                        android:focusable="false"
+                        android:background="?attr/selectableItemBackground"
+                        android:clickable="true"
+                        android:enabled="true"
+                        android:focusable="true"
                         android:gravity="center_vertical"
                         android:minHeight="@dimen/touch_target_min"
                         android:orientation="horizontal"
@@ -214,29 +228,42 @@
                         android:paddingEnd="@dimen/space_12"
                         android:paddingBottom="@dimen/space_8">
 
-                        <TextView
+                        <LinearLayout
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
-                            android:text="@string/control_section_balance"
-                            android:textAppearance="@style/TextAppearance.OpenJbd.ListItemTitle" />
+                            android:orientation="vertical">
 
-                        <com.google.android.material.chip.Chip
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:clickable="false"
-                            android:enabled="false"
-                            android:text="@string/control_planned"
-                            app:ensureMinTouchTargetSize="false" />
+                            <TextView
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:text="@string/control_section_balance"
+                                android:textAppearance="@style/TextAppearance.OpenJbd.ListItemTitle" />
+
+                            <TextView
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:text="@string/control_settings_available"
+                                android:textAppearance="@style/TextAppearance.OpenJbd.ListItemSubtitle" />
+                        </LinearLayout>
+
+                        <ImageView
+                            android:layout_width="@dimen/icon_size_24"
+                            android:layout_height="@dimen/icon_size_24"
+                            android:contentDescription="@null"
+                            android:importantForAccessibility="no"
+                            android:src="@drawable/ic_chevron_right_24"
+                            app:tint="@color/icon_default" />
                     </LinearLayout>
 
                     <LinearLayout
+                        android:id="@+id/control_capacity_row"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:alpha="0.55"
-                        android:clickable="false"
-                        android:enabled="false"
-                        android:focusable="false"
+                        android:background="?attr/selectableItemBackground"
+                        android:clickable="true"
+                        android:enabled="true"
+                        android:focusable="true"
                         android:gravity="center_vertical"
                         android:minHeight="@dimen/touch_target_min"
                         android:orientation="horizontal"
@@ -245,29 +272,42 @@
                         android:paddingEnd="@dimen/space_12"
                         android:paddingBottom="@dimen/space_8">
 
-                        <TextView
+                        <LinearLayout
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
-                            android:text="@string/control_section_capacity"
-                            android:textAppearance="@style/TextAppearance.OpenJbd.ListItemTitle" />
+                            android:orientation="vertical">
 
-                        <com.google.android.material.chip.Chip
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:clickable="false"
-                            android:enabled="false"
-                            android:text="@string/control_planned"
-                            app:ensureMinTouchTargetSize="false" />
+                            <TextView
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:text="@string/control_section_capacity"
+                                android:textAppearance="@style/TextAppearance.OpenJbd.ListItemTitle" />
+
+                            <TextView
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:text="@string/control_settings_available"
+                                android:textAppearance="@style/TextAppearance.OpenJbd.ListItemSubtitle" />
+                        </LinearLayout>
+
+                        <ImageView
+                            android:layout_width="@dimen/icon_size_24"
+                            android:layout_height="@dimen/icon_size_24"
+                            android:contentDescription="@null"
+                            android:importantForAccessibility="no"
+                            android:src="@drawable/ic_chevron_right_24"
+                            app:tint="@color/icon_default" />
                     </LinearLayout>
 
                     <LinearLayout
+                        android:id="@+id/control_temperature_row"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:alpha="0.55"
-                        android:clickable="false"
-                        android:enabled="false"
-                        android:focusable="false"
+                        android:background="?attr/selectableItemBackground"
+                        android:clickable="true"
+                        android:enabled="true"
+                        android:focusable="true"
                         android:gravity="center_vertical"
                         android:minHeight="@dimen/touch_target_min"
                         android:orientation="horizontal"
@@ -276,20 +316,32 @@
                         android:paddingEnd="@dimen/space_12"
                         android:paddingBottom="@dimen/space_8">
 
-                        <TextView
+                        <LinearLayout
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
-                            android:text="@string/control_section_temperature"
-                            android:textAppearance="@style/TextAppearance.OpenJbd.ListItemTitle" />
+                            android:orientation="vertical">
 
-                        <com.google.android.material.chip.Chip
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:clickable="false"
-                            android:enabled="false"
-                            android:text="@string/control_planned"
-                            app:ensureMinTouchTargetSize="false" />
+                            <TextView
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:text="@string/control_section_temperature"
+                                android:textAppearance="@style/TextAppearance.OpenJbd.ListItemTitle" />
+
+                            <TextView
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:text="@string/control_settings_available"
+                                android:textAppearance="@style/TextAppearance.OpenJbd.ListItemSubtitle" />
+                        </LinearLayout>
+
+                        <ImageView
+                            android:layout_width="@dimen/icon_size_24"
+                            android:layout_height="@dimen/icon_size_24"
+                            android:contentDescription="@null"
+                            android:importantForAccessibility="no"
+                            android:src="@drawable/ic_chevron_right_24"
+                            app:tint="@color/icon_default" />
                     </LinearLayout>
 
                     <LinearLayout

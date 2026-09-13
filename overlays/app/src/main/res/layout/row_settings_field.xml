@@ -1,0 +1,51 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="?attr/selectableItemBackground"
+    android:gravity="center_vertical"
+    android:minHeight="@dimen/touch_target_min"
+    android:orientation="horizontal"
+    android:paddingStart="@dimen/space_16"
+    android:paddingTop="@dimen/space_10"
+    android:paddingEnd="@dimen/space_12"
+    android:paddingBottom="@dimen/space_10">
+
+    <LinearLayout
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="@dimen/space_8"
+        android:layout_weight="1"
+        android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/settings_field_label"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textAppearance="@style/TextAppearance.OpenJbd.ListItemTitle" />
+
+        <TextView
+            android:id="@+id/settings_field_value"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingTop="@dimen/space_2"
+            android:textAppearance="@style/TextAppearance.OpenJbd.ListItemSubtitle" />
+
+        <TextView
+            android:id="@+id/settings_field_error"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingTop="@dimen/space_2"
+            android:textColor="@color/error"
+            android:textAppearance="@style/TextAppearance.MaterialComponents.Caption"
+            android:visibility="gone" />
+    </LinearLayout>
+
+    <ImageView
+        android:id="@+id/settings_field_chevron"
+        android:layout_width="@dimen/icon_size_24"
+        android:layout_height="@dimen/icon_size_24"
+        android:contentDescription="@null"
+        android:importantForAccessibility="no"
+        android:src="@drawable/ic_chevron_right_24"
+        android:visibility="gone" />
+</LinearLayout>

@@ -14,6 +14,8 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.gytxtx.openjbd.data.BmsRepository
 import com.gytxtx.openjbd.data.BmsUiState
 import com.gytxtx.openjbd.maintenance.MaintenanceGate
+import com.gytxtx.openjbd.settings.SettingsGroup
+import com.gytxtx.openjbd.settings.SettingsGroupDialogFragment
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
@@ -81,6 +83,17 @@ class ControlFragment : Fragment() {
             diagnosticsExpanded = !diagnosticsExpanded
             diagnosticsPanel.visibility = if (diagnosticsExpanded) View.VISIBLE else View.GONE
             if (diagnosticsExpanded) renderDiagnostics(repository.getSnapshot())
+        }
+        mapOf(
+            R.id.control_balance_settings_row to SettingsGroup.BALANCE,
+            R.id.control_protection_row to SettingsGroup.PROTECTION,
+            R.id.control_temperature_row to SettingsGroup.TEMPERATURE,
+            R.id.control_capacity_row to SettingsGroup.CAPACITY
+        ).forEach { (rowId, group) ->
+            view.findViewById<View>(rowId).setOnClickListener {
+                SettingsGroupDialogFragment.newInstance(group)
+                    .show(parentFragmentManager, "settings-${group.name}")
+            }
         }
 
         renderGateState()
