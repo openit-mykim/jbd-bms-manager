@@ -1,0 +1,401 @@
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:clipToPadding="false"
+    android:fillViewport="true">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:paddingTop="@dimen/space_8"
+        android:paddingBottom="@dimen/space_18">
+
+        <LinearLayout
+            android:id="@+id/control_locked_content"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:minHeight="420dp"
+            android:orientation="vertical"
+            android:padding="@dimen/space_24">
+
+            <ImageView
+                android:layout_width="@dimen/placeholder_illustration_size"
+                android:layout_height="@dimen/placeholder_illustration_size"
+                android:contentDescription="@null"
+                android:importantForAccessibility="no"
+                android:src="@drawable/ic_lock_24"
+                app:tint="@color/icon_default" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:paddingTop="@dimen/space_18"
+                android:text="@string/control_maintenance_title"
+                android:textAppearance="@style/TextAppearance.OpenJbd.EmptyTitle" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:paddingTop="@dimen/space_8"
+                android:text="@string/control_maintenance_locked_description"
+                android:textAppearance="@style/TextAppearance.OpenJbd.EmptyBody" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/control_unlock_button"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/space_24"
+                android:text="@string/control_unlock"
+                android:textAllCaps="false" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/control_unlocked_content"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:visibility="gone">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical"
+                android:orientation="horizontal"
+                android:paddingStart="@dimen/space_16"
+                android:paddingEnd="@dimen/space_8">
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="@string/control_maintenance_title"
+                    android:textAppearance="@style/TextAppearance.OpenJbd.EmptyTitle" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/control_relock_button"
+                    style="@style/Widget.MaterialComponents.Button.TextButton"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/control_lock_again"
+                    android:textAllCaps="false" />
+            </LinearLayout>
+
+            <TextView
+                style="@style/OpenJbdSectionTitle"
+                android:paddingStart="@dimen/space_16"
+                android:paddingEnd="@dimen/space_16"
+                android:text="@string/control_target_bms" />
+
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="@dimen/space_12"
+                android:layout_marginEnd="@dimen/space_12">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="@dimen/space_16">
+
+                    <TextView
+                        android:id="@+id/control_target_name"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:textAppearance="@style/TextAppearance.OpenJbd.ListItemTitle" />
+
+                    <TextView
+                        android:id="@+id/control_target_address"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:paddingTop="@dimen/space_4"
+                        android:textAppearance="@style/TextAppearance.OpenJbd.ListItemSubtitle" />
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <TextView
+                style="@style/OpenJbdSectionTitle"
+                android:paddingStart="@dimen/space_16"
+                android:paddingEnd="@dimen/space_16"
+                android:text="@string/control_sections_title" />
+
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="@dimen/space_12"
+                android:layout_marginEnd="@dimen/space_12">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:divider="@drawable/divider_card_stroke"
+                    android:orientation="vertical"
+                    android:showDividers="middle">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:alpha="0.55"
+                        android:clickable="false"
+                        android:enabled="false"
+                        android:focusable="false"
+                        android:gravity="center_vertical"
+                        android:minHeight="@dimen/touch_target_min"
+                        android:orientation="horizontal"
+                        android:paddingStart="@dimen/space_16"
+                        android:paddingTop="@dimen/space_8"
+                        android:paddingEnd="@dimen/space_12"
+                        android:paddingBottom="@dimen/space_8">
+
+                        <TextView
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:text="@string/control_section_calibration"
+                            android:textAppearance="@style/TextAppearance.OpenJbd.ListItemTitle" />
+
+                        <com.google.android.material.chip.Chip
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:clickable="false"
+                            android:enabled="false"
+                            android:text="@string/control_planned"
+                            app:ensureMinTouchTargetSize="false" />
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:alpha="0.55"
+                        android:clickable="false"
+                        android:enabled="false"
+                        android:focusable="false"
+                        android:gravity="center_vertical"
+                        android:minHeight="@dimen/touch_target_min"
+                        android:orientation="horizontal"
+                        android:paddingStart="@dimen/space_16"
+                        android:paddingTop="@dimen/space_8"
+                        android:paddingEnd="@dimen/space_12"
+                        android:paddingBottom="@dimen/space_8">
+
+                        <TextView
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:text="@string/control_section_protection"
+                            android:textAppearance="@style/TextAppearance.OpenJbd.ListItemTitle" />
+
+                        <com.google.android.material.chip.Chip
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:clickable="false"
+                            android:enabled="false"
+                            android:text="@string/control_planned"
+                            app:ensureMinTouchTargetSize="false" />
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:alpha="0.55"
+                        android:clickable="false"
+                        android:enabled="false"
+                        android:focusable="false"
+                        android:gravity="center_vertical"
+                        android:minHeight="@dimen/touch_target_min"
+                        android:orientation="horizontal"
+                        android:paddingStart="@dimen/space_16"
+                        android:paddingTop="@dimen/space_8"
+                        android:paddingEnd="@dimen/space_12"
+                        android:paddingBottom="@dimen/space_8">
+
+                        <TextView
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:text="@string/control_section_balance"
+                            android:textAppearance="@style/TextAppearance.OpenJbd.ListItemTitle" />
+
+                        <com.google.android.material.chip.Chip
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:clickable="false"
+                            android:enabled="false"
+                            android:text="@string/control_planned"
+                            app:ensureMinTouchTargetSize="false" />
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:alpha="0.55"
+                        android:clickable="false"
+                        android:enabled="false"
+                        android:focusable="false"
+                        android:gravity="center_vertical"
+                        android:minHeight="@dimen/touch_target_min"
+                        android:orientation="horizontal"
+                        android:paddingStart="@dimen/space_16"
+                        android:paddingTop="@dimen/space_8"
+                        android:paddingEnd="@dimen/space_12"
+                        android:paddingBottom="@dimen/space_8">
+
+                        <TextView
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:text="@string/control_section_capacity"
+                            android:textAppearance="@style/TextAppearance.OpenJbd.ListItemTitle" />
+
+                        <com.google.android.material.chip.Chip
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:clickable="false"
+                            android:enabled="false"
+                            android:text="@string/control_planned"
+                            app:ensureMinTouchTargetSize="false" />
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:alpha="0.55"
+                        android:clickable="false"
+                        android:enabled="false"
+                        android:focusable="false"
+                        android:gravity="center_vertical"
+                        android:minHeight="@dimen/touch_target_min"
+                        android:orientation="horizontal"
+                        android:paddingStart="@dimen/space_16"
+                        android:paddingTop="@dimen/space_8"
+                        android:paddingEnd="@dimen/space_12"
+                        android:paddingBottom="@dimen/space_8">
+
+                        <TextView
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:text="@string/control_section_temperature"
+                            android:textAppearance="@style/TextAppearance.OpenJbd.ListItemTitle" />
+
+                        <com.google.android.material.chip.Chip
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:clickable="false"
+                            android:enabled="false"
+                            android:text="@string/control_planned"
+                            app:ensureMinTouchTargetSize="false" />
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:alpha="0.55"
+                        android:clickable="false"
+                        android:enabled="false"
+                        android:focusable="false"
+                        android:gravity="center_vertical"
+                        android:minHeight="@dimen/touch_target_min"
+                        android:orientation="horizontal"
+                        android:paddingStart="@dimen/space_16"
+                        android:paddingTop="@dimen/space_8"
+                        android:paddingEnd="@dimen/space_12"
+                        android:paddingBottom="@dimen/space_8">
+
+                        <TextView
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:text="@string/control_section_mos"
+                            android:textAppearance="@style/TextAppearance.OpenJbd.ListItemTitle" />
+
+                        <com.google.android.material.chip.Chip
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:clickable="false"
+                            android:enabled="false"
+                            android:text="@string/control_planned"
+                            app:ensureMinTouchTargetSize="false" />
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:alpha="0.55"
+                        android:clickable="false"
+                        android:enabled="false"
+                        android:focusable="false"
+                        android:gravity="center_vertical"
+                        android:minHeight="@dimen/touch_target_min"
+                        android:orientation="horizontal"
+                        android:paddingStart="@dimen/space_16"
+                        android:paddingTop="@dimen/space_8"
+                        android:paddingEnd="@dimen/space_12"
+                        android:paddingBottom="@dimen/space_8">
+
+                        <TextView
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:text="@string/control_section_backup_restore"
+                            android:textAppearance="@style/TextAppearance.OpenJbd.ListItemTitle" />
+
+                        <com.google.android.material.chip.Chip
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:clickable="false"
+                            android:enabled="false"
+                            android:text="@string/control_planned"
+                            app:ensureMinTouchTargetSize="false" />
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:alpha="0.55"
+                        android:clickable="false"
+                        android:enabled="false"
+                        android:focusable="false"
+                        android:gravity="center_vertical"
+                        android:minHeight="@dimen/touch_target_min"
+                        android:orientation="horizontal"
+                        android:paddingStart="@dimen/space_16"
+                        android:paddingTop="@dimen/space_8"
+                        android:paddingEnd="@dimen/space_12"
+                        android:paddingBottom="@dimen/space_8">
+
+                        <TextView
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:text="@string/control_section_diagnostics"
+                            android:textAppearance="@style/TextAppearance.OpenJbd.ListItemTitle" />
+
+                        <com.google.android.material.chip.Chip
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:clickable="false"
+                            android:enabled="false"
+                            android:text="@string/control_planned"
+                            app:ensureMinTouchTargetSize="false" />
+                    </LinearLayout>
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="@dimen/space_16"
+                android:layout_marginTop="@dimen/space_18"
+                android:layout_marginEnd="@dimen/space_16"
+                android:padding="@dimen/space_12"
+                android:text="@string/control_future_notice"
+                android:textAppearance="@style/TextAppearance.OpenJbd.EmptyBody" />
+        </LinearLayout>
+    </LinearLayout>
+</ScrollView>

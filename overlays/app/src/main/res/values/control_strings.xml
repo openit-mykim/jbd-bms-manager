@@ -1,0 +1,22 @@
+<resources>
+    <string name="control_maintenance_title">Maintenance Mode</string>
+    <string name="control_maintenance_locked_description">Maintenance Mode is a technician workspace for BMS configuration and calibration. Unlock it before use.</string>
+    <string name="control_unlock">Unlock</string>
+    <string name="control_unlock_dialog_title">Unlock Maintenance Mode?</string>
+    <string name="control_unlock_dialog_message">Maintenance operations can affect battery protection, calibration, and behavior values. Proceed only if you understand the meaning and impact of the values. Incorrect settings can create unsafe conditions for the battery and equipment.</string>
+    <string name="control_cancel">Cancel</string>
+    <string name="control_unlock_confirm">Unlock</string>
+    <string name="control_lock_again">Lock again</string>
+    <string name="control_target_bms">Target BMS</string>
+    <string name="control_sections_title">Maintenance sections</string>
+    <string name="control_section_calibration">Calibration</string>
+    <string name="control_section_protection">Protection</string>
+    <string name="control_section_balance">Balance configuration</string>
+    <string name="control_section_capacity">Capacity</string>
+    <string name="control_section_temperature">Temperature</string>
+    <string name="control_section_mos">MOS control</string>
+    <string name="control_section_backup_restore">Backup &amp; restore</string>
+    <string name="control_section_diagnostics">Diagnostics</string>
+    <string name="control_planned">Planned</string>
+    <string name="control_future_notice">Write and calibration features will be delivered incrementally in later updates.</string>
+</resources>

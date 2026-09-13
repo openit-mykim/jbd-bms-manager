@@ -130,7 +130,7 @@ class MainActivity : AppCompatActivity() {
     private fun createPageFragment(page: Int): Fragment = when (page) {
         PAGE_DETAIL -> DetailFragment()
         PAGE_BALANCE -> BalanceFragment()
-        PAGE_CONTROL -> ComingSoonFragment.newInstance(R.string.control_title)
+        PAGE_CONTROL -> ControlFragment()
         PAGE_SETTINGS -> SettingsFragment()
         else -> OverviewFragment()
     }
