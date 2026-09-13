@@ -1,0 +1,9 @@
+<resources>
+    <string name="nav_detail">상세</string>
+    <string name="nav_balance">밸런스</string>
+    <string name="nav_control">제어</string>
+    <string name="detail_title">상세</string>
+    <string name="balance_title">밸런스</string>
+    <string name="control_title">제어</string>
+    <string name="development_in_progress">개발 중</string>
+</resources>
