@@ -262,7 +262,21 @@ Initial research references:
 
 - OpenJBD upstream source: `https://github.com/gytxtx/OpenJBD`
 - syssi ESPHome JBD implementation and protocol reference: `https://github.com/syssi/esphome-jbd-bms`
+- official Jiabaida communication protocol PDF (mirrored in syssi repo): `https://github.com/syssi/esphome-jbd-bms/blob/main/docs/Jiabaida.communication.protocol.pdf`
 - community JBD serial/register map mirror: `https://github.com/ieb/N2KLifePo4/blob/main/JBD-BMS-SERIAL-INTERFACE.md`
+- bms-tools upstream register-map origin (GitLab): `https://gitlab.com/bms-tools/bms-tools` — map file: `https://gitlab.com/bms-tools/bms-tools/-/blob/master/JBD_REGISTER_MAP.md`
 - open_battery project referenced by OpenJBD: `https://shishir-dey.github.io/open_battery/`
+
+Settings read/write implementation references (sample code for EEPROM access):
+
+- jbdtool parameter read/write utility (C CLI; named parameter `-r`/`-w` incl. `BalanceStartVoltage`, `BalanceWindow`, `BatteryConfig` bitfield read/write): `https://github.com/sshoecraft/jbdtool`
+- JiabaidaBMS ESP32 implementation that reads state and writes configuration: `https://github.com/beelsebob/JiabaidaBMS`
+- JBD-UP16S010 protocol notes incl. write frames (`DD 5A …`) and a Modbus-RTU variant: `https://gist.github.com/PhracturedBlue/7ef619594eaa4c27f4ff068b461865b8` — updated revision: `https://gist.github.com/dmitrych5/e2fa4ef16b0b483808e4f4089846d0d0`
+
+Balance and monitoring read references:
+
+- ESP32 BLE reader with per-cell and balance-state display: `https://github.com/kolins-cz/Smart-BMS-Bluetooth-ESP32`
+- Jiabaida Protocol V4 host tool (balance-state interval formatting `1-3, 5, 7-9`, timeout/retry design): `https://github.com/wow-meow/bms-uart`
+- Cross-platform UART/BLE library with Python parsers: `https://github.com/ethycS0/jbd_bms`
 
 These sources are useful engineering evidence, but physical compatibility still must be recorded for the BMS variants this project claims to support.
