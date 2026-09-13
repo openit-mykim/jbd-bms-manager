@@ -1,0 +1,11 @@
+<resources>
+    <string name="detail_section_battery">배터리</string>
+    <string name="detail_section_device">디바이스</string>
+    <string name="detail_section_connection">연결</string>
+    <string name="detail_section_status">상세 상태</string>
+    <string name="detail_section_refresh">갱신</string>
+    <string name="detail_last_updated">마지막 갱신</string>
+    <string name="detail_rated_charge_current">정격 충전 전류</string>
+    <string name="detail_rated_discharge_current">정격 방전 전류</string>
+    <string name="detail_rated_discharge_power">정격 방전 전력</string>
+</resources>
