@@ -11,7 +11,7 @@ Tasks:
 - Add OpenJBD as `upstream` remote.
 - Fetch and record baseline commit `7e3e225a128f6e0d69425b98a2670d8d69594885`.
 - Merge upstream history using `--allow-unrelated-histories` so provenance is visible in Git history.
-- Preserve this repository's `README.md`, `LICENSE`, `AGENTS.md`, `PROJECT_STATUS.md`, `CLAUDE.md`, `HERMES.md`, `paseo.json`, `scripts/`, and `docs/`.
+- Preserve this repository's project-control files and docs.
 - Preserve upstream MIT license separately under `THIRD_PARTY_LICENSES/OpenJBD-LICENSE`.
 - Retain upstream implementation and test files.
 - Build baseline debug APK.
@@ -32,13 +32,12 @@ Tasks:
 
 - Remove functional dependence on `windowOptOutEdgeToEdgeEnforcement`.
 - Implement explicit status-bar and navigation-bar WindowInsets handling.
-- Ensure toolbar's visual content sits below status-bar inset.
+- Ensure every Activity toolbar sits below the status-bar inset.
 - Ensure bottom navigation sits above gesture/navigation inset.
-- Avoid double-padding on pre-API 35 devices.
+- Avoid double-padding on older devices.
 - Check portrait and landscape layouts.
 - Check gesture navigation and 3-button navigation.
 - Check light and dark themes.
-- Add regression coverage where practical.
 
 Exit criteria:
 
@@ -46,58 +45,107 @@ Exit criteria:
 - Existing lower API behavior remains acceptable.
 - screenshot evidence or manual verification note is attached to PR.
 
-## Phase 2 — Monitor Mode productization
+## Phase 2 — Five-tab monitoring productization
 
-Goal: turn upstream monitoring UI into the stable daily-use surface of JBD BMS Manager.
+Goal: replace the upstream three-tab information architecture with the JBD BMS Manager five-tab product model.
 
-Primary screen priorities:
+Target bottom navigation:
+
+```text
+개요 / 상세 / 밸런스 / 제어 / 설정
+Overview / Detail / Balance / Control / Settings
+```
+
+Authoritative UX design: `docs/navigation-design.md`.
+
+### Overview
+
+Primary priorities:
 
 1. SOC
 2. pack voltage
 3. current
 4. power
-5. cell delta
-6. temperature
-7. alarm / protection state
+5. temperature
+6. cell delta
+7. alarm / protection summary
+8. charge/discharge MOS state
 
-Tasks:
+The page should remain compact and suitable for a quick battery-state judgment.
+
+### Detail
+
+Redistribute useful content from upstream `Parameters` into a user-oriented detailed read-only page:
+
+- capacities
+- cycles
+- firmware / device identity
+- manufacturing information
+- detailed temperatures
+- protection / MOS state
+- future charts/session information
+
+Do not preserve `Parameters` as a top-level destination merely because it exists upstream.
+
+### Balance
+
+Create a dedicated read-oriented cell page:
+
+- every cell-group voltage
+- min / max / average
+- delta voltage
+- active balancing state
+- strongest / weakest cell highlighting
+- foundation for future weak-cell and divergence diagnostics
+
+Balance configuration itself belongs under Control.
+
+### Control
+
+Add the top-level shell and locked Maintenance Mode entry point. Broad write support is still implemented in later phases.
+
+### Settings
+
+Retain application preferences only. Remove any design assumption that Settings is the main entry point to Maintenance Mode.
+
+Other Phase 2 tasks:
 
 - Rename visible app branding.
-- Review package/application ID migration strategy; do not rename packages until baseline is stable.
-- Simplify high-frequency monitoring UI.
-- Keep detailed cells screen.
-- Preserve landscape dashboard.
-- Add Korean strings.
-- Ensure connection/reconnect flows are clear.
-- Keep Monitor Mode free of protection/calibration writes.
+- Keep unique application ID.
+- Add/complete Korean strings for the five labels and moved screens.
+- Preserve landscape dashboard as a secondary monitoring surface.
+- Ensure connection/reconnect flows remain clear.
 
 Exit criteria:
 
+- five bottom destinations are present and localized.
+- no `Parameters` top-level destination remains.
+- Overview/Detail/Balance are read-oriented.
+- Control exists but does not claim unsupported write functions.
+- Settings contains application preferences only.
 - stable BLE connect/reconnect with supported JBD test BMS.
-- no write path reachable from Monitor Mode.
-- Korean/English core screens complete.
 
-## Phase 3 — Maintenance Mode shell
+## Phase 3 — Control / Maintenance Mode shell
 
-Goal: introduce a service domain without yet enabling broad high-risk writes.
+Goal: build the technician domain behind the Control tab without yet enabling broad high-risk writes.
 
 Architecture:
 
-- explicit Maintenance Mode entry.
-- unlock acknowledgement.
-- capability discovery before exposing write controls.
+- locked-by-default Control page.
+- deliberate maintenance unlock acknowledgement.
+- capability discovery before exposing supported operations.
 - common staged edit session.
 - change review screen.
 - apply transaction coordinator.
 - read-back verification.
 - audit/result record for each maintenance operation.
 
-Initial screens:
+Initial sections:
 
 - Device / Firmware
 - Calibration
 - Protection
-- Balance
+- Balance configuration
 - Capacity
 - Temperature
 - MOS Control
@@ -106,7 +154,7 @@ Initial screens:
 
 Exit criteria:
 
-- Maintenance Mode shell is separated from Monitor Mode.
+- Control is clearly separated from the three read-oriented monitoring tabs.
 - no placeholder screen pretends unsupported commands work.
 - common write transaction framework has tests.
 
@@ -138,9 +186,9 @@ Exit criteria:
 - supported firmware/device scope is documented.
 - at least one physical-device validation is recorded before declaring production-ready.
 
-## Phase 5 — Protection, balance and control
+## Phase 5 — Protection, balance configuration and control
 
-Goal: implement validated service configuration.
+Goal: implement validated service configuration under the Control tab.
 
 Areas:
 
@@ -157,6 +205,7 @@ Rules:
 - preserve safety defaults.
 - do not expose raw arbitrary register write in normal UI.
 - bulk changes require backup first or a clear override.
+- Balance tab remains observation/diagnosis only.
 
 ## Phase 6 — Backup, restore and diagnostics
 
@@ -173,19 +222,9 @@ Backup should include:
 - protocol variant identifier
 - unsupported/unknown field markers
 
-Restore must:
+Restore must validate compatibility, show a diff, reject incompatible critical fields and read values back when supported.
 
-- validate device compatibility.
-- show diff before write.
-- reject incompatible or unknown critical fields.
-- read back all restored values when supported.
-
-Diagnostics:
-
-- raw device metadata
-- BLE state
-- protocol transaction result
-- register-level debug output behind developer/service controls
+Diagnostics live under Control and may include raw device metadata, BLE state and register-level debug output behind service/developer controls.
 
 ## Phase 7 — Quality, CI and release
 
@@ -195,7 +234,7 @@ Goal: make maintenance sustainable.
 - release workflow for tagged versions.
 - lint / static analysis appropriate to Android project.
 - protocol unit-test suite.
-- UI regression checks for critical flows.
+- UI regression checks for five-tab navigation and critical flows.
 - signed APK/AAB strategy.
 - changelog and release notes.
 - versioning policy.
