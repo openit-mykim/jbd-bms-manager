@@ -9,6 +9,7 @@ on:
       - "scripts/apply-product-overlay.py"
       - "scripts/apply-alpha3.py"
       - "scripts/apply-alpha4.py"
+      - "scripts/apply-alpha5.py"
       - ".github/workflows/android-alpha.yml"
 
 permissions:
@@ -21,8 +22,8 @@ concurrency:
 env:
   UPSTREAM_REPO: gytxtx/OpenJBD
   UPSTREAM_COMMIT: 7e3e225a128f6e0d69425b98a2670d8d69594885
-  RELEASE_TAG: v0.1.0-alpha.4
-  APK_NAME: jbd-bms-manager-v0.1.0-alpha.4.apk
+  RELEASE_TAG: v0.1.0-alpha.5
+  APK_NAME: jbd-bms-manager-v0.1.0-alpha.5.apk
 
 jobs:
   build:
@@ -54,6 +55,7 @@ jobs:
           python3 manager/scripts/apply-product-overlay.py upstream-src
           python3 manager/scripts/apply-alpha3.py upstream-src
           python3 manager/scripts/apply-alpha4.py upstream-src
+          python3 manager/scripts/apply-alpha5.py upstream-src
 
       - name: Grant Gradle wrapper permission
         run: chmod +x upstream-src/gradlew
@@ -86,24 +88,25 @@ jobs:
         if: github.ref == 'refs/heads/main'
         run: |
           cat > release-notes.md <<'EOF'
-          ## JBD BMS Manager v0.1.0-alpha.4
+          ## JBD BMS Manager v0.1.0-alpha.5
 
-          다중 BMS 선택 UI 선구성과 최종 병아리 얼굴 앱 아이콘을 적용한 테스트 빌드입니다.
+          BMS 장치 관리 진입점을 상단 왼쪽 버튼 하나로 통합한 테스트 빌드입니다.
 
           ### 변경 내용
-          - 하단 메뉴: `개요 / 상세 / 밸런스 / 제어 / 설정`
-          - `밸런스`, `제어`는 현재 `개발 중` 화면 제공
-          - 상단 우측에 현재/마지막 BMS 선택 UI 추가
-          - BMS 선택 Bottom Sheet 선구성 추가
-          - Android 16 상단/하단 system-bar inset 보정 유지
-          - 한국어 UI 유지
-          - 사용자 제공 병아리 얼굴을 기준으로 전체 노란 배경 + 얼굴만 크게 보이는 앱 아이콘 적용
-          - 앱 표시명 `JBD BMS Manager`
-          - applicationId `com.openit.jbdbmsmanager`
+          - 상단 오른쪽 BMS 콤보/클릭 기능 제거
+          - 상단 오른쪽은 현재 연결 BMS 이름 또는 `BMS 미연결` 상태만 표시
+          - 상단 왼쪽 장치 버튼을 BMS 관리의 유일한 진입점으로 통합
+          - 등록/저장된 BMS가 없으면 장치 검색 화면으로 바로 이동
+          - 저장된 BMS가 있으면 등록 목록 화면을 먼저 표시
+          - 등록 목록 하단에 `+ 새 BMS 검색` 버튼 추가
+          - 저장된 BMS 항목 선택 시 해당 장치로 재연결
+          - 기존 5개 하단 메뉴와 Android 16 inset 보정 유지
+          - 사용자 제공 병아리 앱 아이콘 유지
 
-          ### 주의
+          ### 현재 제한
+          - 현재 알파는 OpenJBD 기반 마지막 1개 장치 저장 구조를 사용합니다.
+          - 실제 다중 BMS 영구 레지스트리, 별칭 편집, RSSI 상태 표시는 후속 구현 대상입니다.
           - debug key로 서명된 알파 테스트 빌드입니다.
-          - 다중 BMS 등록/별칭/RSSI 실시간 스캔은 후속 구현 대상입니다.
           - JBD / Jiabaida의 공식 앱이 아닙니다.
           EOF
 
@@ -118,7 +121,7 @@ jobs:
           else
             gh release create "${RELEASE_TAG}" "dist/${APK_NAME}" "dist/${APK_NAME}.sha256" \
               --target "${GITHUB_SHA}" \
-              --title "JBD BMS Manager v0.1.0-alpha.4" \
+              --title "JBD BMS Manager v0.1.0-alpha.5" \
               --notes-file release-notes.md \
               --prerelease \
               --repo "${GITHUB_REPOSITORY}"
