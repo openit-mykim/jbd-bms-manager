@@ -1,5 +1,7 @@
 <resources>
     <string name="bms_selector_disconnected">No BMS</string>
+    <string name="bms_selector_arrow">▼</string>
+    <string name="bms_status_dot_symbol">●</string>
     <string name="bms_sheet_title">Registered BMS</string>
     <string name="bms_sheet_subtitle">Select a BMS to reconnect. Multi-device registration and live scan status will be added next.</string>
     <string name="bms_sheet_no_registered">No BMS has been registered yet.</string>
