@@ -2,50 +2,56 @@
 
 ## Goal
 
-JBD BMS Manager must support more than one battery/BMS and make the active target obvious at all times.
+JBD BMS Manager must support more than one battery/BMS while keeping one explicit active target. Device discovery, registration, selection and reconnection use one entry point only.
 
-This is not only a convenience feature. The selected BMS becomes the ownership boundary for monitoring state, future service history, backups, calibration records and configuration changes.
+This is also a safety boundary: monitoring state, backups, calibration records and future writable Control operations must always belong to the explicitly selected physical BMS.
 
-## Top app bar selector
+## Top app bar
 
-The right side of the blue top app bar shows the currently selected BMS name as a persistent selector.
-
-Example:
+The blue top app bar has two distinct responsibilities:
 
 ```text
-☰   개요                              NANROBOT ▼
+[device-list icon]   개요                         통근용 48V
 ```
 
-States:
+- left navigation/device-list button: the only BMS management entry point
+- right-side text: read-only current connection status / active BMS name
 
-- connected: user alias or BLE name
-- reconnecting: keep the selected name visible while connection state is handled elsewhere
-- no saved/selected BMS: `BMS 미연결`
+The right-side text is not a combo box, dropdown or button. When no BMS is connected it displays `BMS 미연결`.
 
-The selector remains visible on all five primary tabs so the user always knows which battery is being observed or controlled.
+This removes the previous duplicated interaction where both the left button and the top-right BMS name opened device-selection UI.
 
-## Selector interaction
+## Left button behavior
 
-Tapping the BMS name opens a bottom sheet rather than a narrow popup menu.
+### No registered BMS
 
-Target layout:
+Tapping the left button opens the BLE device search screen immediately. The screen scans for nearby compatible BMS devices and shows search progress/results.
 
 ```text
-등록된 BMS
+BMS 연결
 
-●  출퇴근 자전거
-   A4:C1:38:xx:xx:01       -58 dBm
+장치 검색 중...
 
-●  NANROBOT
-   A4:C1:38:xx:xx:27       -71 dBm
+SP14S004
+A4:C1:38:xx:xx:27     -58 dBm
+```
 
-●  테스트팩 21700
-   A4:C1:38:xx:xx:93       -64 dBm
+Selecting a discovered device registers/remembers it and connects to it. Alias editing becomes part of the full registry implementation.
 
-●  예비 배터리
-   A4:C1:38:xx:xx:B1       신호 없음
+### One or more registered BMS devices
 
-[ + 새 BMS 등록 ]
+Tapping the left button opens the registered-device list first.
+
+```text
+BMS 연결
+
+●  통근용 48V
+   A4:C1:38:xx:xx:01
+
+○  예비 배터리
+   A4:C1:38:xx:xx:B1
+
+[ + 새 BMS 검색 ]
 ```
 
 Selecting a registered BMS performs:
@@ -61,8 +67,10 @@ connect selected BMS
         ↓
 verify connection
         ↓
-refresh header and active data context
+refresh active data context and top-right status text
 ```
+
+The bottom `+ 새 BMS 검색` action opens BLE discovery.
 
 ## Device model
 
@@ -82,106 +90,88 @@ RegisteredBms
 - notes (optional)
 ```
 
-`alias` is the user-facing name and should be editable independently from the BLE-advertised name.
+`alias` is user-facing and independently editable from the BLE-advertised name.
 
-The MAC address should be stored, but future implementation must not assume the MAC address is always the only permanent identity. Some BLE devices may use changing/private addresses. Where available, device model, serial number, firmware identity or other stable values should contribute to `deviceFingerprint`.
+Store the MAC address, but do not assume it is always the only permanent identity. Where available, model, serial, firmware identity or another stable value should contribute to `deviceFingerprint`.
 
-## Registration
+## Signal semantics
 
-When a new BMS is selected from scanning, offer registration:
+Use three states:
 
-```text
-Bluetooth name: SP14S004
-MAC: A4:C1:38:xx:xx:27
-
-관리 이름
-[ NANROBOT 배터리 ]
-
-[ 등록 ]
-```
-
-The alias is optional; if omitted, BLE name or address is used as fallback display text.
-
-## Signal indicator
-
-Use three states rather than interpreting absence as an error:
-
-- green: device found in the current scan / currently reachable
+- green: currently connected or seen/reachable during the latest scan
 - gray: registered but not seen in the latest scan
 - red: explicit connection failure or device error
 
 RSSI should be shown when available, for example `-61 dBm`.
 
-Do not use red merely because the device is out of range.
+Do not use red merely because a registered device is out of range.
 
 ## Scanning policy
 
-Do not run continuous background scanning solely for the selector.
+Do not continuously scan in the background just to decorate the list.
 
 Preferred behavior:
 
-1. User opens BMS selector.
-2. Start a short scan window, approximately 3–5 seconds.
-3. Match advertisements to registered devices.
-4. Update reachability indicator and RSSI.
-5. Stop scanning.
-
-This reduces unnecessary BLE activity and battery use.
+1. With no registered device, entering BMS management starts discovery immediately.
+2. With registered devices, show the saved list first.
+3. Start discovery when the user taps `+ 새 BMS 검색`.
+4. In the full registry phase, a short optional scan may refresh reachability/RSSI for registered devices.
+5. Stop scanning when the discovery window completes or the screen is closed.
 
 ## Startup behavior
 
-Only the last selected/active BMS is eligible for automatic reconnect at startup.
+Only the last explicitly selected BMS is eligible for automatic reconnect at startup.
 
-If several registered BMS devices are visible, the application must not arbitrarily choose another device.
+If several registered BMS devices are visible, the application must not arbitrarily switch to another one.
 
 ## Maintenance safety
 
-The active BMS identity is especially important under Control.
-
-Before any write transaction, Control should repeat the target identity near the operation summary:
+The active BMS identity is especially important under Control. Before any write transaction, Control repeats the target identity near the operation summary:
 
 ```text
 대상 BMS
-NANROBOT
-A4:C1:38:xx:xx:27
+통근용 48V
+A4:C1:38:xx:xx:01
 ```
 
 Future backups, service history and calibration records are keyed to the registered BMS/device fingerprint.
 
-## Initial UI shell
+## Current implementation shell
 
-Before full multi-device persistence and scanning are implemented, the product may expose a non-deceptive shell:
+The current alpha still persists only the last device from the OpenJBD baseline. Therefore the executable UI must not pretend that a true multi-device registry already exists.
 
-- top-right active BMS selector
-- bottom sheet
-- currently saved/last device shown if available
-- green indicator only when that exact device is currently connected
-- gray when merely saved
-- tapping the saved device reconnects it
-- multi-device registration and live scan fields explicitly marked as under development
+Current behavior:
 
-Do not render fake devices or fake RSSI values in the executable application.
+- top-right text is read-only connection status/name
+- left app-bar button is the single BMS-management entry point
+- no saved device: open BLE search immediately
+- saved device: show it as the current registered-device row
+- tapping the saved row reconnects it
+- `+ 새 BMS 검색` opens BLE discovery
+- no fake devices and no fake RSSI values
+
+When the persistent registry is implemented, the same BMS-management screen expands from one saved row to the full registered-device list without changing the navigation model.
 
 ## Implementation phases
 
-### Phase A — selector shell
+### Phase A — unified device-management shell
 
-- persistent top-right selector
-- show connected/saved device name
-- bottom sheet
-- reconnect current saved device
+- one left-side BMS management entry point
+- read-only top-right connection status/name
+- no saved device → discovery
+- saved device → saved list + new-device search
 
-### Phase B — registry
+### Phase B — persistent registry
 
 - multiple registered devices
-- alias editing
+- aliases
 - selected-device persistence
 - add/remove/rename workflows
 
 ### Phase C — scan state
 
-- short scan on sheet open
-- RSSI and green/gray status
+- short scan for reachability/RSSI
+- green/gray state
 - explicit red failure state
 
 ### Phase D — device-scoped data
