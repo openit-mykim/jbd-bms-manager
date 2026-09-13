@@ -115,22 +115,24 @@ Decision: Settings contains application preferences and app information only. Ma
 
 Reason: application preferences and BMS service functions are different domains. The Control tab makes the safety boundary visible and understandable.
 
-## D015 — Multi-BMS registry and persistent active target
+## D015 — Multi-BMS registry and single device-management entry point
 
-Decision: support multiple registered BMS devices with user aliases, while maintaining exactly one explicit active/selected BMS at a time.
+Decision: support multiple registered BMS devices with user aliases while maintaining exactly one explicit active/selected BMS at a time.
 
 UI rules:
 
-- the blue top app bar shows the active BMS name at the right on all five primary tabs.
-- tapping the active BMS opens a bottom sheet of registered devices.
-- registered devices show alias/name, address, and live reachability/RSSI when scanning is implemented.
-- green means currently seen/reachable, gray means registered but not currently seen, and red is reserved for explicit connection failure/error.
+- the left app-bar device-list button is the only entry point for BMS discovery, registration, selection and reconnection.
+- the top-right app-bar text shows the currently connected BMS name or `BMS 미연결`; it is status-only and is not clickable.
+- when there is no registered/saved BMS, the left button opens BLE device discovery immediately.
+- when one or more BMS devices are registered, the left button shows the registered-device list first.
+- the registered-device screen contains a bottom `+ 새 BMS 검색` action for discovering another device.
 - selecting a registered BMS disconnects/cancels reconnect for the previous device and immediately connects the selected device.
 - startup auto-connect targets only the last explicitly selected BMS.
+- green means connected or currently seen/reachable, gray means registered but not currently seen, and red is reserved for explicit connection failure/error.
 
 Identity rule: store MAC address but do not treat it as the only permanent identity. Add a stable device fingerprint using BMS serial/model/firmware identity when available.
 
-Safety reason: monitoring data, backups, calibration records and Maintenance Mode writes must all be scoped to the explicitly selected physical BMS.
+Safety reason: device management should not have duplicated controls, and monitoring data, backups, calibration records and Maintenance Mode writes must all be scoped to the explicitly selected physical BMS.
 
 See `docs/multi-bms-design.md`.
 
