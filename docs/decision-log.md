@@ -115,6 +115,25 @@ Decision: Settings contains application preferences and app information only. Ma
 
 Reason: application preferences and BMS service functions are different domains. The Control tab makes the safety boundary visible and understandable.
 
+## D015 — Multi-BMS registry and persistent active target
+
+Decision: support multiple registered BMS devices with user aliases, while maintaining exactly one explicit active/selected BMS at a time.
+
+UI rules:
+
+- the blue top app bar shows the active BMS name at the right on all five primary tabs.
+- tapping the active BMS opens a bottom sheet of registered devices.
+- registered devices show alias/name, address, and live reachability/RSSI when scanning is implemented.
+- green means currently seen/reachable, gray means registered but not currently seen, and red is reserved for explicit connection failure/error.
+- selecting a registered BMS disconnects/cancels reconnect for the previous device and immediately connects the selected device.
+- startup auto-connect targets only the last explicitly selected BMS.
+
+Identity rule: store MAC address but do not treat it as the only permanent identity. Add a stable device fingerprint using BMS serial/model/firmware identity when available.
+
+Safety reason: monitoring data, backups, calibration records and Maintenance Mode writes must all be scoped to the explicitly selected physical BMS.
+
+See `docs/multi-bms-design.md`.
+
 ## Change rule
 
 If a future PR changes one of these decisions materially, update this file in the same PR with:
