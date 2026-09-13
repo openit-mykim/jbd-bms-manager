@@ -92,7 +92,19 @@ read back
 exit/save factory mode
 ```
 
-Do not hard-code one universal sequence until verified against the target SP14S004-class hardware and firmware.
+Concrete community-documented sequence for JBD-class firmware (candidates until confirmed on target hardware):
+
+```text
+enter:        write 56 78 → register 0x00
+exit:         write 00 00 → register 0x01          (no EEPROM commit)
+exit/commit:  write 28 28 → register 0x01          (persists EEPROM values, resets error counters)
+password set: write length-prefixed password → register 0x06 before entering factory mode
+password mgmt: set_password 0x07, clear_password 0x09
+```
+
+The commit exit has a documented side effect: error counters (`0xAA`) are reset to zero. The app should snapshot error counters before a commit exit so the audit record preserves them.
+
+Do not hard-code one universal sequence until verified against the target SP14S004-class hardware and firmware. Read-only sessions should exit without commit; write sessions must read back every changed register and only commit when all approved changes verify.
 
 ## Candidate calibration registers
 
@@ -125,6 +137,35 @@ Community maps commonly describe groups for:
 - NTC enable bits
 - cell count
 - function flags
+
+Concrete register candidates extracted from the community register-map mirror (see references; accessed 2026-09-14; **all candidates until hardware-verified**). All stored registers are 16-bit big-endian unless noted; reads use mode `0xA5`, writes use mode `0x5A`; responses carry register address, status (`0x00` OK / `0x80` error), length and data.
+
+| Address | Candidate meaning | Format / unit | Notes |
+|---|---|---|---|
+| `0x10` | design capacity | U16, 10 mAh | |
+| `0x11` | cycle capacity | U16, 10 mAh | |
+| `0x12`, `0x13`, `0x32..0x35` | SOC estimate points (100 / 0 / 80 / 60 / 40 / 20 %) | U16, 1 mV | raw cell-voltage points |
+| `0x14` | cell self-discharge rate estimate | U16, 0.1 % | |
+| `0x15` | manufacture date | packed bits | mirror of basic-info date field |
+| `0x16` | serial number | U16 | |
+| `0x17` | cycle count | U16, 1 cycle | |
+| `0x18..0x1B` | charge temperature thresholds + releases | U16, 0.1 K | chgot / chgot_rel / chgut / chgut_rel |
+| `0x1C..0x1F` | discharge temperature thresholds + releases | U16, 0.1 K | dsgot / dsgot_rel / dsgut / dsgut_rel |
+| `0x20..0x23` | pack over/under-voltage thresholds + releases | U16, 10 mV | povp / povp_rel / puvp / puvp_rel |
+| `0x24..0x27` | cell over/under-voltage thresholds + releases | U16, 1 mV | covp / covp_rel / cuvp / cuvp_rel |
+| `0x28`, `0x29` | charge / discharge over-current thresholds | S16, 10 mA | charge positive, discharge negative |
+| `0x2A` | balancing start voltage | S16, 1 mV | |
+| `0x2B` | balancing delta/window | U16, 1 mV | |
+| `0x2C` | shunt resistor value | U16, 0.1 mΩ | |
+| `0x2D` | function config bits | U16 bitfield | bit 2 balance enable, bit 3 charge-balance enable (also switch/scrl/led bits) |
+| `0x2E` | NTC enable bits | U16 bitfield | NTC 1..8 |
+| `0x2F` | cell count | U16, 1 cell | |
+| `0x30`, `0x31` | FET control / LED timer | U16 | semantics partially undocumented |
+| `0x36..0x39` | secondary protections | mixed | secondary cell OV/UV, short-circuit, secondary over-current packs |
+| `0x3A..0x3F` | release delay byte packs | 2 × U8 | temperature, pack voltage, cell voltage, over-current release delays (seconds) |
+| `0x40..0x9F` | unassigned in community map | — | do not touch |
+| `0xA0..0xA2` | manufacturer / device name / barcode | length-prefixed strings | |
+| `0xAA` | error counters | 11 × U16 | read-only |
 
 Before implementing any field:
 
