@@ -2,10 +2,12 @@ package com.gytxtx.openjbd
 
 import android.content.Context
 import android.content.Intent
+import android.graphics.Color
 import android.os.Bundle
 import android.provider.Settings
 import android.view.View
 import android.view.animation.DecelerateInterpolator
+import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
@@ -14,6 +16,7 @@ import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import com.google.android.material.appbar.MaterialToolbar
 import com.google.android.material.bottomnavigation.BottomNavigationView
+import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.gytxtx.openjbd.data.BmsRepository
 import com.gytxtx.openjbd.data.BmsUiState
 import com.gytxtx.openjbd.data.ConnectionState
@@ -25,8 +28,10 @@ import javax.inject.Inject
 class MainActivity : AppCompatActivity() {
     private var connected = false
     private var currentPage = -1
+    private var latestSnapshot: BmsUiState? = null
     private lateinit var toolbar: MaterialToolbar
     private lateinit var bottomNavigationView: BottomNavigationView
+    private var bmsSelectorText: TextView? = null
 
     @Inject lateinit var connectionManager: BmsConnectionManager
     @Inject lateinit var repository: BmsRepository
@@ -81,9 +86,17 @@ class MainActivity : AppCompatActivity() {
         toolbar = findViewById(R.id.top_app_bar)
         toolbar.setNavigationIconTint(getColor(R.color.on_primary))
         bottomNavigationView = findViewById(R.id.bottom_navigation)
+
+        bmsSelectorText = toolbar.menu.findItem(R.id.action_bms_selector)?.actionView
+            ?.findViewById(R.id.bms_selector_text)
+        toolbar.menu.findItem(R.id.action_bms_selector)?.actionView?.setOnClickListener {
+            showBmsSelectorSheet()
+        }
+
         toolbar.setNavigationOnClickListener { openDeviceList() }
         toolbar.setOnMenuItemClickListener { item ->
             when (item.itemId) {
+                R.id.action_bms_selector -> { showBmsSelectorSheet(); true }
                 R.id.action_disconnect -> { connectionManager.disconnect(); true }
                 R.id.action_dashboard -> { startActivity(Intent(this, DashboardActivity::class.java)); true }
                 else -> false
@@ -160,7 +173,56 @@ class MainActivity : AppCompatActivity() {
         Settings.Global.getFloat(contentResolver, Settings.Global.ANIMATOR_DURATION_SCALE, 1f)
     )
 
-    private fun renderState(snapshot: BmsUiState) { connected = snapshot.connected; updateToolbar() }
+    private fun renderState(snapshot: BmsUiState) {
+        latestSnapshot = snapshot
+        connected = snapshot.connected
+        updateToolbar()
+        updateBmsSelector(snapshot)
+    }
+
+    private fun updateBmsSelector(snapshot: BmsUiState?) {
+        val prefs = AppSettings.prefs(this)
+        val savedName = prefs.getString(AppSettings.PREF_LAST_DEVICE_NAME, null)
+        val label = when {
+            snapshot?.connected == true -> snapshot.deviceName ?: savedName ?: snapshot.deviceAddress
+            !savedName.isNullOrBlank() -> savedName
+            else -> getString(R.string.bms_selector_disconnected)
+        }
+        bmsSelectorText?.text = label
+    }
+
+    private fun showBmsSelectorSheet() {
+        val dialog = BottomSheetDialog(this)
+        val view = layoutInflater.inflate(R.layout.bottom_sheet_bms_selector, null)
+        dialog.setContentView(view)
+
+        val prefs = AppSettings.prefs(this)
+        val savedAddress = prefs.getString(AppSettings.PREF_LAST_DEVICE_ADDRESS, "").orEmpty()
+        val savedName = prefs.getString(AppSettings.PREF_LAST_DEVICE_NAME, savedAddress).orEmpty()
+        val row = view.findViewById<View>(R.id.bms_current_row)
+        val empty = view.findViewById<TextView>(R.id.bms_empty_hint)
+        val name = view.findViewById<TextView>(R.id.bms_current_name)
+        val address = view.findViewById<TextView>(R.id.bms_current_address)
+        val dot = view.findViewById<TextView>(R.id.bms_status_dot)
+
+        if (savedAddress.isBlank()) {
+            row.visibility = View.GONE
+            empty.visibility = View.VISIBLE
+        } else {
+            row.visibility = View.VISIBLE
+            empty.visibility = View.GONE
+            name.text = if (savedName.isBlank()) savedAddress else savedName
+            address.text = savedAddress
+            val isCurrentConnected = latestSnapshot?.connected == true && latestSnapshot?.deviceAddress == savedAddress
+            dot.setTextColor(if (isCurrentConnected) Color.rgb(46, 160, 67) else Color.GRAY)
+            row.setOnClickListener {
+                dialog.dismiss()
+                connectionManager.disconnect()
+                connectionManager.connect(savedAddress, if (savedName.isBlank()) savedAddress else savedName)
+            }
+        }
+        dialog.show()
+    }
 
     private fun updateToolbar() {
         toolbar.title = when (currentPage) {
@@ -174,6 +236,7 @@ class MainActivity : AppCompatActivity() {
         toolbar.setNavigationIconTint(getColor(R.color.on_primary))
         toolbar.menu.findItem(R.id.action_disconnect)?.isVisible = currentPage == PAGE_OVERVIEW && connected
         toolbar.menu.findItem(R.id.action_dashboard)?.isVisible = currentPage == PAGE_OVERVIEW && connected
+        updateBmsSelector(latestSnapshot)
     }
 
     private fun openDeviceList() {
@@ -196,6 +259,7 @@ class MainActivity : AppCompatActivity() {
     private fun rememberDevice(address: String, name: String?) {
         AppSettings.prefs(this).edit().putString(AppSettings.PREF_LAST_DEVICE_ADDRESS, address).putString(AppSettings.PREF_LAST_DEVICE_NAME, name ?: address).apply()
         configureAutoReconnect()
+        updateBmsSelector(latestSnapshot)
     }
 
     private fun configureAutoReconnect() {
