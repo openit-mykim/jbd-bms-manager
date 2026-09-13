@@ -22,8 +22,8 @@ concurrency:
 env:
   UPSTREAM_REPO: gytxtx/OpenJBD
   UPSTREAM_COMMIT: 7e3e225a128f6e0d69425b98a2670d8d69594885
-  RELEASE_TAG: v0.1.0-alpha.5
-  APK_NAME: jbd-bms-manager-v0.1.0-alpha.5.apk
+  RELEASE_TAG: v0.1.0-alpha.6
+  APK_NAME: jbd-bms-manager-v0.1.0-alpha.6.apk
 
 jobs:
   build:
@@ -56,6 +56,7 @@ jobs:
           python3 manager/scripts/apply-alpha3.py upstream-src
           python3 manager/scripts/apply-alpha4.py upstream-src
           python3 manager/scripts/apply-alpha5.py upstream-src
+          python3 manager/scripts/apply-alpha6.py upstream-src
 
       - name: Grant Gradle wrapper permission
         run: chmod +x upstream-src/gradlew
@@ -88,22 +89,19 @@ jobs:
         if: github.ref == 'refs/heads/main'
         run: |
           cat > release-notes.md <<'EOF'
-          ## JBD BMS Manager v0.1.0-alpha.5
+          ## JBD BMS Manager v0.1.0-alpha.6
 
-          BMS 장치 관리 진입점을 상단 왼쪽 버튼 하나로 통합한 테스트 빌드입니다.
+          다섯 개 탭의 콘텐츠 이관을 마친 테스트 빌드입니다. 밸런스·상세·제어 탭이 실제 화면으로 구현되었습니다.
 
           ### 변경 내용
-          - 상단 오른쪽 BMS 콤보/클릭 기능 제거
-          - 상단 오른쪽은 현재 연결 BMS 이름 또는 `BMS 미연결` 상태만 표시
-          - 상단 왼쪽 장치 버튼을 BMS 관리의 유일한 진입점으로 통합
-          - 등록/저장된 BMS가 없으면 장치 검색 화면으로 바로 이동
-          - 저장된 BMS가 있으면 등록 목록 화면을 먼저 표시
-          - 등록 목록 하단에 `+ 새 BMS 검색` 버튼 추가
-          - 저장된 BMS 항목 선택 시 해당 장치로 재연결
-          - 기존 5개 하단 메뉴와 Android 16 inset 보정 유지
-          - 사용자 제공 병아리 앱 아이콘 유지
+          - 밸런스 탭: 셀별 전압, 최고/최저 셀 강조, 밸런싱 셀 표시, 최소/최대/평균/편차 통계를 갖춘 읽기 전용 셀 진단 화면 추가
+          - 개요 탭: 셀별 전체 목록을 제거하고 요약 통계만 유지(빠른 상태 판단)
+          - 상세 탭: 파라미터 나열을 사용자용 읽기 전용 화면으로 재구성(용량·사이클·디바이스 정보·상세 상태·마지막 갱신)
+          - 제어 탭: 잠금 기본값의 유지보수 모드 셸 추가(대상 BMS 표시, 잠금 해제 확인 절차, 준비 중 항목 8종은 비활성 표시)
+          - BMS 관리 진입점 통합, 병아리 앱 아이콘, Android 16 inset 보정 유지
 
           ### 현재 제한
+          - 제어 탭의 쓰기·보정 기능은 아직 제공되지 않습니다(이후 단계에서 단계적 제공).
           - 현재 알파는 OpenJBD 기반 마지막 1개 장치 저장 구조를 사용합니다.
           - 실제 다중 BMS 영구 레지스트리, 별칭 편집, RSSI 상태 표시는 후속 구현 대상입니다.
           - debug key로 서명된 알파 테스트 빌드입니다.
@@ -121,7 +119,7 @@ jobs:
           else
             gh release create "${RELEASE_TAG}" "dist/${APK_NAME}" "dist/${APK_NAME}.sha256" \
               --target "${GITHUB_SHA}" \
-              --title "JBD BMS Manager v0.1.0-alpha.5" \
+              --title "JBD BMS Manager v0.1.0-alpha.6" \
               --notes-file release-notes.md \
               --prerelease \
               --repo "${GITHUB_REPOSITORY}"
