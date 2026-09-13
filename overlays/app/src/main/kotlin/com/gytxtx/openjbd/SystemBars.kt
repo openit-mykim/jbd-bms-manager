@@ -30,57 +30,21 @@ internal object SystemBars {
             window.isNavigationBarContrastEnforced = false
         }
 
-        val topBar = activity.findViewById<View?>(R.id.top_app_bar)
+        // OpenJBD uses different toolbar IDs for each standalone Activity.
+        // Android 16 exposes the bug when only the main toolbar receives the
+        // status-bar inset, so resolve every known app bar here.
+        val topBar = findTopAppBar(activity)
         val bottomBar = activity.findViewById<View?>(R.id.bottom_navigation)
         val contentRoot = activity.findViewById<View>(android.R.id.content)
 
         if (topBar != null) {
-            val baseHeight = topBar.layoutParams.height
-            val baseLeft = topBar.paddingLeft
-            val baseTop = topBar.paddingTop
-            val baseRight = topBar.paddingRight
-            val baseBottom = topBar.paddingBottom
-            ViewCompat.setOnApplyWindowInsetsListener(topBar) { view, insets ->
-                val top = insets.getInsets(WindowInsetsCompat.Type.statusBars()).top
-                view.setPadding(baseLeft, baseTop + top, baseRight, baseBottom)
-                if (baseHeight > 0) {
-                    val params = view.layoutParams
-                    params.height = baseHeight + top
-                    view.layoutParams = params
-                }
-                insets
-            }
-            ViewCompat.requestApplyInsets(topBar)
+            applyTopInset(topBar)
         }
 
         if (bottomBar != null) {
-            val baseHeight = bottomBar.layoutParams.height
-            val baseLeft = bottomBar.paddingLeft
-            val baseTop = bottomBar.paddingTop
-            val baseRight = bottomBar.paddingRight
-            val baseBottom = bottomBar.paddingBottom
-            ViewCompat.setOnApplyWindowInsetsListener(bottomBar) { view, insets ->
-                val bottom = insets.getInsets(WindowInsetsCompat.Type.navigationBars()).bottom
-                view.setPadding(baseLeft, baseTop, baseRight, baseBottom + bottom)
-                if (baseHeight > 0) {
-                    val params = view.layoutParams
-                    params.height = baseHeight + bottom
-                    view.layoutParams = params
-                }
-                insets
-            }
-            ViewCompat.requestApplyInsets(bottomBar)
+            applyBottomInset(bottomBar, resizeHeight = true)
         } else {
-            val baseLeft = contentRoot.paddingLeft
-            val baseTop = contentRoot.paddingTop
-            val baseRight = contentRoot.paddingRight
-            val baseBottom = contentRoot.paddingBottom
-            ViewCompat.setOnApplyWindowInsetsListener(contentRoot) { view, insets ->
-                val bottom = insets.getInsets(WindowInsetsCompat.Type.navigationBars()).bottom
-                view.setPadding(baseLeft, baseTop, baseRight, baseBottom + bottom)
-                insets
-            }
-            ViewCompat.requestApplyInsets(contentRoot)
+            applyBottomInset(contentRoot, resizeHeight = false)
         }
 
         if (Build.VERSION.SDK_INT >= 30) {
@@ -98,6 +62,58 @@ internal object SystemBars {
         } else {
             applyLegacyBarIcons(window, darkTheme)
         }
+    }
+
+    private fun findTopAppBar(activity: Activity): View? {
+        val ids = intArrayOf(
+            R.id.top_app_bar,
+            R.id.device_top_app_bar,
+            R.id.about_top_app_bar,
+            R.id.licenses_top_app_bar
+        )
+        for (id in ids) {
+            val view = activity.findViewById<View?>(id)
+            if (view != null) return view
+        }
+        return null
+    }
+
+    private fun applyTopInset(view: View) {
+        val baseHeight = view.layoutParams.height
+        val baseLeft = view.paddingLeft
+        val baseTop = view.paddingTop
+        val baseRight = view.paddingRight
+        val baseBottom = view.paddingBottom
+        ViewCompat.setOnApplyWindowInsetsListener(view) { target, insets ->
+            val top = insets.getInsets(WindowInsetsCompat.Type.statusBars()).top
+            target.setPadding(baseLeft, baseTop + top, baseRight, baseBottom)
+            if (baseHeight > 0) {
+                val params = target.layoutParams
+                params.height = baseHeight + top
+                target.layoutParams = params
+            }
+            insets
+        }
+        ViewCompat.requestApplyInsets(view)
+    }
+
+    private fun applyBottomInset(view: View, resizeHeight: Boolean) {
+        val baseHeight = view.layoutParams?.height ?: 0
+        val baseLeft = view.paddingLeft
+        val baseTop = view.paddingTop
+        val baseRight = view.paddingRight
+        val baseBottom = view.paddingBottom
+        ViewCompat.setOnApplyWindowInsetsListener(view) { target, insets ->
+            val bottom = insets.getInsets(WindowInsetsCompat.Type.navigationBars()).bottom
+            target.setPadding(baseLeft, baseTop, baseRight, baseBottom + bottom)
+            if (resizeHeight && baseHeight > 0) {
+                val params = target.layoutParams
+                params.height = baseHeight + bottom
+                target.layoutParams = params
+            }
+            insets
+        }
+        ViewCompat.requestApplyInsets(view)
     }
 
     @JvmStatic
