@@ -136,6 +136,21 @@ Safety reason: device management should not have duplicated controls, and monito
 
 See `docs/multi-bms-design.md`.
 
+## D016 — Settings session hardening policy
+
+Decision: settings read/write sessions follow this hardening policy:
+
+- bounded retries on loss of response only (reads: up to 2 extra attempts; register writes / factory entry / no-commit exit: 1 extra attempt; the `28 28` commit exit is never retried);
+- error status (`0x80`/`0x81`) and malformed responses are definitive and never retried;
+- a committed session is followed by an independent post-commit confirmation read (fresh factory session) of all changed registers;
+- bitfield writes are read-modify-write, verified by full read-back (never a blindly composed mask).
+
+Reason: cross-verified against `sshoecraft/jbdtool` (retry-on-verify-failure history, BatteryConfig silent-clear incident) and SmartBMSUtility (timeout retry, read/write mode tracking, variant rejections). Persistence semantics of `28 28` vs `00 00` differ across community sources and firmware variants, so persistence must be independently confirmed rather than assumed.
+
+Evidence/details: `docs/protocol-design.md` (Factory/configuration mode, Defensive patterns).
+
+Migration impact: none — the session coordinator API stays backward compatible; retry and confirmation behavior are additive.
+
 ## Change rule
 
 If a future PR changes one of these decisions materially, update this file in the same PR with:

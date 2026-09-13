@@ -104,7 +104,20 @@ password mgmt: set_password 0x07, clear_password 0x09
 
 The commit exit has a documented side effect: error counters (`0xAA`) are reset to zero. The app should snapshot error counters before a commit exit so the audit record preserves them.
 
-Do not hard-code one universal sequence until verified against the target SP14S004-class hardware and firmware. Read-only sessions should exit without commit; write sessions must read back every changed register and only commit when all approved changes verify.
+Cross-verified multi-source evidence (2026-09-14):
+
+- `sshoecraft/jbdtool` (C, production CLI) performs its parameter writes inside `enter(56 78) → writes → exit(00 00)` sessions and never uses `28 28`.
+- SmartBMSUtility (Swift, production app) likewise enters `56 78` and always exits with `00 00`, keeping the mode open only while its configuration screen is active.
+- The bms-tools-derived register map documents `28 28` as "update EEPROM values and reset error counters".
+
+Because persistence semantics across firmware variants are ambiguous, this app's policy is:
+
+1. read back every changed register **inside** the session;
+2. exit with commit (`28 28`) only when every approved change verified — otherwise exit without commit (`00 00`) and report precisely which changes verified;
+3. after a successful commit, run an independent **post-commit confirmation read** (fresh factory session) because it is the strongest available persistence evidence;
+4. snapshot error counters (`0xAA`) before the commit exit because `28 28` resets them.
+
+Do not hard-code one universal sequence until verified against the target SP14S004-class hardware and firmware.
 
 ## Candidate calibration registers
 
@@ -154,18 +167,23 @@ Concrete register candidates extracted from the community register-map mirror (s
 | `0x20..0x23` | pack over/under-voltage thresholds + releases | U16, 10 mV | povp / povp_rel / puvp / puvp_rel |
 | `0x24..0x27` | cell over/under-voltage thresholds + releases | U16, 1 mV | covp / covp_rel / cuvp / cuvp_rel |
 | `0x28`, `0x29` | charge / discharge over-current thresholds | S16, 10 mA | charge positive, discharge negative |
-| `0x2A` | balancing start voltage | S16, 1 mV | |
-| `0x2B` | balancing delta/window | U16, 1 mV | |
+| `0x2A` | balancing start voltage | S16, 1 mV | signedness disputed across community sources (bms-tools S16 / jbdtool unsigned); values are positive in practice; raw-byte verification unaffected |
+| `0x2B` | balancing delta/window | U16, 1 mV | jbdtool treats this as signed; kept as U16 |
 | `0x2C` | shunt resistor value | U16, 0.1 mΩ | |
 | `0x2D` | function config bits | U16 bitfield | bit 2 balance enable, bit 3 charge-balance enable (also switch/scrl/led bits) |
 | `0x2E` | NTC enable bits | U16 bitfield | NTC 1..8 |
 | `0x2F` | cell count | U16, 1 cell | |
-| `0x30`, `0x31` | FET control / LED timer | U16 | semantics partially undocumented |
+| `0x30`, `0x31` | FET control time setting / LED display time setting | U16 | names per jbdtool (`fet_ctrl_time_set`, `led_disp_time_set`); exact semantics partially documented |
 | `0x36..0x39` | secondary protections | mixed | secondary cell OV/UV, short-circuit, secondary over-current packs |
 | `0x3A..0x3F` | release delay byte packs | 2 × U8 | temperature, pack voltage, cell voltage, over-current release delays (seconds) |
-| `0x40..0x9F` | unassigned in community map | — | do not touch |
+| `0x40`, `0x41` | GPS voltage / time registers | S16 | present in jbdtool; variant-specific, absent on most packs |
+| `0x42..0x47` | additional SOC estimate points (90 / 70 / 50 / 30 / 10 / 100 %) | U16, 1 mV | jbdtool VOLCAP90..100 |
+| `0x48..0x9F` | unassigned in community map | — | do not touch |
+| `0x0A`, `0xE3` | factory reset magic sequences | destructive | community tools use magic payloads; this app must never expose reset writes |
 | `0xA0..0xA2` | manufacturer / device name / barcode | length-prefixed strings | |
 | `0xAA` | error counters | 11 × U16 | read-only |
+
+Cross-check: SmartBMSUtility writes design capacity as `value / 10` (10 mAh units) and self-discharge rate as `value × 10` (0.1 % units), independently confirming those scale conventions; jbdtool's parameter table matches the addresses above.
 
 Before implementing any field:
 
@@ -179,6 +197,25 @@ Before implementing any field:
 8. implement staged write;
 9. read back;
 10. physically validate on target BMS.
+
+## Defensive patterns (cross-verified)
+
+Patterns validated against two independent production implementations (`sshoecraft/jbdtool`, SmartBMSUtility):
+
+- **Retry only on loss of response** (nothing received). Error status and malformed frames are definitive outcomes and are never retried, and a lost response to the commit exit (`28 28`) is never retried because the commit is ambiguous and resets error counters. Evidence: SmartBMSUtility re-sends on timeout and aborts after repeated failures; jbdtool retries failed response verifications on serial links.
+- **Read-modify-write for bitfields**, preserving unrelated bits, verified by a full read-back — never write a blindly composed mask. Evidence: jbdtool had a field incident where a composed `BatteryConfig` write silently cleared the field and disabled balancing; it now validates the composed value before writing. This app stages bit-level changes against a fresh read.
+- **Treat response status `0x80`/`0x81` as a rejection of that operation**, not as data. Some reseller variants reject read/write mode entirely (reported for LionTron packs via register `0x00`/`0xE1` responses) — those must stay read-only through the capability gate. Some older tooling ignores nonzero status entirely; this app is deliberately stricter.
+- **Write acknowledgment format**: a successful write answers with a zero-length payload frame `DD <reg> <status> <00> <crcH> <crcL> 77` (with `status = 0`, the checksum bytes are `00 00`).
+- **Keep read/write mode scoped to the session** and surface a warning when exit cannot be confirmed (device may remain in factory mode). SmartBMSUtility keeps the mode open only while its configuration screen is active, tracks mode state, and re-enters automatically when needed.
+- **Application-side guards**: conservative per-field raw ranges, strict scale alignment on encode (no silent coercion), staged review with old → new values, and diff-based writes (only changed fields are staged).
+
+## Factory password (firmware ≥ 0x16)
+
+- `0x06 use_password` — write the current 6-byte password (length-prefixed) before entering factory mode when a password is set.
+- `0x07 set_password` — change password (payload length 12: current + new).
+- `0x09 clear_password` — write ASCII `J1B2D4` to clear.
+
+Evidence: SmartBMSUtility supports creating/removing a Bluetooth password and reading/writing configuration on password-protected devices. This app does **not** implement password entry yet; password-protected devices surface as blocked sessions until a password flow with explicit UI exists.
 
 ## Capability model
 
@@ -270,6 +307,8 @@ Initial research references:
 Settings read/write implementation references (sample code for EEPROM access):
 
 - jbdtool parameter read/write utility (C CLI; named parameter `-r`/`-w` incl. `BalanceStartVoltage`, `BalanceWindow`, `BatteryConfig` bitfield read/write): `https://github.com/sshoecraft/jbdtool`
+- jbdtool design notes incl. parameter table, write flow, and the BatteryConfig silent-clear incident history: `https://github.com/sshoecraft/jbdtool/blob/main/docs/main.md`
+- SmartBMSUtility app source (Swift; BLE read/write mode handling, config read/write queues, timeout retry, password-protected config sessions): `https://github.com/KG-Development/SmartBMSUtility`
 - JiabaidaBMS ESP32 implementation that reads state and writes configuration: `https://github.com/beelsebob/JiabaidaBMS`
 - JBD-UP16S010 protocol notes incl. write frames (`DD 5A …`) and a Modbus-RTU variant: `https://gist.github.com/PhracturedBlue/7ef619594eaa4c27f4ff068b461865b8` — updated revision: `https://gist.github.com/dmitrych5/e2fa4ef16b0b483808e4f4089846d0d0`
 

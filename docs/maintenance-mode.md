@@ -135,6 +135,10 @@ Apply confirmation
 Protocol write
       ↓
 Read-back verification
+      ↓
+Commit (only when every change verified)
+      ↓
+Post-commit confirmation read
 ```
 
 Example review:
@@ -157,8 +161,10 @@ A write transaction should distinguish at least:
 - Timeout
 - Write acknowledged but read-back differs
 - Feature unsupported by connected firmware
+- Commit exit not confirmed
+- Post-commit confirmation mismatch
 
-Do not report success until the requested value is verified where read-back is available.
+Do not report success until the requested value is verified where read-back is available. A committed session is additionally followed by an independent post-commit confirmation read (fresh read/write session) of all changed registers; an unavailable or mismatched confirmation is surfaced as a warning and recorded in the result, and must never be silently treated as success or failure.
 
 ## Audit / service history
 
