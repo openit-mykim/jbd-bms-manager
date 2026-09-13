@@ -1,0 +1,11 @@
+<resources>
+    <string name="empty_cells_connected">The connected BMS has not reported cell voltage data.</string>
+    <string name="balance_legend_title">Highlight legend</string>
+    <string name="balance_legend_highest">● Highest voltage</string>
+    <string name="balance_legend_lowest">● Lowest voltage</string>
+    <string name="balance_legend_balancing">● Balancing</string>
+    <plurals name="balance_active_cell_count">
+        <item quantity="one">Balancing active · %1$d cell</item>
+        <item quantity="other">Balancing active · %1$d cells</item>
+    </plurals>
+</resources>

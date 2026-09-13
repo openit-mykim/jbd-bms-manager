@@ -1,0 +1,10 @@
+<resources>
+    <string name="empty_cells_connected">연결된 BMS에서 셀 전압 데이터가 보고되지 않았습니다.</string>
+    <string name="balance_legend_title">강조 표시</string>
+    <string name="balance_legend_highest">● 최고 전압</string>
+    <string name="balance_legend_lowest">● 최저 전압</string>
+    <string name="balance_legend_balancing">● 밸런싱 중</string>
+    <plurals name="balance_active_cell_count">
+        <item quantity="other">밸런싱 중 · %1$d셀</item>
+    </plurals>
+</resources>

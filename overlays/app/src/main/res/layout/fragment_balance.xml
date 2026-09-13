@@ -40,6 +40,7 @@
                 android:textAppearance="@style/TextAppearance.OpenJbd.EmptyTitle" />
 
             <TextView
+                android:id="@+id/txt_balance_empty_body"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:gravity="center"
@@ -91,6 +92,45 @@
                         android:paddingTop="@dimen/space_8"
                         android:text="@string/balance_none"
                         android:textAppearance="@style/TextAppearance.OpenJbd.StatusValue" />
+
+                    <TextView
+                        android:id="@+id/txt_balance_active_count"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:paddingTop="@dimen/space_6"
+                        android:textColor="@color/accent_dark"
+                        android:textStyle="bold"
+                        android:visibility="gone" />
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/card_balance_current"
+                style="@style/OpenJbdMaterialCard"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="@dimen/space_8"
+                android:visibility="gone">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="@dimen/space_14">
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="@string/param_balance_current"
+                        android:textAppearance="@style/TextAppearance.OpenJbd.MetricLabel" />
+
+                    <TextView
+                        android:id="@+id/txt_balance_current"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:paddingTop="@dimen/space_6"
+                        android:text="@string/placeholder_value"
+                        android:textAppearance="@style/TextAppearance.OpenJbd.MetricValue" />
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
@@ -234,6 +274,44 @@
             <TextView
                 style="@style/OpenJbdSectionTitle"
                 android:text="@string/cell_voltages_title" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:paddingBottom="@dimen/space_4"
+                android:text="@string/balance_legend_title"
+                android:textAppearance="@style/TextAppearance.OpenJbd.MetricLabel" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="@dimen/space_8"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="@string/balance_legend_highest"
+                    android:textAppearance="@style/TextAppearance.OpenJbd.Supporting"
+                    android:textColor="@color/accent" />
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="@string/balance_legend_lowest"
+                    android:textAppearance="@style/TextAppearance.OpenJbd.Supporting"
+                    android:textColor="@color/primary" />
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="@string/balance_legend_balancing"
+                    android:textAppearance="@style/TextAppearance.OpenJbd.Supporting"
+                    android:textColor="@color/accent_dark" />
+            </LinearLayout>
 
             <LinearLayout
                 android:id="@+id/list_balance_cells"
