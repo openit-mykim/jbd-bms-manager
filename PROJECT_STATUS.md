@@ -4,95 +4,115 @@ Last updated: 2026-09-13
 
 ## Current phase
 
-**Executable alpha established — full source-history import still pending**
+**Executable alpha established — five-tab productization is now the active UI direction**
 
-Status: **v0.1.0-alpha.1 BUILT / DEVICE VALIDATION PENDING**
+Current distributable line: `v0.1.0-alpha.x`.
 
-A reproducible GitHub Actions build now checks out the pinned OpenJBD baseline, applies the JBD BMS Manager product overlay, runs unit tests, builds the APK, and publishes a GitHub prerelease.
+The repository has a reproducible GitHub Actions build that checks out the pinned OpenJBD baseline, applies the JBD BMS Manager overlay, runs unit tests, builds the APK and publishes a GitHub prerelease.
 
-The full OpenJBD source-history import into this repository remains a separate provenance task for Hermes/Paseo. The installable alpha does not depend on completing that import first.
+## Current product decisions
 
-## Current distributable
+Primary bottom navigation is now fixed as:
 
-- Version: `v0.1.0-alpha.1`
-- applicationId: `com.openit.jbdbmsmanager`
-- Upstream baseline: `gytxtx/OpenJBD@7e3e225a128f6e0d69425b98a2670d8d69594885`
-- Build: GitHub Actions
-- Unit tests: **PASS**
-- Debug APK build: **PASS**
-- GitHub prerelease: **PUBLISHED**
-- APK SHA-256: `0844a6ab9359cdebcaf6cd1bbb26678b500cbbd0800a464d1c75600b8a3961c9`
+```text
+개요 / 상세 / 밸런스 / 제어 / 설정
+Overview / Detail / Balance / Control / Settings
+```
 
-Implemented in the alpha overlay:
+Responsibilities:
 
-- Android 16/API 36 explicit WindowInsets handling for top/bottom system bars
-- removal of reliance on edge-to-edge opt-out behavior
-- Korean UI resources
-- Korean option in the in-app language selector
-- `JBD BMS Manager` app identity
-- unique Android applicationId so the derivative can coexist with upstream OpenJBD
-- Korean README
-- reproducible APK artifact + prerelease publishing workflow
+- Overview: compact battery-state summary.
+- Detail: detailed read-only operation/device information.
+- Balance: cell-group voltage and balancing diagnosis.
+- Control: locked Maintenance Mode and supported service functions.
+- Settings: application preferences only.
+
+The key boundary is:
+
+```text
+밸런스 = 상태 확인과 진단
+제어 = 유지보수 작업
+```
+
+See `docs/navigation-design.md`.
+
+## Android 16 status
+
+The first Android 16 system-bar fix corrected the main screen, but physical testing showed that standalone screens such as Device List use different toolbar IDs and still required status-bar inset handling.
+
+The shared inset layer has therefore been expanded to cover all known Activity toolbars, including:
+
+- main toolbar
+- device-list toolbar
+- about toolbar
+- licenses toolbar
+
+A new alpha build is used for physical verification of this follow-up fix.
 
 ## Immediate next action
 
-1. Install `v0.1.0-alpha.1` on the Android 16 test phone.
-2. Verify the original top Toolbar / bottom Navigation overlap is gone.
-3. Connect the actual JBD BMS and verify Monitor Mode, reconnect, cell values, temperature and landscape dashboard.
-4. Record any UI/translation issues.
-5. Hermes/Paseo then continues full source-history import and Maintenance Mode work.
+1. Verify the follow-up Android 16 toolbar fix on the physical Android 16 phone.
+2. Implement the five-tab bottom navigation shell.
+3. Migrate existing content:
+   - existing Overview → Overview
+   - user-facing Parameters → Detail
+   - cell voltage/balance presentation → Balance
+   - Maintenance shell → Control
+   - app preferences → Settings
+4. Preserve BLE connect/reconnect behavior during the navigation migration.
+5. Continue Maintenance Mode implementation only after the five-tab shell is stable.
 
 ## Phase checklist
 
 - [x] Repository created: `openit-mykim/jbd-bms-manager`
-- [x] MIT license selected for this project
+- [x] MIT license selected
 - [x] Agent execution contract added
-- [x] Architecture and maintenance-mode concepts documented
 - [x] Hermes + Paseo operating model documented
-- [x] Paseo project configuration added
-- [x] Upstream import procedure documented
-- [x] OpenJBD third-party MIT license preserved
-- [x] GitHub PR/issue/CODEOWNERS templates added
-- [x] Phase issues created
-- [ ] Full OpenJBD source/history imported into this repository
-- [x] Pinned-baseline unit tests pass in CI
-- [x] Pinned-baseline derivative debug APK builds in CI
-- [x] Android 16 system-bar fix implemented in product overlay
-- [ ] Android 16 system-bar fix physically verified on device
-- [x] Korean localization implemented
-- [ ] Korean localization physically reviewed on device
-- [x] Alpha APK prerelease published
-- [ ] Monitor Mode physical BMS validation completed
-- [ ] Maintenance Mode shell added
+- [x] Upstream OpenJBD baseline pinned
+- [x] Reproducible unit-test/debug-APK CI established
+- [x] Korean localization added
+- [x] Initial Android 16 system-bar handling implemented
+- [x] Follow-up inset design expanded to standalone Activity toolbars
+- [x] Five-tab information architecture decided and documented
+- [ ] Follow-up Android 16 fix physically verified
+- [ ] Five-tab bottom navigation implemented
+- [ ] Overview content migrated/simplified
+- [ ] Detail screen implemented from useful Parameters content
+- [ ] Balance screen implemented as first-class cell diagnostic surface
+- [ ] Control/Maintenance shell implemented
+- [ ] Settings limited to application preferences
+- [ ] Physical BMS monitor validation completed
 - [ ] Calibration protocol implemented and tested
 - [ ] Supported configuration features implemented and tested
 - [ ] Backup / restore implemented
 - [ ] Production signing / release policy finalized
+- [ ] Full OpenJBD source/history imported into this repository
 
-## Phase issue map
+## Phase mapping
 
-- #1 — Phase 0: full upstream baseline/history import
-- #2 — Phase 1: Android 16 system-bar insets (implementation done; device verification pending)
-- #3 — Phase 2: Monitor Mode + Korean localization (localization implemented; device validation pending)
-- #4 — Phase 3: Maintenance Mode framework
-- #5 — Phase 4: calibration
-- #6 — Phase 5: configuration controls
-- #8 — Phase 6: backup / restore / diagnostics
-- #9 — Phase 7: CI / release / long-term maintenance
-
-Issue #7 is a closed duplicate and should be ignored.
+- Phase 0 — provenance/full upstream source-history import
+- Phase 1 — Android 16 compatibility and physical verification
+- Phase 2 — five-tab monitoring productization
+- Phase 3 — Control / Maintenance Mode framework
+- Phase 4 — calibration
+- Phase 5 — protection / balance configuration / MOS control
+- Phase 6 — backup / restore / diagnostics
+- Phase 7 — CI / release / long-term maintenance
 
 ## Product decisions already made
 
-- Repository name: `jbd-bms-manager`
-- App display name: `JBD BMS Manager`
+- Repository: `jbd-bms-manager`
+- App name: `JBD BMS Manager`
 - Primary transport: BLE
 - Core operation: local-first; no account or cloud required
-- Modes: Monitor Mode and Maintenance Mode
-- Monitor Mode remains read-oriented for service configuration
+- Top-level navigation: Overview / Detail / Balance / Control / Settings
+- Monitoring surfaces are read-oriented
+- Control is the home of Maintenance Mode
+- Settings is application-only
+- Balance is observation/diagnosis; balance configuration is under Control
 - Maintenance Mode uses explicit unlock + staged changes
 - Unknown BMS variants default to conservative/read-only behavior
-- Android initial languages: Korean and English; retain upstream languages where practical
+- Initial languages: Korean and English; retain upstream languages where practical
 - OpenJBD is the upstream foundation, not a branding dependency
 
 ## Update rule
