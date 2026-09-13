@@ -14,15 +14,15 @@
         android:maxLines="1"
         android:maxWidth="150dp"
         android:text="@string/bms_selector_disconnected"
+        android:textAppearance="?attr/textAppearanceSubtitle2"
         android:textColor="@color/on_primary"
-        android:textSize="14sp"
         android:textStyle="bold" />
 
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="4dp"
-        android:text="▼"
-        android:textColor="@color/on_primary"
-        android:textSize="10sp" />
+        android:text="@string/bms_selector_arrow"
+        android:textAppearance="?attr/textAppearanceCaption"
+        android:textColor="@color/on_primary" />
 </LinearLayout>
