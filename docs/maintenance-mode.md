@@ -2,19 +2,37 @@
 
 ## Purpose
 
-Maintenance Mode contains BMS operations that can change battery behavior. It is intentionally separated from normal monitoring so ordinary users cannot accidentally alter protection, balancing or calibration parameters.
+Maintenance Mode contains BMS operations that can change battery behavior. It is intentionally separated from the read-oriented monitoring surfaces so ordinary status review cannot accidentally trigger service operations.
 
-## Entry
+## Primary entry
+
+Maintenance Mode lives under the top-level **Control / 제어** tab.
 
 Recommended entry pattern:
 
-1. Open Settings.
-2. Select **Maintenance Mode**.
-3. Long-press or perform another deliberate unlock action.
-4. Show a warning that changes affect BMS behavior and battery safety.
-5. Enter the maintenance workspace.
+1. Open **Control / 제어**.
+2. Show the maintenance workspace in a locked state.
+3. Require a deliberate unlock action.
+4. Show a warning that service operations can affect BMS behavior.
+5. Detect supported device capabilities.
+6. Expose only verified functions.
 
 A PIN can be added later if commercial/service deployment requires role separation.
+
+Settings is reserved for application preferences and is no longer the primary entry point to Maintenance Mode.
+
+## Relationship to Balance tab
+
+The top-level **Balance / 밸런스** page is read-oriented and used for cell-group observation and diagnosis.
+
+The rule is:
+
+```text
+Balance = observe / diagnose
+Control = configure / service
+```
+
+Balance settings such as enable state, start voltage and delta threshold belong here under Control, not on the Balance tab.
 
 ## Sections
 
@@ -43,12 +61,14 @@ Read and edit supported settings such as:
 
 Do not expose registers on unknown firmware variants unless support is verified.
 
-### Balance
+### Balance configuration
 
 - Balancing enable / disable
 - Balance start voltage
 - Cell-delta threshold
-- Current balance status
+- Other verified balance parameters
+
+Current balance status belongs primarily on the read-oriented Balance tab, although Control may show it as context before applying changes.
 
 ### Capacity
 
@@ -86,6 +106,16 @@ Restore flow:
 7. Read back and verify.
 
 A backup from a different or unknown BMS variant should never be blindly written.
+
+### Diagnostics
+
+- raw device metadata
+- firmware / hardware identifiers
+- BLE state
+- protocol transaction results
+- register-level debug information behind service/developer controls
+
+Raw diagnostics are intentionally secondary and must not become a sixth top-level navigation destination.
 
 ## Write workflow
 
