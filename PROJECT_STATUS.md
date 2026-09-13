@@ -8,11 +8,11 @@ Last updated: 2026-09-13
 
 Status: **READY TO EXECUTE**
 
-The repository documentation and agent orchestration contract are being prepared before importing the OpenJBD application source.
+The repository is prepared for Hermes + Paseo development. The OpenJBD application source itself has not yet been imported.
 
 ## Immediate next action
 
-Hermes should execute `scripts/bootstrap-upstream.sh` from a clean clone of this repository, review the resulting merge, run the baseline verification, and open a PR if the bootstrap is performed on a feature branch.
+Hermes should execute `scripts/bootstrap-upstream.sh` from a clean clone in a dedicated Paseo worktree/branch, review the resulting merge, run baseline verification, and open a PR.
 
 Expected upstream baseline:
 
@@ -20,6 +20,8 @@ Expected upstream baseline:
 - Baseline commit: `7e3e225a128f6e0d69425b98a2670d8d69594885`
 - Baseline date: 2026-08-08
 - License: MIT
+
+Primary tracking issue: **#1 Phase 0: Import OpenJBD baseline with provenance**.
 
 ## Phase checklist
 
@@ -30,8 +32,10 @@ Expected upstream baseline:
 - [x] Hermes + Paseo operating model documented
 - [x] Paseo project configuration added
 - [x] Upstream import procedure documented
+- [x] OpenJBD third-party MIT license preserved
+- [x] GitHub PR/issue/CODEOWNERS templates added
+- [x] Phase issues created
 - [ ] OpenJBD source imported with provenance preserved
-- [ ] Upstream license notice preserved in repository
 - [ ] Baseline unit tests pass
 - [ ] Baseline debug APK builds
 - [ ] Android 16 system-bar overlap reproduced and fixed
@@ -39,15 +43,26 @@ Expected upstream baseline:
 - [ ] Korean localization added
 - [ ] Maintenance Mode shell added
 - [ ] Calibration protocol implemented and tested
-- [ ] Protection / balance / capacity writes implemented and tested
+- [ ] Supported configuration features implemented and tested
 - [ ] Backup / restore implemented
 - [ ] Release CI and signed distribution defined
 
+## Phase issue map
+
+- #1 — Phase 0: upstream baseline import
+- #2 — Phase 1: Android 16 system-bar insets
+- #3 — Phase 2: Monitor Mode + Korean localization
+- #4 — Phase 3: Maintenance Mode framework
+- #5 — Phase 4: calibration
+- #6 — Phase 5: configuration controls
+- #8 — Phase 6: backup / restore / diagnostics
+- #9 — Phase 7: CI / release / long-term maintenance
+
+Issue #7 is a closed duplicate and should be ignored.
+
 ## Known initial defect
 
-On Android 16 / API 36, the current OpenJBD baseline can render the top toolbar and bottom navigation underneath system bar insets. The upstream project targets SDK 36 but still relies partly on edge-to-edge opt-out behavior.
-
-The first product code change after baseline import must replace opt-out assumptions with explicit WindowInsets handling.
+On Android 16 / API 36, the current OpenJBD baseline can render the top toolbar and bottom navigation underneath system-bar insets. The first product code change after baseline import must replace opt-out assumptions with explicit WindowInsets handling.
 
 ## Product decisions already made
 
@@ -56,10 +71,9 @@ The first product code change after baseline import must replace opt-out assumpt
 - Primary transport: BLE
 - Core operation: local-first; no account or cloud required
 - Modes: Monitor Mode and Maintenance Mode
-- Monitor Mode: read-only with respect to protection/calibration configuration
-- Maintenance Mode: explicit unlock + staged writes
-- Maintenance transaction: Read → Edit → Validate → Review → Apply → Read-back verify
-- Unknown BMS variants: default to read-only
+- Monitor Mode remains read-oriented for service configuration
+- Maintenance Mode uses explicit unlock + staged changes
+- Unknown BMS variants default to conservative/read-only behavior
 - Android initial languages: Korean and English; retain upstream languages where practical
 - OpenJBD is the upstream foundation, not a branding dependency
 
