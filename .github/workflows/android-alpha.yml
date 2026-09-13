@@ -3,20 +3,20 @@ name: Android Alpha Build
 on:
   workflow_dispatch:
   push:
-    branches: ["main"]
+    branches: ["main", "feat/**", "fix/**", "refactor/**", "test/**", "chore/**"]
     paths:
       - "overlays/**"
-      - "scripts/apply-product-overlay.py"
-      - "scripts/apply-alpha3.py"
-      - "scripts/apply-alpha4.py"
-      - "scripts/apply-alpha5.py"
+      - "scripts/apply-*.py"
       - ".github/workflows/android-alpha.yml"
 
 permissions:
   contents: write
 
 concurrency:
-  group: android-alpha
+  # Per-ref groups so parallel feature-branch builds never cancel each other
+  # or an in-progress main/release build. Same-ref pushes still supersede
+  # older runs for that ref only.
+  group: android-alpha-${{ github.ref }}
   cancel-in-progress: true
 
 env:
