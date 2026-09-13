@@ -2,16 +2,28 @@
 
 ## Product concept
 
-JBD BMS Manager is an Android application for JBD / Jiabaida smart BMS devices. The application is divided into two clearly separated operating domains:
+JBD BMS Manager is an Android application for JBD / Jiabaida smart BMS devices. The product separates everyday observation from technician-oriented maintenance while presenting both through one coherent five-tab navigation model.
 
-1. **Monitor Mode** — safe, read-oriented daily use.
-2. **Maintenance Mode** — technician-oriented calibration, configuration and diagnostics.
+Primary bottom navigation:
 
-The separation is intentional. Normal users should not encounter protection thresholds, calibration registers or destructive control operations during ordinary battery monitoring.
+```text
+개요 / 상세 / 밸런스 / 제어 / 설정
+Overview / Detail / Balance / Control / Settings
+```
+
+The navigation model is authoritative. See `docs/navigation-design.md` for detailed screen responsibilities.
+
+The core separation remains:
+
+1. **Read-oriented monitoring surfaces** — Overview, Detail and Balance.
+2. **Maintenance workspace** — Control.
+3. **Application preferences** — Settings.
+
+Normal users should not encounter calibration or BMS configuration operations while reviewing battery status.
 
 ## Base application
 
-The initial implementation is planned to derive from OpenJBD, which already provides:
+The initial implementation derives from OpenJBD, which already provides:
 
 - Native Android BLE communication
 - JBD frame parsing
@@ -21,26 +33,30 @@ The initial implementation is planned to derive from OpenJBD, which already prov
 - Cell-group monitoring
 - Landscape dashboard
 
-The upstream baseline should be recorded before source import so later changes remain traceable.
+The upstream baseline is pinned and recorded so later changes remain traceable.
 
 ## Proposed application layers
 
 ```text
 UI
-├─ Monitor Mode
-│  ├─ Overview
-│  ├─ Cells
-│  ├─ Status / Health
-│  └─ Dashboard
-└─ Maintenance Mode
-   ├─ Calibration
-   ├─ Protection
-   ├─ Balance
-   ├─ Capacity
-   ├─ Temperature
-   ├─ MOS Control
-   ├─ Backup / Restore
-   └─ Diagnostics
+├─ Overview
+│  └─ compact battery-state summary
+├─ Detail
+│  └─ detailed read-only operating/device information
+├─ Balance
+│  └─ cell-group voltage and balancing diagnostics
+├─ Control
+│  └─ Maintenance Mode
+│     ├─ Calibration
+│     ├─ Protection
+│     ├─ Balance configuration
+│     ├─ Capacity
+│     ├─ Temperature
+│     ├─ MOS Control
+│     ├─ Backup / Restore
+│     └─ Diagnostics
+└─ Settings
+   └─ application preferences only
 
 Domain / Application
 ├─ Read operations
@@ -60,6 +76,28 @@ Protocol
 Transport
 └─ Android BLE GATT
 ```
+
+## Navigation responsibility
+
+### Overview
+
+Fast status judgment: SOC, voltage, current, power, temperature, protection summary, cell delta and MOS state.
+
+### Detail
+
+Detailed read-only information such as capacity, cycles, firmware/device identity, detailed temperatures and protection state. User-facing content from the upstream `Parameters` screen should migrate here.
+
+### Balance
+
+Cell-group voltages, min/max/average, delta and active-balancing indication. This is an observation/diagnostic surface, not a configuration surface.
+
+### Control
+
+Top-level entry to Maintenance Mode. Calibration, protection settings, balance settings, capacity management, MOS operations, backup/restore and diagnostics live here. Control is locked by default and capability-gated.
+
+### Settings
+
+Application preferences only: language, theme, temperature unit, refresh interval, auto-connect and app information. BMS configuration must not be placed here.
 
 ## Maintenance transaction model
 
@@ -104,7 +142,7 @@ Unknown devices should default to conservative, read-only behavior until write c
 
 ## Android UI / system bars
 
-The OpenJBD baseline targets recent Android versions. Android 16 enforces edge-to-edge behavior for apps targeting API 36, so JBD BMS Manager should use explicit window-inset handling rather than relying on opt-out flags.
+The OpenJBD baseline targets recent Android versions. Android 16 enforces edge-to-edge behavior for apps targeting API 36, so JBD BMS Manager uses explicit window-inset handling rather than relying on opt-out flags.
 
 The main layout should conceptually be:
 
@@ -112,11 +150,11 @@ The main layout should conceptually be:
 status-bar inset
 Toolbar
 application content
-Bottom Navigation
+Bottom Navigation (5 destinations)
 navigation-bar / gesture inset
 ```
 
-Both portrait and landscape screens must be tested against gesture navigation and traditional navigation-button modes.
+All standalone Activity toolbars must also receive status-bar insets. Both portrait and landscape screens must be tested against gesture navigation and traditional navigation-button modes.
 
 ## Localization
 
@@ -129,8 +167,8 @@ Additional upstream languages can be retained where practical.
 
 ## Safety boundaries
 
-- Monitor Mode performs no protection or calibration writes.
-- Maintenance Mode requires an explicit unlock action.
+- Overview, Detail and Balance perform no calibration/configuration writes.
+- Control requires an explicit maintenance unlock action.
 - Dangerous values must be validated against reasonable protocol and hardware ranges.
 - Every write should show old value → new value before execution.
 - Backup should be encouraged before large configuration changes.
