@@ -24,8 +24,8 @@
             android:maxLines="1"
             android:maxWidth="150dp"
             android:text="@string/bms_selector_disconnected"
+            android:textAppearance="?attr/textAppearanceSubtitle2"
             android:textColor="@color/on_primary"
-            android:textSize="14sp"
             android:textStyle="bold" />
     </com.google.android.material.appbar.MaterialToolbar>
 
