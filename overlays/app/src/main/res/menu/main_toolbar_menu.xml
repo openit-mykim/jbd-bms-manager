@@ -2,12 +2,6 @@
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <item
-        android:id="@+id/action_bms_selector"
-        android:title="@string/bms_selector_disconnected"
-        app:actionLayout="@layout/view_bms_selector"
-        app:showAsAction="always" />
-
-    <item
         android:id="@+id/action_dashboard"
         android:icon="@drawable/ic_dashboard_24"
         android:title="@string/action_dashboard"
