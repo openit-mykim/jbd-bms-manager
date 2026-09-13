@@ -1,0 +1,11 @@
+<resources>
+    <string name="detail_section_battery">Battery</string>
+    <string name="detail_section_device">Device</string>
+    <string name="detail_section_connection">Connection</string>
+    <string name="detail_section_status">Detailed status</string>
+    <string name="detail_section_refresh">Refresh</string>
+    <string name="detail_last_updated">Last updated</string>
+    <string name="detail_rated_charge_current">Rated charge current</string>
+    <string name="detail_rated_discharge_current">Rated discharge current</string>
+    <string name="detail_rated_discharge_power">Rated discharge power</string>
+</resources>
