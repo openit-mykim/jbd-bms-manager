@@ -1,0 +1,44 @@
+name: Feature request
+description: Propose a focused feature or compatibility improvement
+title: "[Feature] "
+labels: []
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem / use case
+      description: What concrete problem should this solve?
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed behavior
+      description: Describe the desired behavior, not only the implementation idea.
+    validations:
+      required: true
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      options:
+        - Monitor Mode
+        - Maintenance Mode
+        - BLE / protocol
+        - Android compatibility
+        - Localization
+        - Build / CI / release
+        - Documentation
+        - Other
+    validations:
+      required: true
+  - type: textarea
+    id: device_scope
+    attributes:
+      label: Device / compatibility scope
+      description: BMS model, firmware or Android constraints if relevant.
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: Acceptance criteria
+      description: What would make this feature complete and testable?
