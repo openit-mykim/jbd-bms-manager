@@ -118,10 +118,10 @@ The repository is in an early executable alpha state. Current work focuses on:
 2. Android 16 edge-to-edge / system-bar compatibility.
 3. Korean localization.
 4. JBD BMS Manager product identity.
-5. Migration to the five-tab information architecture.
+5. Five-tab information architecture — shell and content in place for this alpha line.
 6. Reproducible APK CI/release packaging.
 
-The next major product work is implementing the five-tab shell and then building the Control/Maintenance domain on top of it.
+The next major product work is physical verification of the five-tab alpha, then the Control/Maintenance write-transaction framework (Read → Edit → Validate → Review → Apply → Read-back).
 
 See `PROJECT_STATUS.md` and `docs/development-plan.md` for the live execution state.
 
