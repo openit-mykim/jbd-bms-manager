@@ -1,0 +1,33 @@
+{
+  "worktree": {
+    "setup": [
+      "chmod +x gradlew 2>/dev/null || true",
+      "chmod +x scripts/*.sh 2>/dev/null || true"
+    ]
+  },
+  "scripts": {
+    "test": {
+      "command": "./gradlew testDebugUnitTest"
+    },
+    "build-debug": {
+      "command": "./gradlew assembleDebug"
+    },
+    "verify": {
+      "command": "bash scripts/verify.sh"
+    }
+  },
+  "metadataGeneration": {
+    "title": {
+      "instructions": "Use a short task-shaped title, ideally 3-6 words. Name the subsystem when useful."
+    },
+    "branchName": {
+      "instructions": "Use <type>/<scope>-<short-desc>. Allowed types: feat, fix, refactor, test, docs, chore. Lowercase and hyphens only after the slash."
+    },
+    "commitMessage": {
+      "instructions": "Use Conventional Commits: <type>(<scope>): <concise description>. Do not mention AI or agents."
+    },
+    "pullRequest": {
+      "instructions": "Write a concise PR with sections: Summary, Why, Testing, Safety impact, Follow-up. Explicitly state skipped hardware validation or unsupported device assumptions."
+    }
+  }
+}
