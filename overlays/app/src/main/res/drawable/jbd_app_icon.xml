@@ -1,8 +1,38 @@
-<vector xmlns:android="http://schemas.android.com/apk/res/android" android:width="108dp" android:height="108dp" android:viewportWidth="108" android:viewportHeight="108">
-  <path android:fillColor="#FFFFFF" android:pathData="M0,0h108v108h-108z"/>
-  <path android:fillColor="#FFE783" android:strokeColor="#000000" android:strokeWidth="5" android:pathData="M16,46C16,20 34,7 57,7C80,7 94,22 94,49C94,82 79,101 54,101C28,101 14,86 14,61C14,54 14,50 16,46Z"/>
-  <path android:fillColor="#F69597" android:pathData="M20,40a8,8 0,1 0,16 0a8,8 0,1 0,-16 0M78,40a8,8 0,1 0,16 0a8,8 0,1 0,-16 0"/>
-  <path android:fillColor="#000000" android:pathData="M29,34a4,4 0,1 0,8 0a4,4 0,1 0,-8 0M73,33a4,4 0,1 0,8 0a4,4 0,1 0,-8 0"/>
-  <path android:fillColor="#F6A04D" android:strokeColor="#000000" android:strokeWidth="3" android:pathData="M50,31C58,29 63,36 61,43C59,51 50,53 47,45C45,39 46,33 50,31Z"/>
-  <path android:fillColor="#000000" android:pathData="M46,39L62,38L62,42L46,43Z"/>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+
+    <!-- Full yellow field. Android applies the launcher mask. -->
+    <path
+        android:fillColor="#FDE004"
+        android:pathData="M0,0H108V108H0Z" />
+
+    <!-- Eyes -->
+    <path
+        android:fillColor="#0C0904"
+        android:pathData="M26.7,43.35a6.55,6.35 0,1 0,0 12.7a6.55,6.35 0,1 0,0 -12.7" />
+    <path
+        android:fillColor="#0C0904"
+        android:pathData="M81.15,43.25a6.55,6.35 0,1 0,0 12.7a6.55,6.35 0,1 0,0 -12.7" />
+
+    <!-- Cheeks -->
+    <path
+        android:fillColor="#FB8B89"
+        android:pathData="M16.42,53.12a7.58,7.45 0,1 0,0 14.9a7.58,7.45 0,1 0,0 -14.9" />
+    <path
+        android:fillColor="#FB8B89"
+        android:pathData="M91.51,53.02a7.58,7.45 0,1 0,0 14.9a7.58,7.45 0,1 0,0 -14.9" />
+
+    <!-- Beak, reconstructed from the supplied icon without changing its face proportions. -->
+    <path
+        android:fillColor="#0C0904"
+        android:pathData="M53.7,46.1C59.1,45.6 62.1,48.8 62.3,54.0C62.5,56.2 61.5,57.3 60.2,58.2C61.4,60.1 61.3,63.1 60.1,65.3C58.8,67.8 56.7,68.7 54.1,68.6C50.8,68.5 48.1,66.6 46.4,63.7C44.8,61.0 44.2,58.1 44.4,55.1C44.7,50.0 48.4,46.6 53.7,46.1Z" />
+    <path
+        android:fillColor="#F8971F"
+        android:pathData="M53.9,48.5C57.7,48.1 60.0,50.4 60.2,53.7C60.3,55.0 59.6,55.7 58.4,56.0C55.2,56.8 51.6,56.7 46.7,56.3C46.9,51.8 49.6,48.9 53.9,48.5Z" />
+    <path
+        android:fillColor="#F8971F"
+        android:pathData="M47.0,59.0C51.7,59.4 56.0,59.3 59.3,58.7C59.5,61.0 59.1,63.2 58.0,64.8C56.9,66.4 55.4,66.9 53.7,66.8C50.5,66.6 47.8,63.7 47.0,59.0Z" />
 </vector>
