@@ -4,17 +4,43 @@
 
 Unofficial open-source Android manager for JBD / Jiabaida smart BMS devices.
 
-`JBD BMS Manager` is an extended derivative project based on the OpenJBD monitoring foundation. Its core product decision is to separate everyday battery monitoring from technician-oriented maintenance operations.
-
-> **Current alpha:** `v0.1.0-alpha.1` adds Android 16 system-bar inset handling, Korean UI resources, and product branding on top of the pinned OpenJBD baseline.
+`JBD BMS Manager` is an extended derivative project based on the OpenJBD monitoring foundation. The product separates read-oriented battery observation from technician-oriented maintenance while keeping both in one coherent application.
 
 > **Agent handoff:** If you are Hermes or another coding agent, read `AGENTS.md` first, then `PROJECT_STATUS.md`. The repository is intentionally prepared so development can continue from this GitHub path alone.
 
-## Product model
+## Primary navigation
 
-### Monitor Mode
+The product uses exactly five top-level bottom-navigation destinations:
 
-Safe, read-oriented daily use:
+```text
+Overview / Detail / Balance / Control / Settings
+개요 / 상세 / 밸런스 / 제어 / 설정
+```
+
+Responsibilities:
+
+- **Overview** — compact battery-state summary: SOC, voltage, current, power, temperature, cell delta, protection summary and MOS state.
+- **Detail** — detailed read-only operating/device information such as capacities, cycles, firmware, identity, detailed temperatures and protection state.
+- **Balance** — cell-group voltage and balancing observation/diagnosis: all cell voltages, min/max/average, delta and active balancing indication.
+- **Control** — locked Maintenance Mode entry for calibration, protection configuration, balance configuration, capacity/SOC management, MOS control, backup/restore and diagnostics.
+- **Settings** — application preferences only: language, theme, temperature unit, refresh interval, auto-connect, source and license information.
+
+The key UX boundary is:
+
+```text
+Balance = observe / diagnose
+Control = configure / service
+```
+
+The upstream OpenJBD `Overview / Parameters / Settings` structure is therefore migrated toward `Overview / Detail / Balance / Control / Settings`. User-facing parameter information moves into Detail; raw/service diagnostics move under Control.
+
+See `docs/navigation-design.md` for the authoritative information architecture.
+
+## Monitor surfaces
+
+The read-oriented product surfaces are Overview, Detail and Balance. These screens must not expose calibration or BMS configuration writes.
+
+Core monitor capabilities include:
 
 - State of charge (SOC)
 - Pack voltage, current and power
@@ -22,7 +48,7 @@ Safe, read-oriented daily use:
 - Cycle count
 - Cell-group voltages
 - Min / max / average cell voltage
-- Cell delta (ΔV)
+- Cell delta
 - Temperatures
 - Charge / discharge MOS state
 - Balance state
@@ -30,11 +56,11 @@ Safe, read-oriented daily use:
 - Auto reconnect
 - Landscape dashboard
 
-Monitor Mode must not expose protection, calibration or arbitrary write operations.
+## Control / Maintenance Mode
 
-### Maintenance Mode
+Control is the top-level entry to the technician workspace and is locked by default.
 
-Technician-oriented service functions:
+Planned service functions:
 
 - Pack voltage calibration
 - Cell voltage calibration
@@ -86,15 +112,16 @@ See `docs/upstream-sync.md`, `scripts/bootstrap-upstream.sh`, and `scripts/apply
 
 ## Current project state
 
-The repository is now in an **early executable alpha** state for Monitor Mode. The first distributable package focuses on:
+The repository is in an early executable alpha state. Current work focuses on:
 
-1. OpenJBD monitor baseline.
-2. Android 16 edge-to-edge / system-bar overlap correction.
-3. Korean UI localization.
+1. OpenJBD monitoring baseline.
+2. Android 16 edge-to-edge / system-bar compatibility.
+3. Korean localization.
 4. JBD BMS Manager product identity.
-5. Reproducible APK CI/release packaging.
+5. Migration to the five-tab information architecture.
+6. Reproducible APK CI/release packaging.
 
-The next major product work is Maintenance Mode and verified calibration/configuration support.
+The next major product work is implementing the five-tab shell and then building the Control/Maintenance domain on top of it.
 
 See `PROJECT_STATUS.md` and `docs/development-plan.md` for the live execution state.
 
@@ -116,9 +143,9 @@ Typical isolated task:
 paseo run \
   --new-workspace worktree \
   --worktree-mode branch-off \
-  --new-branch fix/android16-insets \
+  --new-branch feat/five-tab-navigation \
   --base origin/main \
-  "Read AGENTS.md and PROJECT_STATUS.md, implement the active scoped task, run focused verification, and report changed files plus test evidence."
+  "Read AGENTS.md, PROJECT_STATUS.md and docs/navigation-design.md. Implement the active scoped task, run focused verification, and report changed files plus test evidence."
 ```
 
 Use `origin/main`, not an unqualified local `main`, as the normal Paseo worktree base.
@@ -129,40 +156,21 @@ Use `origin/main`, not an unqualified local `main`, as the normal Paseo worktree
 - `HERMES.md` — Hermes project entry point
 - `PROJECT_STATUS.md` — current phase and immediate next action
 - `README.ko.md` — Korean project README
+- `docs/navigation-design.md` — authoritative five-tab information architecture
 - `docs/development-plan.md` — detailed phase-by-phase implementation plan
 - `docs/architecture.md` — application/layer architecture
-- `docs/maintenance-mode.md` — service-mode UX and write transaction design
+- `docs/maintenance-mode.md` — Control/Maintenance UX and write transaction design
 - `docs/hermes-paseo.md` — orchestration and worktree workflow
 - `docs/testing.md` — test and physical-device validation policy
 - `docs/upstream-sync.md` — OpenJBD provenance and sync procedure
 - `docs/repository-governance.md` — branching, PR, CI and release policy
 - `docs/roadmap.md` — concise feature roadmap
 
-## Bootstrap
-
-For full source-history integration in a local development checkout, the coordinator can stage the initial OpenJBD import with:
-
-```bash
-bash scripts/bootstrap-upstream.sh
-```
-
-For reproducible overlay builds without importing the full source history first, CI uses:
-
-```bash
-python3 scripts/apply-product-overlay.py <OpenJBD checkout>
-```
-
-Normal verification after source import:
-
-```bash
-bash scripts/verify.sh
-```
-
 ## Android 16 compatibility
 
-OpenJBD targets SDK 36. On Android 16, the top toolbar and bottom navigation can overlap the status/navigation gesture areas when an app relies on legacy edge-to-edge opt-out behavior.
+OpenJBD targets SDK 36. On Android 16, toolbars and bottom navigation can overlap the status/navigation gesture areas when an app relies on legacy edge-to-edge behavior.
 
-JBD BMS Manager handles system insets explicitly and removes reliance on `windowOptOutEdgeToEdgeEnforcement` in the alpha build overlay.
+JBD BMS Manager handles system insets explicitly. All standalone Activity toolbars must receive status-bar inset handling, not only the main screen.
 
 ## Repository governance
 
@@ -173,15 +181,13 @@ JBD BMS Manager handles system insets explicitly and removes reliance on `window
 - Branch prefixes: `feat/`, `fix/`, `refactor/`, `test/`, `docs/`, `chore/`
 - Commit style: Conventional Commits where practical
 
-Required `main` branch checks should only be enabled after the corresponding CI workflow has proven stable.
-
 ## Safety
 
 Changing BMS protection, calibration, balancing, temperature, capacity or MOS parameters can affect battery safety.
 
 This project therefore requires:
 
-- explicit Maintenance Mode unlock
+- explicit Control/Maintenance unlock
 - conservative capability detection
 - staged change review
 - value validation
