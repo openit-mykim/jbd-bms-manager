@@ -82,6 +82,8 @@ class SettingsRepositoryTest {
     fun directFallbackStateRetainsAccessWarning() = runTest {
         val host = FakeSettingsCommandHost(
             outcomes = arrayOf(
+                // Factory entry is attempted twice (one retry) before the direct fallback.
+                GatewayOutcome.NoResponse,
                 GatewayOutcome.NoResponse,
                 register(0x2A, 3_500),
                 register(0x2B, 15),
@@ -109,6 +111,10 @@ class SettingsRepositoryTest {
                 ack(0x24),
                 register(0x24, 4_100),
                 counterResponse(IntArray(11)),
+                ack(0x01),
+                // Post-commit confirmation session: re-enter, re-read changed register, exit.
+                ack(0x00),
+                register(0x24, 4_100),
                 ack(0x01)
             )
         )
@@ -119,9 +125,10 @@ class SettingsRepositoryTest {
         )
 
         assertTrue(result.outcome is WriteSessionOutcome.Committed)
+        assertTrue(result.postCommitConfirmation?.mismatched?.isEmpty() == true)
         assertSame(result, repository.state.value.lastWriteResult)
         assertEquals(listOf("begin", "end"), host.events)
-        assertEquals(6, host.frames.size)
+        assertEquals(9, host.frames.size)
         assertEquals(null, repository.state.value.lastError)
     }
 
