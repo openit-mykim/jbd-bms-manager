@@ -76,6 +76,10 @@ private val FUNCTION_CONFIG = RegisterSpec(0x2D, signed = false, scale = 1.0, un
 /**
  * Candidate EEPROM fields from `docs/protocol-design.md`, accessed 2026-09-14. The mappings are
  * community-sourced and remain capability-gated until exact hardware/firmware validation.
+ * Community sources disagree on the signedness of 0x2A/0x2B (bms-tools uses S16/U16, while
+ * jbdtool uses unsigned/signed). Values are positive within the guard ranges in practice and
+ * verification compares raw bytes, so this affects only display/validation; the current mapping
+ * is retained deliberately.
  */
 enum class SettingField(
     val key: String,
