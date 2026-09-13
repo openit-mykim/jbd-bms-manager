@@ -4,24 +4,43 @@ Last updated: 2026-09-13
 
 ## Current phase
 
-**Phase 0 — Upstream baseline import and repository bootstrap**
+**Executable alpha established — full source-history import still pending**
 
-Status: **READY TO EXECUTE**
+Status: **v0.1.0-alpha.1 BUILT / DEVICE VALIDATION PENDING**
 
-The repository is prepared for Hermes + Paseo development. The OpenJBD application source itself has not yet been imported.
+A reproducible GitHub Actions build now checks out the pinned OpenJBD baseline, applies the JBD BMS Manager product overlay, runs unit tests, builds the APK, and publishes a GitHub prerelease.
+
+The full OpenJBD source-history import into this repository remains a separate provenance task for Hermes/Paseo. The installable alpha does not depend on completing that import first.
+
+## Current distributable
+
+- Version: `v0.1.0-alpha.1`
+- applicationId: `com.openit.jbdbmsmanager`
+- Upstream baseline: `gytxtx/OpenJBD@7e3e225a128f6e0d69425b98a2670d8d69594885`
+- Build: GitHub Actions
+- Unit tests: **PASS**
+- Debug APK build: **PASS**
+- GitHub prerelease: **PUBLISHED**
+- APK SHA-256: `0844a6ab9359cdebcaf6cd1bbb26678b500cbbd0800a464d1c75600b8a3961c9`
+
+Implemented in the alpha overlay:
+
+- Android 16/API 36 explicit WindowInsets handling for top/bottom system bars
+- removal of reliance on edge-to-edge opt-out behavior
+- Korean UI resources
+- Korean option in the in-app language selector
+- `JBD BMS Manager` app identity
+- unique Android applicationId so the derivative can coexist with upstream OpenJBD
+- Korean README
+- reproducible APK artifact + prerelease publishing workflow
 
 ## Immediate next action
 
-Hermes should execute `scripts/bootstrap-upstream.sh` from a clean clone in a dedicated Paseo worktree/branch, review the resulting merge, run baseline verification, and open a PR.
-
-Expected upstream baseline:
-
-- Upstream: `gytxtx/OpenJBD`
-- Baseline commit: `7e3e225a128f6e0d69425b98a2670d8d69594885`
-- Baseline date: 2026-08-08
-- License: MIT
-
-Primary tracking issue: **#1 Phase 0: Import OpenJBD baseline with provenance**.
+1. Install `v0.1.0-alpha.1` on the Android 16 test phone.
+2. Verify the original top Toolbar / bottom Navigation overlap is gone.
+3. Connect the actual JBD BMS and verify Monitor Mode, reconnect, cell values, temperature and landscape dashboard.
+4. Record any UI/translation issues.
+5. Hermes/Paseo then continues full source-history import and Maintenance Mode work.
 
 ## Phase checklist
 
@@ -35,23 +54,26 @@ Primary tracking issue: **#1 Phase 0: Import OpenJBD baseline with provenance**.
 - [x] OpenJBD third-party MIT license preserved
 - [x] GitHub PR/issue/CODEOWNERS templates added
 - [x] Phase issues created
-- [ ] OpenJBD source imported with provenance preserved
-- [ ] Baseline unit tests pass
-- [ ] Baseline debug APK builds
-- [ ] Android 16 system-bar overlap reproduced and fixed
-- [ ] Monitor Mode baseline stabilized
-- [ ] Korean localization added
+- [ ] Full OpenJBD source/history imported into this repository
+- [x] Pinned-baseline unit tests pass in CI
+- [x] Pinned-baseline derivative debug APK builds in CI
+- [x] Android 16 system-bar fix implemented in product overlay
+- [ ] Android 16 system-bar fix physically verified on device
+- [x] Korean localization implemented
+- [ ] Korean localization physically reviewed on device
+- [x] Alpha APK prerelease published
+- [ ] Monitor Mode physical BMS validation completed
 - [ ] Maintenance Mode shell added
 - [ ] Calibration protocol implemented and tested
 - [ ] Supported configuration features implemented and tested
 - [ ] Backup / restore implemented
-- [ ] Release CI and signed distribution defined
+- [ ] Production signing / release policy finalized
 
 ## Phase issue map
 
-- #1 — Phase 0: upstream baseline import
-- #2 — Phase 1: Android 16 system-bar insets
-- #3 — Phase 2: Monitor Mode + Korean localization
+- #1 — Phase 0: full upstream baseline/history import
+- #2 — Phase 1: Android 16 system-bar insets (implementation done; device verification pending)
+- #3 — Phase 2: Monitor Mode + Korean localization (localization implemented; device validation pending)
 - #4 — Phase 3: Maintenance Mode framework
 - #5 — Phase 4: calibration
 - #6 — Phase 5: configuration controls
@@ -59,10 +81,6 @@ Primary tracking issue: **#1 Phase 0: Import OpenJBD baseline with provenance**.
 - #9 — Phase 7: CI / release / long-term maintenance
 
 Issue #7 is a closed duplicate and should be ignored.
-
-## Known initial defect
-
-On Android 16 / API 36, the current OpenJBD baseline can render the top toolbar and bottom navigation underneath system-bar insets. The first product code change after baseline import must replace opt-out assumptions with explicit WindowInsets handling.
 
 ## Product decisions already made
 
@@ -79,4 +97,4 @@ On Android 16 / API 36, the current OpenJBD baseline can render the top toolbar 
 
 ## Update rule
 
-Every merged phase-completing PR must update this file. Keep it short. Move design detail into `docs/` rather than growing this status file indefinitely.
+Every phase-completing PR or distributable milestone should update this file. Keep detailed design in `docs/`.
