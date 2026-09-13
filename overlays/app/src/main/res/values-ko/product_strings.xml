@@ -1,12 +1,9 @@
 <resources>
     <string name="bms_selector_disconnected">BMS 미연결</string>
-    <string name="bms_selector_arrow">▼</string>
     <string name="bms_status_dot_symbol">●</string>
-    <string name="bms_sheet_title">등록된 BMS</string>
-    <string name="bms_sheet_subtitle">BMS를 선택하면 바로 재연결합니다. 다중 등록과 실시간 스캔 상태는 다음 단계에서 구현합니다.</string>
-    <string name="bms_sheet_no_registered">등록된 BMS가 없습니다.</string>
-    <string name="bms_sheet_multi_device_developing">사용자 지정 이름, 여러 BMS 등록, 신호 스캔 표시 기능은 개발 중입니다.</string>
-    <string name="bms_sheet_add_device">+ 새 BMS 등록 (개발 중)</string>
+    <string name="bms_sheet_title">BMS 연결</string>
+    <string name="bms_sheet_subtitle">등록된 BMS를 선택해 연결하거나 새 장치를 검색합니다.</string>
+    <string name="bms_sheet_add_device">+ 새 BMS 검색</string>
     <string name="bms_sheet_status_connected">연결됨</string>
-    <string name="bms_sheet_status_saved">저장됨</string>
+    <string name="bms_sheet_status_saved">등록됨</string>
 </resources>
