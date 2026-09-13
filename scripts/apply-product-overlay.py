@@ -32,7 +32,6 @@ def main() -> None:
     repo_root = Path(__file__).resolve().parents[1]
     overlay_root = repo_root / "overlays"
 
-    # 1) Copy files that are fully owned by this product overlay.
     for src in overlay_root.rglob("*"):
         if not src.is_file():
             continue
@@ -41,14 +40,11 @@ def main() -> None:
         dst.parent.mkdir(parents=True, exist_ok=True)
         shutil.copy2(src, dst)
 
-    # 2) Product identity while keeping the upstream Kotlin namespace during the
-    # initial derivative phase. applicationId is unique so both apps can coexist.
     gradle = root / "app" / "build.gradle.kts"
     replace_required(gradle, 'applicationId = "com.gytxtx.openjbd"', 'applicationId = "com.openit.jbdbmsmanager"')
-    replace_required(gradle, "versionCode = 1", "versionCode = 2")
-    replace_required(gradle, 'versionName = "0.1.0"', 'versionName = "0.1.0-alpha.1"')
+    replace_required(gradle, "versionCode = 1", "versionCode = 3")
+    replace_required(gradle, 'versionName = "0.1.0"', 'versionName = "0.1.0-alpha.2"')
 
-    # 3) Base English resources: app branding and explicit Korean language entry.
     strings = root / "app" / "src" / "main" / "res" / "values" / "strings.xml"
     replace_required(strings, '<string name="app_name">OpenJBD MVP</string>', '<string name="app_name">JBD BMS Manager</string>')
     replace_required(
@@ -56,14 +52,13 @@ def main() -> None:
         '<string name="setting_language_zh">Simplified Chinese</string>\n    <string name="setting_language_en">English</string>',
         '<string name="setting_language_zh">Simplified Chinese</string>\n    <string name="setting_language_ko">Korean</string>\n    <string name="setting_language_en">English</string>',
     )
-    replace_optional(strings, '<string name="about_version">Version 0.1.0</string>', '<string name="about_version">Version 0.1.0-alpha.1</string>')
+    replace_optional(strings, '<string name="about_version">Version 0.1.0</string>', '<string name="about_version">Version 0.1.0-alpha.2</string>')
     replace_optional(
         strings,
         'OpenJBD is a local, account-free Android BLE monitor for JBD / Xiaoxiang BMS devices. It focuses on safely reading battery status without cloud services.',
         'JBD BMS Manager is an unofficial local Android BLE manager for JBD / Xiaoxiang BMS devices, derived from OpenJBD. Core monitoring works without an account or cloud service.',
     )
 
-    # 4) Add Korean to the application's manual language selector.
     app_settings = root / "app" / "src" / "main" / "kotlin" / "com" / "gytxtx" / "openjbd" / "AppSettings.kt"
     replace_required(
         app_settings,
@@ -88,12 +83,9 @@ def main() -> None:
         'private fun languageLabel(value: String) = when (value) { AppSettings.VALUE_KO -> getString(R.string.setting_language_ko); AppSettings.VALUE_ZH -> getString(R.string.setting_language_zh); AppSettings.VALUE_EN -> getString(R.string.setting_language_en); else -> getString(R.string.setting_language_system) }',
     )
 
-    # 5) Android 16: remove the obsolete edge-to-edge opt-out from the theme.
     styles = root / "app" / "src" / "main" / "res" / "values" / "styles.xml"
     replace_optional(styles, '        <item name="android:windowOptOutEdgeToEdgeEnforcement">true</item>\n', "")
 
-    # 6) Point in-app source link to this derivative project while preserving
-    # the upstream attribution/license page.
     for path in (root / "app" / "src" / "main").rglob("*.kt"):
         replace_optional(path, "https://github.com/gytxtx/OpenJBD", "https://github.com/openit-mykim/jbd-bms-manager")
 
