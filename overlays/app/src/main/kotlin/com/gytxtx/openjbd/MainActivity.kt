@@ -31,7 +31,7 @@ class MainActivity : AppCompatActivity() {
     private var latestSnapshot: BmsUiState? = null
     private lateinit var toolbar: MaterialToolbar
     private lateinit var bottomNavigationView: BottomNavigationView
-    private var bmsSelectorText: TextView? = null
+    private var bmsStatusText: TextView? = null
 
     @Inject lateinit var connectionManager: BmsConnectionManager
     @Inject lateinit var repository: BmsRepository
@@ -86,17 +86,11 @@ class MainActivity : AppCompatActivity() {
         toolbar = findViewById(R.id.top_app_bar)
         toolbar.setNavigationIconTint(getColor(R.color.on_primary))
         bottomNavigationView = findViewById(R.id.bottom_navigation)
+        bmsStatusText = findViewById(R.id.bms_status_text)
 
-        bmsSelectorText = toolbar.menu.findItem(R.id.action_bms_selector)?.actionView
-            ?.findViewById(R.id.bms_selector_text)
-        toolbar.menu.findItem(R.id.action_bms_selector)?.actionView?.setOnClickListener {
-            showBmsSelectorSheet()
-        }
-
-        toolbar.setNavigationOnClickListener { openDeviceList() }
+        toolbar.setNavigationOnClickListener { openBmsManager() }
         toolbar.setOnMenuItemClickListener { item ->
             when (item.itemId) {
-                R.id.action_bms_selector -> { showBmsSelectorSheet(); true }
                 R.id.action_disconnect -> { connectionManager.disconnect(); true }
                 R.id.action_dashboard -> { startActivity(Intent(this, DashboardActivity::class.java)); true }
                 else -> false
@@ -177,49 +171,54 @@ class MainActivity : AppCompatActivity() {
         latestSnapshot = snapshot
         connected = snapshot.connected
         updateToolbar()
-        updateBmsSelector(snapshot)
+        updateBmsStatus(snapshot)
     }
 
-    private fun updateBmsSelector(snapshot: BmsUiState?) {
-        val prefs = AppSettings.prefs(this)
-        val savedName = prefs.getString(AppSettings.PREF_LAST_DEVICE_NAME, null)
-        val label = when {
-            snapshot?.connected == true -> snapshot.deviceName ?: savedName ?: snapshot.deviceAddress
-            !savedName.isNullOrBlank() -> savedName
-            else -> getString(R.string.bms_selector_disconnected)
+    private fun updateBmsStatus(snapshot: BmsUiState?) {
+        val label = if (snapshot?.connected == true) {
+            snapshot.deviceName ?: snapshot.deviceAddress ?: getString(R.string.bms_selector_disconnected)
+        } else {
+            getString(R.string.bms_selector_disconnected)
         }
-        bmsSelectorText?.text = label
+        bmsStatusText?.text = label
     }
 
-    private fun showBmsSelectorSheet() {
+    private fun openBmsManager() {
+        val prefs = AppSettings.prefs(this)
+        val savedAddress = prefs.getString(AppSettings.PREF_LAST_DEVICE_ADDRESS, "").orEmpty()
+        if (savedAddress.isBlank()) {
+            openDeviceList()
+            return
+        }
+        showRegisteredBmsSheet(savedAddress)
+    }
+
+    private fun showRegisteredBmsSheet(savedAddress: String) {
         val dialog = BottomSheetDialog(this)
         val view = layoutInflater.inflate(R.layout.bottom_sheet_bms_selector, null)
         dialog.setContentView(view)
 
         val prefs = AppSettings.prefs(this)
-        val savedAddress = prefs.getString(AppSettings.PREF_LAST_DEVICE_ADDRESS, "").orEmpty()
         val savedName = prefs.getString(AppSettings.PREF_LAST_DEVICE_NAME, savedAddress).orEmpty()
         val row = view.findViewById<View>(R.id.bms_current_row)
-        val empty = view.findViewById<TextView>(R.id.bms_empty_hint)
         val name = view.findViewById<TextView>(R.id.bms_current_name)
         val address = view.findViewById<TextView>(R.id.bms_current_address)
         val dot = view.findViewById<TextView>(R.id.bms_status_dot)
+        val addButton = view.findViewById<View>(R.id.bms_add_button)
 
-        if (savedAddress.isBlank()) {
-            row.visibility = View.GONE
-            empty.visibility = View.VISIBLE
-        } else {
-            row.visibility = View.VISIBLE
-            empty.visibility = View.GONE
-            name.text = if (savedName.isBlank()) savedAddress else savedName
-            address.text = savedAddress
-            val isCurrentConnected = latestSnapshot?.connected == true && latestSnapshot?.deviceAddress == savedAddress
-            dot.setTextColor(if (isCurrentConnected) Color.rgb(46, 160, 67) else Color.GRAY)
-            row.setOnClickListener {
-                dialog.dismiss()
-                connectionManager.disconnect()
-                connectionManager.connect(savedAddress, if (savedName.isBlank()) savedAddress else savedName)
-            }
+        name.text = if (savedName.isBlank()) savedAddress else savedName
+        address.text = savedAddress
+        val isCurrentConnected = latestSnapshot?.connected == true && latestSnapshot?.deviceAddress == savedAddress
+        dot.setTextColor(if (isCurrentConnected) Color.rgb(46, 160, 67) else Color.GRAY)
+
+        row.setOnClickListener {
+            dialog.dismiss()
+            connectionManager.disconnect()
+            connectionManager.connect(savedAddress, if (savedName.isBlank()) savedAddress else savedName)
+        }
+        addButton.setOnClickListener {
+            dialog.dismiss()
+            openDeviceList()
         }
         dialog.show()
     }
@@ -236,7 +235,7 @@ class MainActivity : AppCompatActivity() {
         toolbar.setNavigationIconTint(getColor(R.color.on_primary))
         toolbar.menu.findItem(R.id.action_disconnect)?.isVisible = currentPage == PAGE_OVERVIEW && connected
         toolbar.menu.findItem(R.id.action_dashboard)?.isVisible = currentPage == PAGE_OVERVIEW && connected
-        updateBmsSelector(latestSnapshot)
+        updateBmsStatus(latestSnapshot)
     }
 
     private fun openDeviceList() {
@@ -259,7 +258,7 @@ class MainActivity : AppCompatActivity() {
     private fun rememberDevice(address: String, name: String?) {
         AppSettings.prefs(this).edit().putString(AppSettings.PREF_LAST_DEVICE_ADDRESS, address).putString(AppSettings.PREF_LAST_DEVICE_NAME, name ?: address).apply()
         configureAutoReconnect()
-        updateBmsSelector(latestSnapshot)
+        updateBmsStatus(latestSnapshot)
     }
 
     private fun configureAutoReconnect() {
