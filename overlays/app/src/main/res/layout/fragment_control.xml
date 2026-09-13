@@ -355,12 +355,13 @@
                     </LinearLayout>
 
                     <LinearLayout
+                        android:id="@+id/control_diagnostics_row"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:alpha="0.55"
-                        android:clickable="false"
-                        android:enabled="false"
-                        android:focusable="false"
+                        android:background="?attr/selectableItemBackground"
+                        android:clickable="true"
+                        android:enabled="true"
+                        android:focusable="true"
                         android:gravity="center_vertical"
                         android:minHeight="@dimen/touch_target_min"
                         android:orientation="horizontal"
@@ -375,17 +376,154 @@
                             android:layout_weight="1"
                             android:text="@string/control_section_diagnostics"
                             android:textAppearance="@style/TextAppearance.OpenJbd.ListItemTitle" />
-
-                        <com.google.android.material.chip.Chip
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:clickable="false"
-                            android:enabled="false"
-                            android:text="@string/control_planned"
-                            app:ensureMinTouchTargetSize="false" />
                     </LinearLayout>
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
+
+            <LinearLayout
+                android:id="@+id/control_diagnostics_panel"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:visibility="gone">
+
+                <TextView
+                    style="@style/OpenJbdSectionTitle"
+                    android:paddingStart="@dimen/space_16"
+                    android:paddingEnd="@dimen/space_16"
+                    android:text="@string/control_diagnostics_title" />
+
+                <TextView
+                    android:id="@+id/control_diagnostics_empty"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="@dimen/space_16"
+                    android:layout_marginEnd="@dimen/space_16"
+                    android:padding="@dimen/space_12"
+                    android:text="@string/control_diagnostics_empty"
+                    android:textAppearance="@style/TextAppearance.OpenJbd.EmptyBody" />
+
+                <LinearLayout
+                    android:id="@+id/control_diagnostics_connection_section"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical">
+
+                    <TextView
+                        style="@style/OpenJbdSectionTitle"
+                        android:paddingStart="@dimen/space_16"
+                        android:paddingEnd="@dimen/space_16"
+                        android:text="@string/detail_section_connection" />
+
+                    <com.google.android.material.card.MaterialCardView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="@dimen/space_12"
+                        android:layout_marginEnd="@dimen/space_12">
+
+                        <LinearLayout
+                            android:id="@+id/list_control_diagnostics_connection"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:divider="@drawable/divider_card_stroke"
+                            android:orientation="vertical"
+                            android:showDividers="middle" />
+                    </com.google.android.material.card.MaterialCardView>
+                </LinearLayout>
+
+                <LinearLayout
+                    android:id="@+id/control_diagnostics_device_section"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical">
+
+                    <TextView
+                        style="@style/OpenJbdSectionTitle"
+                        android:paddingStart="@dimen/space_16"
+                        android:paddingEnd="@dimen/space_16"
+                        android:text="@string/control_diagnostics_section_device" />
+
+                    <com.google.android.material.card.MaterialCardView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="@dimen/space_12"
+                        android:layout_marginEnd="@dimen/space_12">
+
+                        <LinearLayout
+                            android:id="@+id/list_control_diagnostics_device"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:divider="@drawable/divider_card_stroke"
+                            android:orientation="vertical"
+                            android:showDividers="middle" />
+                    </com.google.android.material.card.MaterialCardView>
+                </LinearLayout>
+
+                <LinearLayout
+                    android:id="@+id/control_diagnostics_extension_section"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:visibility="gone">
+
+                    <TextView
+                        style="@style/OpenJbdSectionTitle"
+                        android:paddingStart="@dimen/space_16"
+                        android:paddingEnd="@dimen/space_16"
+                        android:text="@string/control_diagnostics_section_extension" />
+
+                    <com.google.android.material.card.MaterialCardView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="@dimen/space_12"
+                        android:layout_marginEnd="@dimen/space_12">
+
+                        <LinearLayout
+                            android:id="@+id/list_control_diagnostics_extension"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:divider="@drawable/divider_card_stroke"
+                            android:orientation="vertical"
+                            android:showDividers="middle" />
+                    </com.google.android.material.card.MaterialCardView>
+                </LinearLayout>
+
+                <LinearLayout
+                    android:id="@+id/control_diagnostics_refresh_section"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical">
+
+                    <TextView
+                        style="@style/OpenJbdSectionTitle"
+                        android:paddingStart="@dimen/space_16"
+                        android:paddingEnd="@dimen/space_16"
+                        android:text="@string/detail_section_refresh" />
+
+                    <com.google.android.material.card.MaterialCardView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="@dimen/space_12"
+                        android:layout_marginEnd="@dimen/space_12">
+
+                        <LinearLayout
+                            android:id="@+id/list_control_diagnostics_refresh"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="vertical" />
+                    </com.google.android.material.card.MaterialCardView>
+                </LinearLayout>
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="@dimen/space_16"
+                    android:layout_marginTop="@dimen/space_18"
+                    android:layout_marginEnd="@dimen/space_16"
+                    android:padding="@dimen/space_12"
+                    android:text="@string/control_diagnostics_footer"
+                    android:textAppearance="@style/TextAppearance.OpenJbd.EmptyBody" />
+            </LinearLayout>
 
             <TextView
                 android:layout_width="match_parent"
