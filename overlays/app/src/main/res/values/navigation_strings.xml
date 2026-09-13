@@ -1,0 +1,9 @@
+<resources>
+    <string name="nav_detail">Detail</string>
+    <string name="nav_balance">Balance</string>
+    <string name="nav_control">Control</string>
+    <string name="detail_title">Detail</string>
+    <string name="balance_title">Balance</string>
+    <string name="control_title">Control</string>
+    <string name="development_in_progress">Under development</string>
+</resources>
