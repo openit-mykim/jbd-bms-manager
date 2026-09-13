@@ -16,14 +16,14 @@ Reason: the project has a different product scope, governance and roadmap. Prese
 
 Initial upstream baseline: `gytxtx/OpenJBD@7e3e225a128f6e0d69425b98a2670d8d69594885`.
 
-## D003 — Two operating modes
+## D003 — Two operating domains
 
-Decision: separate the application into Monitor Mode and Maintenance Mode.
+Decision: separate read-oriented monitoring from technician-oriented maintenance.
 
-- Monitor Mode is read-oriented and safe for everyday use.
-- Maintenance Mode is technician-oriented and contains calibration/configuration functions.
+- Read-oriented monitoring is presented through Overview, Detail and Balance.
+- Maintenance Mode lives under Control.
 
-Reason: writable BMS functions should not be mixed into normal monitoring UX.
+Reason: calibration and BMS configuration must not be mixed into ordinary monitoring UX.
 
 ## D004 — Maintenance write transaction
 
@@ -47,9 +47,9 @@ Reason: the primary use case is direct battery monitoring and service over local
 
 ## D007 — Android 16 insets are first product-code fix
 
-Decision: after baseline import, fix system-bar overlap before UI feature work.
+Decision: stabilize system-bar behavior before broader UI feature work.
 
-Reason: the observed OpenJBD baseline can render the top toolbar and bottom navigation under Android 16 system bars. A stable base UI is required before productization.
+Reason: the observed OpenJBD baseline can render toolbars and bottom navigation under Android 16 system bars. A stable base UI is required before productization.
 
 ## D008 — Hermes coordinates, Paseo isolates work
 
@@ -74,6 +74,46 @@ Reason: real BMS behavior, persistence, firmware variation and scaling must be c
 Decision: keep this project's MIT license and preserve OpenJBD's original MIT notice separately after import.
 
 Reason: imported OpenJBD source remains subject to its upstream copyright/license notice.
+
+## D012 — Five-tab bottom navigation
+
+Decision: use exactly five top-level destinations:
+
+```text
+개요 / 상세 / 밸런스 / 제어 / 설정
+Overview / Detail / Balance / Control / Settings
+```
+
+Responsibilities:
+
+- Overview: compact battery-state summary.
+- Detail: detailed read-only operation/device information.
+- Balance: cell-voltage and balancing observation/diagnosis.
+- Control: locked Maintenance Mode and supported service operations.
+- Settings: application preferences only.
+
+Reason: this maps the UI to user intent instead of exposing the upstream `Parameters` structure directly. Five items fit the intended bottom-navigation maximum while leaving room for monitoring, cell diagnostics and maintenance as first-class concepts.
+
+Constraint: do not add a sixth top-level tab. Secondary functions belong under one of these five destinations.
+
+## D013 — Balance vs Control boundary
+
+Decision: Balance is read-oriented; balance configuration belongs under Control.
+
+Rule:
+
+```text
+밸런스 = 상태 확인과 진단
+제어 = 유지보수 작업
+```
+
+Reason: users should be able to inspect individual cells without being placed next to writable BMS settings.
+
+## D014 — Settings is app-only
+
+Decision: Settings contains application preferences and app information only. Maintenance Mode must not use Settings as its primary navigation entry.
+
+Reason: application preferences and BMS service functions are different domains. The Control tab makes the safety boundary visible and understandable.
 
 ## Change rule
 
