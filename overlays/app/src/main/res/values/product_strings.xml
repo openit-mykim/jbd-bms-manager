@@ -1,12 +1,9 @@
 <resources>
     <string name="bms_selector_disconnected">No BMS</string>
-    <string name="bms_selector_arrow">▼</string>
     <string name="bms_status_dot_symbol">●</string>
-    <string name="bms_sheet_title">Registered BMS</string>
-    <string name="bms_sheet_subtitle">Select a BMS to reconnect. Multi-device registration and live scan status will be added next.</string>
-    <string name="bms_sheet_no_registered">No BMS has been registered yet.</string>
-    <string name="bms_sheet_multi_device_developing">Multi-BMS aliases, signal scan indicators, and saved device management are under development.</string>
-    <string name="bms_sheet_add_device">+ Add BMS (Coming soon)</string>
+    <string name="bms_sheet_title">BMS Connection</string>
+    <string name="bms_sheet_subtitle">Select a registered BMS to connect, or search for another device.</string>
+    <string name="bms_sheet_add_device">+ Search for new BMS</string>
     <string name="bms_sheet_status_connected">Connected</string>
-    <string name="bms_sheet_status_saved">Saved</string>
+    <string name="bms_sheet_status_saved">Registered</string>
 </resources>
