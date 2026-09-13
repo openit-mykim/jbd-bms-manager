@@ -64,34 +64,16 @@
         </LinearLayout>
     </LinearLayout>
 
-    <TextView
-        android:id="@+id/bms_empty_hint"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
-        android:gravity="center"
-        android:text="@string/bms_sheet_no_registered"
-        android:textAppearance="?attr/textAppearanceBody2"
-        android:visibility="gone" />
-
     <View
         android:layout_width="match_parent"
         android:layout_height="1dp"
         android:layout_marginTop="12dp"
         android:background="#22000000" />
 
-    <TextView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
-        android:text="@string/bms_sheet_multi_device_developing"
-        android:textAppearance="?attr/textAppearanceBody2" />
-
     <com.google.android.material.button.MaterialButton
         android:id="@+id/bms_add_button"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="12dp"
-        android:enabled="false"
+        android:layout_marginTop="16dp"
         android:text="@string/bms_sheet_add_device" />
 </LinearLayout>
