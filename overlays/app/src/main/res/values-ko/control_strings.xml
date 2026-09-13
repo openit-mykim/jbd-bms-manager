@@ -1,0 +1,22 @@
+<resources>
+    <string name="control_maintenance_title">유지보수 모드</string>
+    <string name="control_maintenance_locked_description">유지보수 모드는 BMS 설정과 보정을 위한 기술자용 공간입니다. 잠금을 해제한 뒤 사용할 수 있습니다.</string>
+    <string name="control_unlock">잠금 해제</string>
+    <string name="control_unlock_dialog_title">유지보수 모드 잠금을 해제할까요?</string>
+    <string name="control_unlock_dialog_message">유지보수 작업은 배터리 보호·보정·동작 값에 영향을 줄 수 있습니다. 값의 의미와 영향을 이해한 경우에만 진행하세요. 잘못된 설정은 배터리와 장비에 위험을 초래할 수 있습니다.</string>
+    <string name="control_cancel">취소</string>
+    <string name="control_unlock_confirm">잠금 해제</string>
+    <string name="control_lock_again">다시 잠금</string>
+    <string name="control_target_bms">대상 BMS</string>
+    <string name="control_sections_title">유지보수 항목</string>
+    <string name="control_section_calibration">캘리브레이션</string>
+    <string name="control_section_protection">보호 설정</string>
+    <string name="control_section_balance">밸런스 설정</string>
+    <string name="control_section_capacity">용량 관리</string>
+    <string name="control_section_temperature">온도 설정</string>
+    <string name="control_section_mos">MOS 제어</string>
+    <string name="control_section_backup_restore">백업 및 복원</string>
+    <string name="control_section_diagnostics">진단</string>
+    <string name="control_planned">준비 중</string>
+    <string name="control_future_notice">쓰기·보정 기능은 이후 업데이트에서 단계적으로 제공됩니다.</string>
+</resources>
