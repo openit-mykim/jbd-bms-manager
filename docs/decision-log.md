@@ -151,6 +151,22 @@ Evidence/details: `docs/protocol-design.md` (Factory/configuration mode, Defensi
 
 Migration impact: none — the session coordinator API stays backward compatible; retry and confirmation behavior are additive.
 
+## D017 — Balance diagnostics and history scope
+
+Decision (master-approved scope for the visualization round):
+
+- **Balance safety bands**: cell colors use an absolute 3-level band (normal / caution / danger) derived from the measured protection limits, or from an explicit NMC default labelled as such; highest/lowest/balancing move to text badges so one channel carries one meaning. 5-step or gradient color scales are rejected (they blur the boundary judgment that makes bands useful).
+- **Balance delta steps**: 5 mV steps only (5 mV minimum, 10 mV recommended); a non-multiple entry is rejected explicitly rather than silently rounded.
+- **Balance all-cell bar chart**: not built. Decided against after the bands and badges shipped — they already satisfy "identify the abnormal cell", and a chart would add rendering cost and a second color channel without new diagnostic value.
+- **Overview SOC gauge**: three-level band (danger ≤ 10 %, caution ≤ 25 %), plus a text status; the XML default indicator color is neutral so a failed render path never shows a reassuring green.
+- **Detail history**: sampling **10 s**, retention **7 days**. The recorder samples the existing `BmsRepository` snapshot — it never issues additional BLE reads — and does not interpolate across disconnection gaps.
+
+Reason: field-usage review (`docs/ui-feature-proposal.md`, video evidence) showed the practical pain is recognizing an abnormal cell and knowing when a pack needs charging, not long-term trend analysis. Bands and badges address that directly; a history chart is secondary and therefore kept to a bounded, low-cost data layer.
+
+Evidence/details: `docs/ui-feature-proposal.md` (§4–8), `docs/navigation-design.md` (Balance as a first-class diagnostic surface, Detail keeping historical charts as a future item).
+
+Migration impact: none — display-only additions plus a new local `history.db` (created on first run; no existing data affected).
+
 ## Change rule
 
 If a future PR changes one of these decisions materially, update this file in the same PR with:
