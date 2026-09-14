@@ -48,13 +48,25 @@ Compare pack/cell voltage and current against suitable reference instruments bef
 Verify on the reference Android 16 phone after installing the current alpha:
 
 - five-tab bottom navigation (개요 / 상세 / 밸런스 / 제어 / 설정) renders and switches correctly;
-- Balance tab with a connected BMS: every cell voltage, highest/lowest highlighting, balancing marks and min/max/average/delta statistics;
+- Balance tab with a connected BMS: every cell voltage, highest/lowest highlighting, balancing marks and min/max/average/delta statistics, balance current (when the device reports it), active-balancing count and the highlight legend;
 - Detail tab: content and empty state;
 - Control tab: locked state → unlock warning → target BMS block → Diagnostics (진단) panel expands read-only and collapses again on re-lock;
+- Control settings sections (밸런스 설정 / 보호 설정 / 온도 설정 / 용량 관리): 조회 shows current values with units (공장 모드 or 직접 읽기), editing is enabled only after a successful read, a small safe edit stages and reviews old → new, applying shows per-change verification, commit state and post-commit confirmation; reconnect and confirm persistence (see Settings flow verification below);
 - Android 16 system bars: main, device list, about and licenses screens;
 - BLE connect / reconnect behavior after the navigation migration.
 
 Record each violation with a screenshot and the app version (tag).
+
+## Settings flow verification (alpha.8+)
+
+Run in order, conservatively (prefer a small, non-safety-critical change first — e.g. balancing window or design capacity — before touching protection thresholds):
+
+1. `조회`: open each settings section; confirm values appear with units and the access mode (공장 모드 / 직접 읽기) is reported. `직접 읽기` results are read-only by design.
+2. `수정 → 확인`: stage one small change; confirm the review shows old → new and that invalid values are rejected before any BLE traffic.
+3. `적용`: confirm the dialog lists the change and the warnings (test stage + commit rule + error-counter reset notice); apply.
+4. `결과`: record per-change verification (`적용·검증됨` required for success), commit state, post-commit confirmation (matched count / mismatches) and any warnings.
+5. `PERSISTENCE`: disconnect, reconnect (and power-cycle if appropriate), re-read the same section. Persistence is verified only when the new value is still present — record `PERSISTENCE_VERIFIED`.
+6. On any mismatch, no-commit result or unknown warning, stop and capture the full result screen before retrying.
 
 ## Protocol evidence capture (before implementing writable fields)
 
