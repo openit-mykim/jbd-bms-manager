@@ -22,8 +22,8 @@ concurrency:
 env:
   UPSTREAM_REPO: gytxtx/OpenJBD
   UPSTREAM_COMMIT: 7e3e225a128f6e0d69425b98a2670d8d69594885
-  RELEASE_TAG: v0.1.0-alpha.8
-  APK_NAME: jbd-bms-manager-v0.1.0-alpha.8.apk
+  RELEASE_TAG: v0.1.0-alpha.9
+  APK_NAME: jbd-bms-manager-v0.1.0-alpha.9.apk
 
 jobs:
   build:
@@ -59,6 +59,7 @@ jobs:
           python3 manager/scripts/apply-alpha6.py upstream-src
           python3 manager/scripts/apply-alpha7.py upstream-src
           python3 manager/scripts/apply-alpha8.py upstream-src
+          python3 manager/scripts/apply-alpha9.py upstream-src
 
       - name: Grant Gradle wrapper permission
         run: chmod +x upstream-src/gradlew
@@ -91,20 +92,21 @@ jobs:
         if: github.ref == 'refs/heads/main'
         run: |
           cat > release-notes.md <<'EOF'
-          ## JBD BMS Manager v0.1.0-alpha.8
+          ## JBD BMS Manager v0.1.0-alpha.9
 
-          BMS 설정 조회·수정·쓰기·재검증 흐름을 추가한 테스트 빌드입니다.
+          유지보수 모드의 나머지 섹션(캘리브레이션·MOS 제어·백업 및 복원)을 추가해 제어 탭의 모든 유지보수 항목이 동작하는 테스트 빌드입니다.
 
           ### 변경 내용
-          - 밸런스 읽기 화면 완성: 밸런스 전류(지원 기기), 밸런싱 셀 수, 색상 범례, 빈 상태 구분 보강
-          - 설정 접근 프로토콜 계층: EEPROM 레지스터 읽기(0xA5)/쓰기(0x5A) 프레임, 팩토리 세션(진입·종료·커밋), 23개 설정 필드 모델·범위 검증 — 단위 테스트 포함
-          - 유지보수 세션 강화: 응답 유실에만 제한 재시도, 커밋은 전 항목 재검증 성공 시에만, 커밋 후 독립 재확인 읽기, 예외 안전 종료
-          - BLE 연결 통합: 세션 중 주기 폴링 일시정지, 설정 명령 큐·명령별 타임아웃·실패 사유 구분
-          - 제어 탭 설정 UI: 밸런스/보호/온도/용량 4개 섹션에서 현재 값 조회 → 수정 → 변경 검토 → 적용 → 재검증 결과 확인 (칼리브레이션·MOS·백업/복원은 준비 중 유지)
+          - 캘리브레이션: 전류 보정(무부하 제로·충전·방전), 셀 전압 보정(셀별), NTC 온도 보정 — BMS 읽기값 / 외부 기준 측정값 / 적용될 작업을 분리 표시(설계 계약 준수), 기존 검증 트랜잭션으로 적용·재검증
+          - MOS 제어: 충·방전 FET 차단/허용 (레지스터 0xE1) — 실시간 도통 상태 표시, 강한 경고, 적용·재검증
+          - 백업 및 복원: 설정 JSON 내보내기(저장 위치 선택) + 백업 불러오기 → 차이 검토 → 일괄 적용(모든 항목 재검증 성공 시에만 커밋)
+          - 제어 탭 8개 유지보수 항목 모두 활성화 (진단은 읽기 전용 유지)
 
           ### 현재 제한
-          - 실제 BMS에서의 설정 쓰기는 아직 물리 검증 전입니다(테스트 빌드). 결과 화면의 검증·커밋·재확인 상태를 반드시 확인하세요.
+          - 실기기에서의 캘리브레이션·MOS·복원 동작은 아직 물리 검증 전입니다(테스트 빌드). 결과 화면의 검증·커밋·재확인 상태를 반드시 확인하세요.
+          - 전류 보정의 스케일(10 mA 단위 가정)은 실기기 검증이 필요한 항목입니다.
           - 커밋 시 BMS 오류 카운터가 초기화됩니다(설계 반영).
+          - 백업 v1에는 캘리브레이션 값·MOS 상태가 포함되지 않습니다.
           - debug key로 서명된 알파 테스트 빌드입니다.
           - JBD / Jiabaida의 공식 앱이 아닙니다.
           EOF
@@ -120,7 +122,7 @@ jobs:
           else
             gh release create "${RELEASE_TAG}" "dist/${APK_NAME}" "dist/${APK_NAME}.sha256" \
               --target "${GITHUB_SHA}" \
-              --title "JBD BMS Manager v0.1.0-alpha.8" \
+              --title "JBD BMS Manager v0.1.0-alpha.9" \
               --notes-file release-notes.md \
               --prerelease \
               --repo "${GITHUB_REPOSITORY}"
