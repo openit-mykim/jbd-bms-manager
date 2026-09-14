@@ -1,0 +1,12 @@
+<resources>
+    <string name="history_title">History trend</string>
+    <string name="history_range_24h">24 hours</string>
+    <string name="history_range_7d">7 days</string>
+    <string name="history_metric_soc">SOC</string>
+    <string name="history_metric_pack">Pack voltage</string>
+    <string name="history_metric_delta">Cell delta</string>
+    <string name="history_empty">No history yet — samples are recorded every 10 s while connected.</string>
+    <string name="history_summary">Min %1$s · Avg %2$s · Max %3$s</string>
+    <string name="history_note">History is stored only on this device and automatically deleted after 7 days. Samples are recorded every 10 seconds.</string>
+    <string name="history_chart_description">History chart: %1$s · %2$s · %3$d samples</string>
+</resources>
