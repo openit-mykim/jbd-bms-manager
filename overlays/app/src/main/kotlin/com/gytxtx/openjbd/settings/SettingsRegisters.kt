@@ -9,6 +9,8 @@ enum class SettingsGroup {
     TEMPERATURE,
     CAPACITY,
     CALIBRATION
+,
+    MOS
 }
 
 data class RegisterSpec(
@@ -247,8 +249,21 @@ enum class SettingField(
     CAL_NTC_05("calNtc05", SettingsGroup.CALIBRATION, RegisterSpec(0xD4, false, 0.1, "K"), SettingsGuardRanges.TEMPERATURE_TENTH_K),
     CAL_NTC_06("calNtc06", SettingsGroup.CALIBRATION, RegisterSpec(0xD5, false, 0.1, "K"), SettingsGuardRanges.TEMPERATURE_TENTH_K),
     CAL_NTC_07("calNtc07", SettingsGroup.CALIBRATION, RegisterSpec(0xD6, false, 0.1, "K"), SettingsGuardRanges.TEMPERATURE_TENTH_K),
-    CAL_NTC_08("calNtc08", SettingsGroup.CALIBRATION, RegisterSpec(0xD7, false, 0.1, "K"), SettingsGuardRanges.TEMPERATURE_TENTH_K);
+    CAL_NTC_08("calNtc08", SettingsGroup.CALIBRATION, RegisterSpec(0xD7, false, 0.1, "K"), SettingsGuardRanges.TEMPERATURE_TENTH_K),
 
+    /**
+     * MOSFET control register 0xE1 per the community register map, independently matched by
+     * jbdtool and SmartBMSUtility: bit 0 disables charge and bit 1 disables discharge. These
+     * disable bits are inverted from basic-info FET status, where a set bit means conducting.
+     */
+    MOS_CHARGE_DISABLE(
+        "mosChargeDisable", SettingsGroup.MOS,
+        RegisterSpec(0xE1, false, 1.0, "bit"), SettingsGuardRanges.BOOLEAN_BIT, bitIndex = 0
+    ),
+    MOS_DISCHARGE_DISABLE(
+        "mosDischargeDisable", SettingsGroup.MOS,
+        RegisterSpec(0xE1, false, 1.0, "bit"), SettingsGuardRanges.BOOLEAN_BIT, bitIndex = 1
+    );
     init {
         require(bitIndex == null || bitIndex in 0..15) { "Bit index must be in 0..15" }
     }

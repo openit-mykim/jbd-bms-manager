@@ -1,0 +1,32 @@
+<com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginTop="@dimen/space_16">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="@dimen/space_12">
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/mos_live_status_title"
+            android:textAppearance="@style/TextAppearance.OpenJbd.ListItemTitle" />
+
+        <TextView
+            android:id="@+id/mos_live_charge_status"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingTop="@dimen/space_8"
+            android:textAppearance="@style/TextAppearance.OpenJbd.ListItemSubtitle" />
+
+        <TextView
+            android:id="@+id/mos_live_discharge_status"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingTop="@dimen/space_4"
+            android:textAppearance="@style/TextAppearance.OpenJbd.ListItemSubtitle" />
+    </LinearLayout>
+</com.google.android.material.card.MaterialCardView>

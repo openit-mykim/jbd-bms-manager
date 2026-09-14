@@ -25,6 +25,8 @@ import com.google.android.material.switchmaterial.SwitchMaterial
 import com.google.android.material.textfield.TextInputEditText
 import com.google.android.material.textfield.TextInputLayout
 import com.gytxtx.openjbd.R
+import com.gytxtx.openjbd.data.BmsRepository
+import com.gytxtx.openjbd.data.BmsUiState
 import com.gytxtx.openjbd.maintenance.ValidationResult
 import dagger.hilt.android.AndroidEntryPoint
 import java.text.SimpleDateFormat
@@ -37,6 +39,7 @@ import kotlinx.coroutines.launch
 @AndroidEntryPoint
 class SettingsGroupDialogFragment : DialogFragment() {
     @Inject lateinit var repository: SettingsRepository
+    @Inject lateinit var bmsRepository: BmsRepository
 
     private val group: SettingsGroup by lazy {
         SettingsGroup.valueOf(requireArguments().getString(ARG_GROUP).orEmpty())
@@ -62,6 +65,8 @@ class SettingsGroupDialogFragment : DialogFragment() {
     private lateinit var resultDetails: LinearLayout
     private lateinit var clearAllButton: MaterialButton
     private lateinit var applyButton: MaterialButton
+    private var mosLiveCharge: TextView? = null
+    private var mosLiveDischarge: TextView? = null
 
     private var latestState = SettingsState()
     private var applying = false
@@ -102,6 +107,14 @@ class SettingsGroupDialogFragment : DialogFragment() {
         clearAllButton = view.findViewById(R.id.settings_clear_all_button)
         applyButton = view.findViewById(R.id.settings_apply_button)
 
+        if (group == SettingsGroup.MOS) {
+            val liveStatus = layoutInflater.inflate(R.layout.view_mos_live_status, null, false)
+            mosLiveCharge = liveStatus.findViewById(R.id.mos_live_charge_status)
+            mosLiveDischarge = liveStatus.findViewById(R.id.mos_live_discharge_status)
+            (accessModeView.parent as ViewGroup).addView(liveStatus, 0)
+            renderMosLiveStatus(bmsRepository.getSnapshot())
+        }
+
         toolbar.setTitle(SettingsDisplay.groupTitleResId(group))
         toolbar.setNavigationOnClickListener { dismiss() }
         refreshButton.setOnClickListener { readGroup() }
@@ -117,6 +130,13 @@ class SettingsGroupDialogFragment : DialogFragment() {
                 repository.state.collect {
                     latestState = it
                     render(it)
+                }
+            }
+        }
+        if (group == SettingsGroup.MOS) {
+            viewLifecycleOwner.lifecycleScope.launch {
+                viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
+                    bmsRepository.uiState.collect(::renderMosLiveStatus)
                 }
             }
         }
@@ -285,11 +305,17 @@ class SettingsGroupDialogFragment : DialogFragment() {
         toggle.visibility = if (isBit) View.VISIBLE else View.GONE
         if (isBit) {
             toggle.isChecked = (stagedValues[field] ?: currentRaw) == 1
-            toggle.setText(if (toggle.isChecked) R.string.settings_value_on else R.string.settings_value_off)
-            toggle.setOnCheckedChangeListener { button, checked ->
-                button.setText(
-                    if (checked) R.string.settings_value_on else R.string.settings_value_off
+            toggle.setText(
+                SettingsDisplay.toggleValueLabelResId(
+                    field,
+                    SettingsDisplay.rawFromToggle(toggle.isChecked)
                 )
+            )
+            toggle.setOnCheckedChangeListener { button, checked ->
+                button.setText(SettingsDisplay.toggleValueLabelResId(
+                    field,
+                    SettingsDisplay.rawFromToggle(checked)
+                ))
             }
         } else {
             input.inputType = InputType.TYPE_CLASS_NUMBER or
@@ -392,8 +418,13 @@ class SettingsGroupDialogFragment : DialogFragment() {
                 ::getString
             )
         }
+        val groupWarning = if (group == SettingsGroup.MOS) {
+            "\n\n" + getString(R.string.mos_confirm_warning)
+        } else {
+            ""
+        }
         val message = summaries.joinToString("\n") + "\n\n" +
-            getString(R.string.settings_confirm_warning) + "\n\n" +
+            getString(R.string.settings_confirm_warning) + groupWarning + "\n\n" +
             getString(R.string.settings_confirm_rule)
         MaterialAlertDialogBuilder(requireContext())
             .setTitle(R.string.settings_confirm_title)
@@ -543,6 +574,24 @@ class SettingsGroupDialogFragment : DialogFragment() {
 
     private fun resolveMessage(message: SettingsUiMessage): String =
         getString(message.stringResId, *message.formatArgs.toTypedArray())
+
+    private fun renderMosLiveStatus(state: BmsUiState) {
+        val info = state.basicInfo
+        val fetState = if (info == null) {
+            null
+        } else {
+            (if (info.chargeEnabled) 1 else 0) or (if (info.dischargeEnabled) 2 else 0)
+        }
+        fun status(bitIndex: Int): String = if (fetState == null) {
+            getString(R.string.mos_live_unavailable)
+        } else if (MosStateMapping.isConducting(fetState, bitIndex)) {
+            getString(R.string.mos_live_conducting)
+        } else {
+            getString(R.string.mos_live_blocked)
+        }
+        mosLiveCharge?.text = getString(R.string.mos_live_charge, status(0))
+        mosLiveDischarge?.text = getString(R.string.mos_live_discharge, status(1))
+    }
 
     private fun formatTimestamp(millis: Long): String =
         SimpleDateFormat(DATE_TIME_PATTERN, Locale.getDefault()).apply {

@@ -14,6 +14,7 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.gytxtx.openjbd.data.BmsRepository
 import com.gytxtx.openjbd.data.BmsUiState
 import com.gytxtx.openjbd.maintenance.MaintenanceGate
+import com.gytxtx.openjbd.settings.BackupRestoreDialogFragment
 import com.gytxtx.openjbd.settings.CalibrationDialogFragment
 import com.gytxtx.openjbd.settings.SettingsGroup
 import com.gytxtx.openjbd.settings.SettingsGroupDialogFragment
@@ -93,12 +94,17 @@ class ControlFragment : Fragment() {
             R.id.control_balance_settings_row to SettingsGroup.BALANCE,
             R.id.control_protection_row to SettingsGroup.PROTECTION,
             R.id.control_temperature_row to SettingsGroup.TEMPERATURE,
-            R.id.control_capacity_row to SettingsGroup.CAPACITY
+            R.id.control_capacity_row to SettingsGroup.CAPACITY,
+            R.id.control_mos_row to SettingsGroup.MOS
         ).forEach { (rowId, group) ->
             view.findViewById<View>(rowId).setOnClickListener {
                 SettingsGroupDialogFragment.newInstance(group)
                     .show(parentFragmentManager, "settings-${group.name}")
             }
+        }
+        view.findViewById<View>(R.id.control_backup_restore_row).setOnClickListener {
+            BackupRestoreDialogFragment()
+                .show(parentFragmentManager, "settings-backup-restore")
         }
 
         renderGateState()

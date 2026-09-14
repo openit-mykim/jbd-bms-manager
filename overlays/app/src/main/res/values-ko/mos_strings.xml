@@ -1,0 +1,14 @@
+<resources>
+    <string name="settings_field_mos_charge_disable">충전 FET 차단</string>
+    <string name="settings_field_mos_discharge_disable">방전 FET 차단</string>
+    <string name="settings_value_blocked">차단</string>
+    <string name="settings_value_allowed">허용</string>
+    <string name="mos_live_status_title">실시간 FET 상태</string>
+    <string name="mos_live_charge">충전 FET: %1$s</string>
+    <string name="mos_live_discharge">방전 FET: %1$s</string>
+    <string name="mos_live_conducting">도통</string>
+    <string name="mos_live_blocked">차단</string>
+    <string name="mos_live_unavailable">확인 불가</string>
+    <string name="mos_confirm_warning">MOS 차단은 충전 또는 방전을 즉시 끊을 수 있습니다. 시스템 동작을 확인한 뒤 적용하세요.</string>
+    <string name="control_mos_available">조회·제어</string>
+</resources>

@@ -253,13 +253,13 @@ class SettingsDisplayTest {
     }
 
     @Test
-    fun originalTwentyThreeFieldsHaveDistinctResourceBackedLabels() {
+    fun allTwentyFiveConfigurationFieldsHaveDistinctResourceBackedLabels() {
         val labels = SettingField.values()
             .filter { it.group != SettingsGroup.CALIBRATION }
             .map(SettingsDisplay::fieldLabelResId)
 
-        assertEquals(23, labels.size)
-        assertEquals(23, labels.toSet().size)
+        assertEquals(25, labels.size)
+        assertEquals(25, labels.toSet().size)
     }
 
     @Test

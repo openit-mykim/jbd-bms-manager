@@ -1,0 +1,14 @@
+<resources>
+    <string name="settings_field_mos_charge_disable">Block charge FET</string>
+    <string name="settings_field_mos_discharge_disable">Block discharge FET</string>
+    <string name="settings_value_blocked">Blocked</string>
+    <string name="settings_value_allowed">Allowed</string>
+    <string name="mos_live_status_title">Live FET status</string>
+    <string name="mos_live_charge">Charge FET: %1$s</string>
+    <string name="mos_live_discharge">Discharge FET: %1$s</string>
+    <string name="mos_live_conducting">Conducting</string>
+    <string name="mos_live_blocked">Blocked</string>
+    <string name="mos_live_unavailable">Unavailable</string>
+    <string name="mos_confirm_warning">MOS blocking can immediately interrupt charging or discharging. Check system operation before applying.</string>
+    <string name="control_mos_available">View · control</string>
+</resources>
