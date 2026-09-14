@@ -2,6 +2,9 @@ package com.gytxtx.openjbd.settings
 
 import com.gytxtx.openjbd.maintenance.ValidationResult
 
+const val BALANCE_WINDOW_STEP_MV = 5
+const val BALANCE_WINDOW_STEP_REASON = "balWindow must use 5 mV steps"
+
 /**
  * Validates one raw candidate. Relational checks run only when the counterpart is present in
  * [currentValues]; callers applying a staged set should pass a map containing the current device
@@ -20,6 +23,9 @@ fun validateField(
     }
     if (rawValue !in field.register.codec.rawRange && field.bitIndex == null) {
         return ValidationResult.Invalid("${field.key} cannot be represented by its 16-bit register")
+    }
+    if (field == SettingField.BAL_WINDOW && rawValue % BALANCE_WINDOW_STEP_MV != 0) {
+        return ValidationResult.Invalid(BALANCE_WINDOW_STEP_REASON)
     }
 
     val values = currentValues + (field to rawValue)
@@ -61,4 +67,12 @@ private fun firstRelationalFailure(
             if (values.getValue(field) < 0) null else "dsgOvercurrent must be negative"
         else -> null
     }
+}
+
+fun stepBalanceWindow(rawValue: Int, increase: Boolean): Int {
+    val range = SettingField.BAL_WINDOW.range
+    val delta = if (increase) BALANCE_WINDOW_STEP_MV else -BALANCE_WINDOW_STEP_MV
+    return (rawValue.toLong() + delta)
+        .coerceIn(range.minRaw.toLong(), range.maxRaw.toLong())
+        .toInt()
 }

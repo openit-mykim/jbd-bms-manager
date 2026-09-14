@@ -25,6 +25,16 @@
     <string name="settings_unit_amp_hour">Ah</string>
     <string name="settings_boolean_raw_range">0 – 1</string>
     <string name="settings_edit_title">%1$s 수정</string>
+    <string name="settings_balance_window_row_value">%1$s · 5 mV 단위</string>
+    <string name="settings_balance_window_step_label">5 mV 단위 미세 조절</string>
+    <string name="settings_balance_window_step_decrease">−5 mV</string>
+    <string name="settings_balance_window_step_increase">+5 mV</string>
+    <string name="settings_balance_window_presets_label">프리셋</string>
+    <string name="settings_balance_window_preset_5">5 mV</string>
+    <string name="settings_balance_window_preset_10_recommended">10 mV · 권장</string>
+    <string name="settings_balance_window_preset_15">15 mV</string>
+    <string name="settings_balance_window_preset_20">20 mV</string>
+    <string name="settings_balance_window_rounding_notice">BMS가 값을 내부 단위로 반올림할 수 있습니다. 적용 후 재읽기 검증으로 실제 저장값을 확인합니다.</string>
     <string name="settings_remove">제거</string>
     <string name="settings_clear_all">전체 취소</string>
     <string name="settings_apply">적용</string>
@@ -58,6 +68,7 @@
     <string name="settings_validation_precision">레지스터 단위에 맞는 값을 입력하세요.</string>
     <string name="settings_validation_temperature_precision">온도는 소수점 첫째 자리까지 입력하세요.</string>
     <string name="settings_validation_use_toggle">이 설정은 켜짐/꺼짐 스위치로 수정하세요.</string>
+    <string name="settings_validation_balance_window_step">5 mV 단위로 입력하세요.</string>
     <string name="settings_validation_range">허용 범위를 벗어났습니다(허용: %1$s)</string>
     <string name="settings_validation_covp_relation">셀 과전압 해제 값은 셀 과전압 보호 값보다 낮아야 합니다.</string>
     <string name="settings_validation_cuvp_relation">셀 저전압 해제 값은 셀 저전압 보호 값보다 높아야 합니다.</string>

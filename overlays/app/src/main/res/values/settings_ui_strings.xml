@@ -25,6 +25,16 @@
     <string name="settings_unit_amp_hour">Ah</string>
     <string name="settings_boolean_raw_range">0 – 1</string>
     <string name="settings_edit_title">Edit %1$s</string>
+    <string name="settings_balance_window_row_value">%1$s · 5 mV steps</string>
+    <string name="settings_balance_window_step_label">Adjust in 5 mV steps</string>
+    <string name="settings_balance_window_step_decrease">−5 mV</string>
+    <string name="settings_balance_window_step_increase">+5 mV</string>
+    <string name="settings_balance_window_presets_label">Presets</string>
+    <string name="settings_balance_window_preset_5">5 mV</string>
+    <string name="settings_balance_window_preset_10_recommended">10 mV · Recommended</string>
+    <string name="settings_balance_window_preset_15">15 mV</string>
+    <string name="settings_balance_window_preset_20">20 mV</string>
+    <string name="settings_balance_window_rounding_notice">The BMS may round this value to its internal unit. After applying, confirm the stored value through read-back verification.</string>
     <string name="settings_remove">Remove</string>
     <string name="settings_clear_all">Discard all</string>
     <string name="settings_apply">Apply</string>
@@ -58,6 +68,7 @@
     <string name="settings_validation_precision">Enter a value aligned to the register unit.</string>
     <string name="settings_validation_temperature_precision">Enter temperature to one decimal place.</string>
     <string name="settings_validation_use_toggle">Use the on/off switch for this setting.</string>
+    <string name="settings_validation_balance_window_step">Enter a value in 5 mV increments.</string>
     <string name="settings_validation_range">Outside the allowed range (allowed: %1$s)</string>
     <string name="settings_validation_covp_relation">Cell over-voltage release must be lower than cell over-voltage protection.</string>
     <string name="settings_validation_cuvp_relation">Cell under-voltage release must be higher than cell under-voltage protection.</string>
