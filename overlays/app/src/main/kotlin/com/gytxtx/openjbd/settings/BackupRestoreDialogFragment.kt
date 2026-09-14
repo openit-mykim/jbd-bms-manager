@@ -20,7 +20,6 @@ import androidx.lifecycle.repeatOnLifecycle
 import com.google.android.material.appbar.MaterialToolbar
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
-import com.gytxtx.openjbd.BuildConfig
 import com.gytxtx.openjbd.R
 import com.gytxtx.openjbd.data.BmsRepository
 import com.gytxtx.openjbd.data.BmsUiState
@@ -229,7 +228,7 @@ class BackupRestoreDialogFragment : DialogFragment() {
         }
         return ConfigurationBackup(
             exportedAtUtc = utcTimestamp(System.currentTimeMillis()),
-            appVersion = BuildConfig.VERSION_NAME,
+            appVersion = appVersion(),
             device = BackupDeviceIdentity(
                 name = snapshot.deviceName.orEmpty(),
                 address = snapshot.deviceAddress.orEmpty(),
@@ -558,6 +557,14 @@ class BackupRestoreDialogFragment : DialogFragment() {
 
     private fun localTimestamp(millis: Long): String =
         SimpleDateFormat(LOCAL_PATTERN, Locale.getDefault()).format(Date(millis))
+
+    @Suppress("DEPRECATION")
+    private fun appVersion(): String = runCatching {
+        requireContext().packageManager
+            .getPackageInfo(requireContext().packageName, 0)
+            .versionName
+            .orEmpty()
+    }.getOrDefault("")
 
     private companion object {
         const val BACKUP_FILENAME_PATTERN = "yyyyMMdd-HHmm"
