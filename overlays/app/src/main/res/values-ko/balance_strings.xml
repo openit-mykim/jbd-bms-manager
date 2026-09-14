@@ -1,9 +1,9 @@
 <resources>
     <string name="empty_cells_connected">연결된 BMS에서 셀 전압 데이터가 보고되지 않았습니다.</string>
     <string name="balance_legend_title">셀 안전 밴드</string>
-    <string name="balance_legend_highest">● 정상</string>
-    <string name="balance_legend_lowest">● 주의</string>
-    <string name="balance_legend_balancing">● 위험</string>
+    <string name="balance_legend_highest">● 최고 전압</string>
+    <string name="balance_legend_lowest">● 최저 전압</string>
+    <string name="balance_legend_balancing">● 밸런싱 중</string>
     <string name="balance_band_label_normal">정상</string>
     <string name="balance_band_label_caution">주의</string>
     <string name="balance_band_label_danger">위험</string>
