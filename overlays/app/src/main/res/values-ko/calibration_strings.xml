@@ -1,0 +1,41 @@
+<resources>
+    <string name="calibration_unit_raw">raw</string>
+    <string name="calibration_field_idle_current">무부하 전류 보정</string>
+    <string name="calibration_field_charge_current">충전 전류 보정</string>
+    <string name="calibration_field_discharge_current">방전 전류 보정</string>
+    <string name="calibration_field_cell_voltage">셀 %1$d 전압 보정</string>
+    <string name="calibration_field_ntc_temperature">NTC %1$d 온도 보정</string>
+
+    <string name="calibration_intro">보정 레지스터는 커뮤니티 맵 기반 후보이며 실기기 검증 전 단계입니다. 모든 값은 안정된 외부 기준 계측기와 비교하세요.</string>
+    <string name="calibration_subgroup_current">전류 보정</string>
+    <string name="calibration_subgroup_cells">셀 전압 보정</string>
+    <string name="calibration_subgroup_ntc">온도(NTC) 보정</string>
+    <string name="calibration_no_cells">연결된 셀 수와 셀 측정값을 확인할 수 없습니다.</string>
+    <string name="calibration_no_ntcs">NTC 수와 온도 측정값을 확인할 수 없습니다.</string>
+    <string name="calibration_live_value">현재 BMS 값: %1$s</string>
+    <string name="calibration_stored_value">저장된 보정 값: %1$s</string>
+    <string name="calibration_edit">외부 기준 입력</string>
+    <string name="calibration_zero_action">제로 보정 예약</string>
+
+    <string name="calibration_guidance_idle">실제로 전류가 흐르지 않는 상태를 만든 뒤 확인한 경우에만 사용하세요.</string>
+    <string name="calibration_guidance_charge">외부 기준 계측기로 측정한 양의 충전 전류를 입력하세요.</string>
+    <string name="calibration_guidance_discharge">외부 기준 계측기로 측정한 방전 전류의 양의 크기를 입력하세요.</string>
+    <string name="calibration_guidance_cell">신뢰할 수 있는 외부 기준으로 측정한 해당 셀 전압을 입력하세요.</string>
+    <string name="calibration_guidance_ntc">신뢰할 수 있는 외부 기준으로 해당 NTC 위치에서 측정한 온도를 입력하세요.</string>
+
+    <string name="calibration_edit_title">%1$s — 외부 기준 측정값</string>
+    <string name="calibration_concept_bms">BMS 현재 읽기값</string>
+    <string name="calibration_concept_external">외부 기준 측정값 입력</string>
+    <string name="calibration_concept_operation">적용될 작업</string>
+    <string name="calibration_external_hint">외부 기준 측정값</string>
+    <string name="calibration_operation_waiting">올바른 기준값을 입력하면 인코딩될 작업이 표시됩니다.</string>
+    <string name="calibration_operation_preview">레지스터 0x%1$02X ← raw 0x%2$04X (%3$d)</string>
+    <string name="calibration_note_hardware_unverified">이 보정 레지스터는 테스트 단계이며 실제 BMS에서 검증해야 합니다.</string>
+    <string name="calibration_note_current_scale">스케일(10 mA 단위 가정)은 실기기 검증이 필요한 항목입니다.</string>
+    <string name="calibration_live_unavailable">읽지 못함</string>
+
+    <string name="calibration_zero_title">무부하 전류 제로 보정을 예약할까요?</string>
+    <string name="calibration_zero_warning">배터리에 전류가 흐르지 않는 상태에서만 실행하세요.</string>
+    <string name="calibration_zero_confirm">0x0000 예약</string>
+    <string name="calibration_confirm_line">값은 BMS 보정 레지스터에 기록되며 기준 계측기와 대조해 반드시 재검증해야 합니다.</string>
+</resources>

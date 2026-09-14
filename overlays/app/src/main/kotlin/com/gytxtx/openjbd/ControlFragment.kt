@@ -14,6 +14,7 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.gytxtx.openjbd.data.BmsRepository
 import com.gytxtx.openjbd.data.BmsUiState
 import com.gytxtx.openjbd.maintenance.MaintenanceGate
+import com.gytxtx.openjbd.settings.CalibrationDialogFragment
 import com.gytxtx.openjbd.settings.SettingsGroup
 import com.gytxtx.openjbd.settings.SettingsGroupDialogFragment
 import dagger.hilt.android.AndroidEntryPoint
@@ -83,6 +84,10 @@ class ControlFragment : Fragment() {
             diagnosticsExpanded = !diagnosticsExpanded
             diagnosticsPanel.visibility = if (diagnosticsExpanded) View.VISIBLE else View.GONE
             if (diagnosticsExpanded) renderDiagnostics(repository.getSnapshot())
+        }
+        view.findViewById<View>(R.id.control_calibration_row).setOnClickListener {
+            CalibrationDialogFragment.newInstance()
+                .show(parentFragmentManager, "calibration")
         }
         mapOf(
             R.id.control_balance_settings_row to SettingsGroup.BALANCE,

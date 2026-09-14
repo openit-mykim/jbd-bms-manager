@@ -25,4 +25,5 @@
     <string name="control_diagnostics_section_extension">Extended information</string>
     <string name="control_diagnostics_empty">Connect a BMS to read diagnostic information.</string>
     <string name="control_diagnostics_footer">Additional register- and protocol-level diagnostics will be added in later steps.</string>
+    <string name="control_calibration_available">Read · calibrate</string>
 </resources>

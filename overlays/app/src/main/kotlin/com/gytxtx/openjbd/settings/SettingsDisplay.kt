@@ -99,13 +99,23 @@ object SettingsDisplay {
         SettingField.DSG_UNDER_TEMP -> R.string.settings_field_dsg_under_temp
         SettingField.DSG_UNDER_TEMP_RELEASE -> R.string.settings_field_dsg_under_temp_release
         SettingField.DESIGN_CAPACITY -> R.string.settings_field_design_capacity
+        SettingField.CAL_IDLE_CURRENT -> R.string.calibration_field_idle_current
+        SettingField.CAL_CHARGE_CURRENT -> R.string.calibration_field_charge_current
+        SettingField.CAL_DISCHARGE_CURRENT -> R.string.calibration_field_discharge_current
+        in CalibrationTargets.cellFields -> R.string.calibration_field_cell_voltage
+        in CalibrationTargets.ntcFields -> R.string.calibration_field_ntc_temperature
+        else -> error("Unsupported settings field: $field")
     }
+
+    fun fieldLabelFormatArgs(field: SettingField): List<Any> =
+        CalibrationTargets.targetFor(field)?.slotNumber?.let(::listOf).orEmpty()
 
     fun groupTitleResId(group: SettingsGroup): Int = when (group) {
         SettingsGroup.BALANCE -> R.string.control_section_balance
         SettingsGroup.PROTECTION -> R.string.control_section_protection
         SettingsGroup.TEMPERATURE -> R.string.control_section_temperature
         SettingsGroup.CAPACITY -> R.string.control_section_capacity
+        SettingsGroup.CALIBRATION -> R.string.control_section_calibration
     }
 
     fun displayValue(field: SettingField, rawValue: Int): SettingsDisplayValue = when {
@@ -132,6 +142,17 @@ object SettingsDisplay {
             inputText = rawValue.toString(),
             unitStringResId = null
         )
+        field in CalibrationTargets.cellFields ->
+            numericValue(rawValue, 0, R.string.settings_unit_mv)
+        field in CalibrationTargets.ntcFields -> {
+            val celsius = rawValue / 10.0 - 273.15
+            numericValue(normalizeNearZero(celsius), 1, R.string.settings_unit_celsius)
+        }
+        field == SettingField.CAL_CHARGE_CURRENT ||
+            field == SettingField.CAL_DISCHARGE_CURRENT ->
+            numericValue(rawValue / 100.0, 2, R.string.settings_unit_amp)
+        field == SettingField.CAL_IDLE_CURRENT ->
+            numericValue(rawValue, 0, R.string.calibration_unit_raw)
         else -> error("Unsupported settings field: $field")
     }
 
@@ -159,6 +180,20 @@ object SettingsDisplay {
             }
             field in currentFields -> decimal.multiply(BigDecimal("100"))
             field == SettingField.DESIGN_CAPACITY -> decimal.multiply(BigDecimal("100"))
+            field in CalibrationTargets.cellFields -> decimal
+            field in CalibrationTargets.ntcFields -> {
+                if (decimal.stripTrailingZeros().scale() > 1) {
+                    return SettingsInputResult.Invalid(
+                        SettingsUiMessage(R.string.settings_validation_temperature_precision)
+                    )
+                }
+                decimal.add(BigDecimal("273.15"))
+                    .multiply(BigDecimal.TEN)
+                    .setScale(0, RoundingMode.HALF_UP)
+            }
+            field == SettingField.CAL_CHARGE_CURRENT ||
+                field == SettingField.CAL_DISCHARGE_CURRENT -> decimal.multiply(BigDecimal("100"))
+            field == SettingField.CAL_IDLE_CURRENT -> decimal
             else -> error("Unsupported settings field: $field")
         }
 
