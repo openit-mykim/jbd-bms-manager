@@ -5,6 +5,7 @@ import com.gytxtx.openjbd.data.BmsUiState
 import com.gytxtx.openjbd.data.ConnectionState
 import com.gytxtx.openjbd.protocol.JbdBasicInfo
 import com.gytxtx.openjbd.protocol.JbdCellVoltages
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.advanceTimeBy
@@ -15,6 +16,7 @@ import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
+@OptIn(ExperimentalCoroutinesApi::class)
 class HistoryRecorderTest {
     @Test
     fun disconnectedSnapshotIsNotStored() = runTest {
