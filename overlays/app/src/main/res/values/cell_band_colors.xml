@@ -1,0 +1,5 @@
+<resources>
+    <color name="cell_band_normal">#2E7D32</color>
+    <color name="cell_band_caution">#EF6C00</color>
+    <color name="cell_band_danger">#C62828</color>
+</resources>

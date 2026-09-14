@@ -1,9 +1,24 @@
 <resources>
     <string name="empty_cells_connected">연결된 BMS에서 셀 전압 데이터가 보고되지 않았습니다.</string>
-    <string name="balance_legend_title">강조 표시</string>
-    <string name="balance_legend_highest">● 최고 전압</string>
-    <string name="balance_legend_lowest">● 최저 전압</string>
-    <string name="balance_legend_balancing">● 밸런싱 중</string>
+    <string name="balance_legend_title">셀 안전 밴드</string>
+    <string name="balance_legend_highest">● 정상</string>
+    <string name="balance_legend_lowest">● 주의</string>
+    <string name="balance_legend_balancing">● 위험</string>
+    <string name="balance_band_label_normal">정상</string>
+    <string name="balance_band_label_caution">주의</string>
+    <string name="balance_band_label_danger">위험</string>
+    <string name="balance_band_legend_normal">● 정상</string>
+    <string name="balance_band_legend_caution">● 주의</string>
+    <string name="balance_band_legend_danger">● 위험</string>
+    <string name="balance_badge_highest_suffix">\u0020· 최고</string>
+    <string name="balance_badge_lowest_suffix">\u0020· 최저</string>
+    <string name="balance_badge_balancing_suffix">\u0020· 밸런싱</string>
+    <string name="balance_badge_legend">배지: 최고 / 최저 / 밸런싱(밸런싱 우선)</string>
+    <string name="balance_cell_label_with_band">%1$s · %2$s%3$s</string>
+    <string name="format_value_voltage_mv">%1$d mV</string>
+    <string name="balance_threshold_source_measured">밴드 기준: 읽은 보호값 · UV ≤ %1$d mV / OV ≥ %2$d mV(참고 표시)</string>
+    <string name="balance_threshold_source_default">밴드 기준: 기본 기준(NMC) · UV ≤ %1$d mV / OV ≥ %2$d mV(참고 표시)</string>
+    <string name="balance_summary_with_threshold_source">%1$s\n%2$s</string>
     <plurals name="balance_active_cell_count">
         <item quantity="other">밸런싱 중 · %1$d셀</item>
     </plurals>

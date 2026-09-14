@@ -11,13 +11,15 @@ data class BalanceCellDiagnostic(
     val voltage: Float,
     val isBalancing: Boolean,
     val highlight: CellHighlight,
+    val band: CellSafetyBand,
     val progress: Int
 )
 
 object BalanceCellDiagnostics {
     fun analyze(
         cells: List<Float>,
-        balanceStates: BooleanArray
+        balanceStates: BooleanArray,
+        thresholds: CellThresholds
     ): List<BalanceCellDiagnostic> {
         if (cells.isEmpty()) return emptyList()
 
@@ -38,6 +40,7 @@ object BalanceCellDiagnostics {
                 voltage = voltage,
                 isBalancing = balanceStates.getOrElse(index) { false },
                 highlight = highlight,
+                band = bandOf(voltsToMillivolts(voltage), thresholds),
                 progress = progress
             )
         }

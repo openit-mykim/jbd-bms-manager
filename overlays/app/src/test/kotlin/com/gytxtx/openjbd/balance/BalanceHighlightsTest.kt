@@ -10,7 +10,8 @@ class BalanceHighlightsTest {
     fun analyzeMarksVoltageExtremesAndActiveBalancingCells() {
         val result = BalanceCellDiagnostics.analyze(
             cells = listOf(3.312f, 3.287f, 3.301f, 3.325f),
-            balanceStates = booleanArrayOf(false, true, false, true)
+            balanceStates = booleanArrayOf(false, true, false, true),
+            thresholds = CellThresholds.nmcDefault()
         )
 
         assertEquals(CellHighlight.NORMAL, result[0].highlight)
@@ -28,7 +29,8 @@ class BalanceHighlightsTest {
     fun analyzeTreatsMissingBalanceFlagsAsInactive() {
         val result = BalanceCellDiagnostics.analyze(
             cells = listOf(3.2f, 3.3f),
-            balanceStates = booleanArrayOf(true)
+            balanceStates = booleanArrayOf(true),
+            thresholds = CellThresholds.nmcDefault()
         )
 
         assertTrue(result[0].isBalancing)
