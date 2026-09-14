@@ -1,5 +1,6 @@
 <resources>
     <string name="control_settings_available">Read · edit</string>
+    <string name="control_remaining_planned_notice">Calibration, MOS control, and backup/restore will be delivered incrementally in later updates.</string>
 
     <string name="settings_close">Close</string>
     <string name="settings_refresh">Refresh</string>

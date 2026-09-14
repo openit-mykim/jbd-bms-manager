@@ -1,5 +1,6 @@
 <resources>
     <string name="control_settings_available">조회·수정</string>
+    <string name="control_remaining_planned_notice">캘리브레이션·MOS 제어·백업 및 복원은 이후 업데이트에서 단계적으로 제공됩니다.</string>
 
     <string name="settings_close">닫기</string>
     <string name="settings_refresh">새로고침</string>
