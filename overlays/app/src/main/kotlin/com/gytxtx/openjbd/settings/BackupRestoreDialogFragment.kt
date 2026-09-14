@@ -342,7 +342,7 @@ class BackupRestoreDialogFragment : DialogFragment() {
             )
         }
         parsedBackup?.let { parsed ->
-            parsed.issues.forEach { issue ->
+            (restoreDiff?.issues ?: parsed.issues).forEach { issue ->
                 addIssueLine(issuesList, issueText(issue), isError = true)
             }
         }
