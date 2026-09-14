@@ -18,6 +18,8 @@ import com.google.android.material.progressindicator.LinearProgressIndicator
 import com.gytxtx.openjbd.data.BmsRepository
 import com.gytxtx.openjbd.data.BmsUiState
 import com.gytxtx.openjbd.data.ConnectionState
+import com.gytxtx.openjbd.overview.SocBand
+import com.gytxtx.openjbd.overview.SocBands
 import com.gytxtx.openjbd.protocol.JbdBasicInfo
 import com.gytxtx.openjbd.protocol.JbdCellVoltages
 import dagger.hilt.android.AndroidEntryPoint
@@ -42,6 +44,7 @@ class OverviewFragment : Fragment() {
     private lateinit var currentText: TextView
     private lateinit var powerText: TextView
     private lateinit var socText: TextView
+    private lateinit var socBandText: TextView
     private lateinit var capacityText: TextView
     private lateinit var cyclesText: TextView
     private lateinit var mosText: TextView
@@ -56,6 +59,11 @@ class OverviewFragment : Fragment() {
     private lateinit var cellDeltaText: TextView
     private lateinit var cellAverageText: TextView
     private lateinit var socProgress: LinearProgressIndicator
+    private val socBandNormal by lazy { requireContext().getColor(R.color.soc_band_normal) }
+    private val socBandCaution by lazy { requireContext().getColor(R.color.soc_band_caution) }
+    private val socBandDanger by lazy { requireContext().getColor(R.color.soc_band_danger) }
+    private val socBandUnknown by lazy { requireContext().getColor(R.color.text_secondary) }
+    private val socProgressUnknown by lazy { requireContext().getColor(R.color.progress_track) }
     private var lastRenderedBasicInfo: JbdBasicInfo? = null
     private var lastRenderedTemps: List<Float>? = null
     private var lastUnitLabel: String? = null
@@ -77,6 +85,7 @@ class OverviewFragment : Fragment() {
             connectionManager.cancelReconnect()
         }
         socText = view.findViewById(R.id.txt_soc)
+        socBandText = view.findViewById(R.id.txt_soc_band)
         socProgress = view.findViewById(R.id.progress_soc)
         voltageText = view.findViewById(R.id.txt_voltage)
         currentText = view.findViewById(R.id.txt_current)
@@ -153,6 +162,10 @@ class OverviewFragment : Fragment() {
         powerText.setTextIfChanged(getString(R.string.format_value_power_1, info.totalVoltage * info.current))
         socText.setTextIfChanged(getString(R.string.format_value_percent, info.soc))
         socProgress.setProgressCompat(info.soc, false)
+        val socBand = SocBands.bandOf(info.soc)
+        socProgress.setIndicatorColor(socBand.color())
+        socBandText.setTextIfChanged(getString(socBand.labelResource()))
+        socBandText.setTextColor(socBand.color())
         capacityText.setTextIfChanged(
             getString(R.string.format_value_capacity_pair, info.remainingAh, info.learnedOrNominalAh)
         )
@@ -244,6 +257,9 @@ class OverviewFragment : Fragment() {
         powerText.text = "--"
         socText.setText(R.string.placeholder_percent)
         socProgress.progress = 0
+        socProgress.setIndicatorColor(socProgressUnknown)
+        socBandText.setText(R.string.soc_band_unknown)
+        socBandText.setTextColor(socBandUnknown)
         capacityText.text = "--"
         cyclesText.text = "--"
         mosText.text = "--"
@@ -284,6 +300,18 @@ class OverviewFragment : Fragment() {
         }
         val fullCapacityAh = Math.max(info.remainingAh, info.learnedOrNominalAh)
         return getString(R.string.estimate_charging, formatDurationHours((fullCapacityAh - info.remainingAh) / absCurrent))
+    }
+
+    private fun SocBand.labelResource() = when (this) {
+        SocBand.NORMAL -> R.string.soc_band_normal
+        SocBand.CAUTION -> R.string.soc_band_caution
+        SocBand.DANGER -> R.string.soc_band_danger
+    }
+
+    private fun SocBand.color() = when (this) {
+        SocBand.NORMAL -> socBandNormal
+        SocBand.CAUTION -> socBandCaution
+        SocBand.DANGER -> socBandDanger
     }
 
     private fun formatDurationHours(hours: Float): String {

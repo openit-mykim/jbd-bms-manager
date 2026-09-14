@@ -1,0 +1,7 @@
+<resources>
+    <string name="soc_band_normal">잔량 충분</string>
+    <string name="soc_band_caution">충전 권장</string>
+    <string name="soc_band_danger">즉시 충전 필요</string>
+    <string name="soc_band_unknown">—</string>
+    <string name="soc_band_note">SOC 밴드는 앱 참고 표시이며 BMS 보호 동작이 아닙니다.</string>
+</resources>
