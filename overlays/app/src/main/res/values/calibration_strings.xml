@@ -1,0 +1,41 @@
+<resources>
+    <string name="calibration_unit_raw">raw</string>
+    <string name="calibration_field_idle_current">Idle-current zero calibration</string>
+    <string name="calibration_field_charge_current">Charge-current calibration</string>
+    <string name="calibration_field_discharge_current">Discharge-current calibration</string>
+    <string name="calibration_field_cell_voltage">Cell %1$d voltage calibration</string>
+    <string name="calibration_field_ntc_temperature">NTC %1$d temperature calibration</string>
+
+    <string name="calibration_intro">Calibration registers are community-map candidates and are not hardware verified. Compare every value with a stable external reference instrument.</string>
+    <string name="calibration_subgroup_current">Current calibration</string>
+    <string name="calibration_subgroup_cells">Cell-voltage calibration</string>
+    <string name="calibration_subgroup_ntc">Temperature (NTC) calibration</string>
+    <string name="calibration_no_cells">No connected-cell count or cell readings are available.</string>
+    <string name="calibration_no_ntcs">No NTC count or temperature readings are available.</string>
+    <string name="calibration_live_value">Current BMS value: %1$s</string>
+    <string name="calibration_stored_value">Stored calibration value: %1$s</string>
+    <string name="calibration_edit">Edit reference</string>
+    <string name="calibration_zero_action">Stage zero</string>
+
+    <string name="calibration_guidance_idle">Use only after establishing and confirming a genuine zero-current condition.</string>
+    <string name="calibration_guidance_charge">Enter the positive charging current measured by an external reference instrument.</string>
+    <string name="calibration_guidance_discharge">Enter the positive magnitude of discharge current measured by an external reference instrument.</string>
+    <string name="calibration_guidance_cell">Enter this cell voltage measured with a reliable external reference.</string>
+    <string name="calibration_guidance_ntc">Enter the temperature measured at this NTC with a reliable external reference.</string>
+
+    <string name="calibration_edit_title">%1$s — external reference</string>
+    <string name="calibration_concept_bms">BMS reading</string>
+    <string name="calibration_concept_external">External reference measurement</string>
+    <string name="calibration_concept_operation">Resulting calibration operation</string>
+    <string name="calibration_external_hint">External reference measurement</string>
+    <string name="calibration_operation_waiting">Enter a valid reference value to preview the encoded operation.</string>
+    <string name="calibration_operation_preview">Register 0x%1$02X ← raw 0x%2$04X (%3$d)</string>
+    <string name="calibration_note_hardware_unverified">This calibration register is in the test stage and requires verification on the actual BMS.</string>
+    <string name="calibration_note_current_scale">The assumed scale (10 mA units) requires verification on the actual device.</string>
+    <string name="calibration_live_unavailable">Not read</string>
+
+    <string name="calibration_zero_title">Stage idle-current zero calibration?</string>
+    <string name="calibration_zero_warning">Run this only when no current is flowing through the battery.</string>
+    <string name="calibration_zero_confirm">Stage 0x0000</string>
+    <string name="calibration_confirm_line">Values are written to BMS calibration registers and must be verified against the reference instrument.</string>
+</resources>

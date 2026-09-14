@@ -7,7 +7,8 @@ enum class SettingsGroup {
     BALANCE,
     PROTECTION,
     TEMPERATURE,
-    CAPACITY
+    CAPACITY,
+    CALIBRATION
 }
 
 data class RegisterSpec(
@@ -69,6 +70,12 @@ object SettingsGuardRanges {
 
     /** Boolean bitfield value guard. */
     val BOOLEAN_BIT = PhysicalRange(0, 1)
+
+    /** Idle-current calibration accepts only an explicit zero-current raw value. */
+    val CALIBRATION_IDLE_CURRENT = PhysicalRange(0, 0)
+
+    /** Candidate current-calibration guard: 0.01..300 A in positive 10 mA units. */
+    val CALIBRATION_CURRENT_10_MA = PhysicalRange(1, 30_000)
 }
 
 private val FUNCTION_CONFIG = RegisterSpec(0x2D, signed = false, scale = 1.0, unit = "bit")
@@ -183,7 +190,64 @@ enum class SettingField(
     DESIGN_CAPACITY(
         "designCapacity", SettingsGroup.CAPACITY,
         RegisterSpec(0x10, false, 10.0, "mAh"), SettingsGuardRanges.DESIGN_CAPACITY_10_MAH
-    );
+    ),
+
+    /**
+     * Candidate calibration registers from the community map cited by
+     * `docs/protocol-design.md`; all remain hardware-unverified and capability-gated.
+     */
+    CAL_IDLE_CURRENT(
+        "calIdleCurrent", SettingsGroup.CALIBRATION,
+        RegisterSpec(0xAD, false, 1.0, "raw"), SettingsGuardRanges.CALIBRATION_IDLE_CURRENT
+    ),
+    CAL_CHARGE_CURRENT(
+        "calChargeCurrent", SettingsGroup.CALIBRATION,
+        RegisterSpec(0xAE, false, 10.0, "mA"), SettingsGuardRanges.CALIBRATION_CURRENT_10_MA
+    ),
+    CAL_DISCHARGE_CURRENT(
+        "calDischargeCurrent", SettingsGroup.CALIBRATION,
+        RegisterSpec(0xAF, false, 10.0, "mA"), SettingsGuardRanges.CALIBRATION_CURRENT_10_MA
+    ),
+    CAL_CELL_01("calCell01", SettingsGroup.CALIBRATION, RegisterSpec(0xB0, false, 1.0, "mV"), SettingsGuardRanges.CELL_THRESHOLD_MV),
+    CAL_CELL_02("calCell02", SettingsGroup.CALIBRATION, RegisterSpec(0xB1, false, 1.0, "mV"), SettingsGuardRanges.CELL_THRESHOLD_MV),
+    CAL_CELL_03("calCell03", SettingsGroup.CALIBRATION, RegisterSpec(0xB2, false, 1.0, "mV"), SettingsGuardRanges.CELL_THRESHOLD_MV),
+    CAL_CELL_04("calCell04", SettingsGroup.CALIBRATION, RegisterSpec(0xB3, false, 1.0, "mV"), SettingsGuardRanges.CELL_THRESHOLD_MV),
+    CAL_CELL_05("calCell05", SettingsGroup.CALIBRATION, RegisterSpec(0xB4, false, 1.0, "mV"), SettingsGuardRanges.CELL_THRESHOLD_MV),
+    CAL_CELL_06("calCell06", SettingsGroup.CALIBRATION, RegisterSpec(0xB5, false, 1.0, "mV"), SettingsGuardRanges.CELL_THRESHOLD_MV),
+    CAL_CELL_07("calCell07", SettingsGroup.CALIBRATION, RegisterSpec(0xB6, false, 1.0, "mV"), SettingsGuardRanges.CELL_THRESHOLD_MV),
+    CAL_CELL_08("calCell08", SettingsGroup.CALIBRATION, RegisterSpec(0xB7, false, 1.0, "mV"), SettingsGuardRanges.CELL_THRESHOLD_MV),
+    CAL_CELL_09("calCell09", SettingsGroup.CALIBRATION, RegisterSpec(0xB8, false, 1.0, "mV"), SettingsGuardRanges.CELL_THRESHOLD_MV),
+    CAL_CELL_10("calCell10", SettingsGroup.CALIBRATION, RegisterSpec(0xB9, false, 1.0, "mV"), SettingsGuardRanges.CELL_THRESHOLD_MV),
+    CAL_CELL_11("calCell11", SettingsGroup.CALIBRATION, RegisterSpec(0xBA, false, 1.0, "mV"), SettingsGuardRanges.CELL_THRESHOLD_MV),
+    CAL_CELL_12("calCell12", SettingsGroup.CALIBRATION, RegisterSpec(0xBB, false, 1.0, "mV"), SettingsGuardRanges.CELL_THRESHOLD_MV),
+    CAL_CELL_13("calCell13", SettingsGroup.CALIBRATION, RegisterSpec(0xBC, false, 1.0, "mV"), SettingsGuardRanges.CELL_THRESHOLD_MV),
+    CAL_CELL_14("calCell14", SettingsGroup.CALIBRATION, RegisterSpec(0xBD, false, 1.0, "mV"), SettingsGuardRanges.CELL_THRESHOLD_MV),
+    CAL_CELL_15("calCell15", SettingsGroup.CALIBRATION, RegisterSpec(0xBE, false, 1.0, "mV"), SettingsGuardRanges.CELL_THRESHOLD_MV),
+    CAL_CELL_16("calCell16", SettingsGroup.CALIBRATION, RegisterSpec(0xBF, false, 1.0, "mV"), SettingsGuardRanges.CELL_THRESHOLD_MV),
+    CAL_CELL_17("calCell17", SettingsGroup.CALIBRATION, RegisterSpec(0xC0, false, 1.0, "mV"), SettingsGuardRanges.CELL_THRESHOLD_MV),
+    CAL_CELL_18("calCell18", SettingsGroup.CALIBRATION, RegisterSpec(0xC1, false, 1.0, "mV"), SettingsGuardRanges.CELL_THRESHOLD_MV),
+    CAL_CELL_19("calCell19", SettingsGroup.CALIBRATION, RegisterSpec(0xC2, false, 1.0, "mV"), SettingsGuardRanges.CELL_THRESHOLD_MV),
+    CAL_CELL_20("calCell20", SettingsGroup.CALIBRATION, RegisterSpec(0xC3, false, 1.0, "mV"), SettingsGuardRanges.CELL_THRESHOLD_MV),
+    CAL_CELL_21("calCell21", SettingsGroup.CALIBRATION, RegisterSpec(0xC4, false, 1.0, "mV"), SettingsGuardRanges.CELL_THRESHOLD_MV),
+    CAL_CELL_22("calCell22", SettingsGroup.CALIBRATION, RegisterSpec(0xC5, false, 1.0, "mV"), SettingsGuardRanges.CELL_THRESHOLD_MV),
+    CAL_CELL_23("calCell23", SettingsGroup.CALIBRATION, RegisterSpec(0xC6, false, 1.0, "mV"), SettingsGuardRanges.CELL_THRESHOLD_MV),
+    CAL_CELL_24("calCell24", SettingsGroup.CALIBRATION, RegisterSpec(0xC7, false, 1.0, "mV"), SettingsGuardRanges.CELL_THRESHOLD_MV),
+    CAL_CELL_25("calCell25", SettingsGroup.CALIBRATION, RegisterSpec(0xC8, false, 1.0, "mV"), SettingsGuardRanges.CELL_THRESHOLD_MV),
+    CAL_CELL_26("calCell26", SettingsGroup.CALIBRATION, RegisterSpec(0xC9, false, 1.0, "mV"), SettingsGuardRanges.CELL_THRESHOLD_MV),
+    CAL_CELL_27("calCell27", SettingsGroup.CALIBRATION, RegisterSpec(0xCA, false, 1.0, "mV"), SettingsGuardRanges.CELL_THRESHOLD_MV),
+    CAL_CELL_28("calCell28", SettingsGroup.CALIBRATION, RegisterSpec(0xCB, false, 1.0, "mV"), SettingsGuardRanges.CELL_THRESHOLD_MV),
+    CAL_CELL_29("calCell29", SettingsGroup.CALIBRATION, RegisterSpec(0xCC, false, 1.0, "mV"), SettingsGuardRanges.CELL_THRESHOLD_MV),
+    CAL_CELL_30("calCell30", SettingsGroup.CALIBRATION, RegisterSpec(0xCD, false, 1.0, "mV"), SettingsGuardRanges.CELL_THRESHOLD_MV),
+    CAL_CELL_31("calCell31", SettingsGroup.CALIBRATION, RegisterSpec(0xCE, false, 1.0, "mV"), SettingsGuardRanges.CELL_THRESHOLD_MV),
+    CAL_CELL_32("calCell32", SettingsGroup.CALIBRATION, RegisterSpec(0xCF, false, 1.0, "mV"), SettingsGuardRanges.CELL_THRESHOLD_MV),
+    CAL_NTC_01("calNtc01", SettingsGroup.CALIBRATION, RegisterSpec(0xD0, false, 0.1, "K"), SettingsGuardRanges.TEMPERATURE_TENTH_K),
+    CAL_NTC_02("calNtc02", SettingsGroup.CALIBRATION, RegisterSpec(0xD1, false, 0.1, "K"), SettingsGuardRanges.TEMPERATURE_TENTH_K),
+    CAL_NTC_03("calNtc03", SettingsGroup.CALIBRATION, RegisterSpec(0xD2, false, 0.1, "K"), SettingsGuardRanges.TEMPERATURE_TENTH_K),
+    CAL_NTC_04("calNtc04", SettingsGroup.CALIBRATION, RegisterSpec(0xD3, false, 0.1, "K"), SettingsGuardRanges.TEMPERATURE_TENTH_K),
+    CAL_NTC_05("calNtc05", SettingsGroup.CALIBRATION, RegisterSpec(0xD4, false, 0.1, "K"), SettingsGuardRanges.TEMPERATURE_TENTH_K),
+    CAL_NTC_06("calNtc06", SettingsGroup.CALIBRATION, RegisterSpec(0xD5, false, 0.1, "K"), SettingsGuardRanges.TEMPERATURE_TENTH_K),
+    CAL_NTC_07("calNtc07", SettingsGroup.CALIBRATION, RegisterSpec(0xD6, false, 0.1, "K"), SettingsGuardRanges.TEMPERATURE_TENTH_K),
+    CAL_NTC_08("calNtc08", SettingsGroup.CALIBRATION, RegisterSpec(0xD7, false, 0.1, "K"), SettingsGuardRanges.TEMPERATURE_TENTH_K);
 
     init {
         require(bitIndex == null || bitIndex in 0..15) { "Bit index must be in 0..15" }

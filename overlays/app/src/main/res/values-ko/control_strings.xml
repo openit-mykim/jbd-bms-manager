@@ -25,4 +25,5 @@
     <string name="control_diagnostics_section_extension">확장 정보</string>
     <string name="control_diagnostics_empty">진단 정보를 읽으려면 BMS를 연결하세요.</string>
     <string name="control_diagnostics_footer">추가 레지스터 및 프로토콜 수준 진단은 이후 단계에서 확장됩니다.</string>
+    <string name="control_calibration_available">조회·보정</string>
 </resources>
