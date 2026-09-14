@@ -21,13 +21,8 @@ import com.gytxtx.openjbd.history.HistoryMetric
 import com.gytxtx.openjbd.history.HistoryPolicy
 import com.gytxtx.openjbd.history.HistoryRange
 import com.gytxtx.openjbd.history.HistoryStore
-import com.gytxtx.openjbd.history.SqliteHistoryStore
 import com.gytxtx.openjbd.history.valueOf
-import dagger.Binds
-import dagger.Module
-import dagger.hilt.InstallIn
 import dagger.hilt.android.AndroidEntryPoint
-import dagger.hilt.components.SingletonComponent
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
@@ -37,13 +32,6 @@ import java.util.Date
 import java.util.Locale
 import javax.inject.Inject
 import kotlin.math.roundToInt
-
-@Module
-@InstallIn(SingletonComponent::class)
-internal abstract class HistoryStoreBindingModule {
-    @Binds
-    abstract fun bindHistoryStore(store: SqliteHistoryStore): HistoryStore
-}
 
 @AndroidEntryPoint
 class DetailFragment : Fragment() {
