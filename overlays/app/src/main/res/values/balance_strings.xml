@@ -1,9 +1,9 @@
 <resources>
     <string name="empty_cells_connected">The connected BMS has not reported cell voltage data.</string>
     <string name="balance_legend_title">Cell safety bands</string>
-    <string name="balance_legend_highest">● Normal</string>
-    <string name="balance_legend_lowest">● Caution</string>
-    <string name="balance_legend_balancing">● Danger</string>
+    <string name="balance_legend_highest">● Highest voltage</string>
+    <string name="balance_legend_lowest">● Lowest voltage</string>
+    <string name="balance_legend_balancing">● Balancing</string>
     <string name="balance_band_label_normal">Normal</string>
     <string name="balance_band_label_caution">Caution</string>
     <string name="balance_band_label_danger">Danger</string>

@@ -211,22 +211,21 @@ class BalanceFragment : Fragment() {
     }
 
     private fun configureLegend() {
-        val listParent = cellList.parent as? LinearLayout ?: return
-        val cellListIndex = listParent.indexOfChild(cellList)
-        val legendRow = listParent.getChildAt(cellListIndex - 1) as? LinearLayout ?: return
-        val legendItems = listOf(
-            Triple(R.string.balance_band_legend_normal, cellBandNormal, 0),
-            Triple(R.string.balance_band_legend_caution, cellBandCaution, 1),
-            Triple(R.string.balance_band_legend_danger, cellBandDanger, 2)
-        )
-        legendItems.forEach { (textResource, color, index) ->
-            (legendRow.getChildAt(index) as? TextView)?.apply {
-                setText(textResource)
-                setTextColor(color)
-            }
+        // id 기반 탐색: 위치 기반(indexOfChild)은 다른 뷰가 끼어들면 잘못된 뷰를 잡아
+        // 위험 밴드가 안전 색으로 보일 수 있다. 색상은 레이아웃(@color/cell_band_*)이 담당한다.
+        listOf(
+            R.id.txt_balance_legend_normal to R.string.balance_band_legend_normal,
+            R.id.txt_balance_legend_caution to R.string.balance_band_legend_caution,
+            R.id.txt_balance_legend_danger to R.string.balance_band_legend_danger
+        ).forEach { (viewId, textResource) ->
+            view?.findViewById<TextView>(viewId)?.setText(textResource)
         }
 
+        val listParent = cellList.parent as? LinearLayout ?: return
+        if (listParent.findViewWithTag<TextView>(BADGE_LEGEND_TAG) != null) return
+        val cellListIndex = listParent.indexOfChild(cellList)
         val badgeLegend = TextView(requireContext()).apply {
+            tag = BADGE_LEGEND_TAG
             setText(R.string.balance_badge_legend)
             setTextAppearance(R.style.TextAppearance_OpenJbd_Supporting)
             setPadding(0, 0, 0, resources.getDimensionPixelSize(R.dimen.space_8))
@@ -251,5 +250,9 @@ class BalanceFragment : Fragment() {
         placeholder.visibility = View.VISIBLE
         emptyBodyText.setText(if (connected) R.string.empty_cells_connected else R.string.empty_cells)
         cellList.removeAllViews()
+    }
+
+    private companion object {
+        const val BADGE_LEGEND_TAG = "balance_badge_legend"
     }
 }
