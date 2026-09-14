@@ -230,6 +230,7 @@ class BackupFormatTest {
         SettingField.DESIGN_CAPACITY -> 10_000
         SettingField.MOS_CHARGE_DISABLE,
         SettingField.MOS_DISCHARGE_DISABLE -> error("MOS is not part of backup v1")
+        else -> error("Unexpected field outside backup scope: $field")
     }
 
     private fun ConfigurationBackup.withRaw(
