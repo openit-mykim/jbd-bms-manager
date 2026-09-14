@@ -235,6 +235,19 @@ class SettingsDisplayTest {
     }
 
     @Test
+    fun balanceWindowStepValidationMapsToDedicatedLocalizedMessage() {
+        val validation = validateField(SettingField.BAL_WINDOW, 12)
+        val message = SettingsDisplay.validationMessage(
+            SettingField.BAL_WINDOW,
+            validation,
+            ::unit
+        )!!
+
+        assertEquals(R.string.settings_validation_balance_window_step, message.stringResId)
+        assertTrue(message.formatArgs.isEmpty())
+    }
+
+    @Test
     fun validValidationNeedsNoMessageAndFallbackPreservesReason() {
         assertNull(
             SettingsDisplay.validationMessage(

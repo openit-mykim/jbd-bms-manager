@@ -1,6 +1,7 @@
 package com.gytxtx.openjbd.settings
 
 import com.gytxtx.openjbd.maintenance.ValidationResult
+import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
@@ -76,6 +77,45 @@ class SettingsValidationTest {
         )
     }
 
+    @Test
+    fun balanceWindowAcceptsFiveMillivoltStepsAcrossRange() {
+        listOf(5, 10, 15, 20, 1_000).forEach { raw ->
+            assertValid(SettingField.BAL_WINDOW, raw)
+        }
+    }
+
+    @Test
+    fun balanceWindowRejectsValuesOutsideFiveMillivoltStepsWithStepReason() {
+        listOf(6, 12, 17).forEach { raw ->
+            assertInvalidReason(SettingField.BAL_WINDOW, raw, BALANCE_WINDOW_STEP_REASON)
+        }
+    }
+
+    @Test
+    fun balanceWindowRejectsValuesOutsideExistingRangeWithRangeReason() {
+        assertInvalidReasonContains(SettingField.BAL_WINDOW, 4, " is outside ")
+        assertInvalidReasonContains(SettingField.BAL_WINDOW, 1_001, " is outside ")
+    }
+
+    @Test
+    fun balanceWindowDecreaseClampsAtFiveMillivolts() {
+        assertEquals(5, stepBalanceWindow(5, increase = false))
+    }
+
+    @Test
+    fun balanceWindowIncreaseClampsAtOneThousandMillivolts() {
+        assertEquals(1_000, stepBalanceWindow(1_000, increase = true))
+    }
+
+    @Test
+    fun balanceWindowIncreaseAdvancesByFiveMillivolts() {
+        val fifteen = stepBalanceWindow(10, increase = true)
+        val twenty = stepBalanceWindow(fifteen, increase = true)
+
+        assertEquals(15, fifteen)
+        assertEquals(20, twenty)
+    }
+
     private fun assertValid(
         field: SettingField,
         raw: Int,
@@ -90,5 +130,17 @@ class SettingsValidationTest {
         values: Map<SettingField, Int> = emptyMap()
     ) {
         assertTrue(validateField(field, raw, values) is ValidationResult.Invalid)
+    }
+
+    private fun assertInvalidReason(field: SettingField, raw: Int, expectedReason: String) {
+        val result = validateField(field, raw) as ValidationResult.Invalid
+
+        assertEquals(expectedReason, result.reason)
+    }
+
+    private fun assertInvalidReasonContains(field: SettingField, raw: Int, expected: String) {
+        val result = validateField(field, raw) as ValidationResult.Invalid
+
+        assertTrue(result.reason.contains(expected))
     }
 }
