@@ -119,10 +119,10 @@ The repository is in an early executable alpha state. Current work focuses on:
 3. Korean localization.
 4. JBD BMS Manager product identity.
 5. Five-tab information architecture — shell and content in place for this alpha line.
-6. Control/Maintenance settings flow (Read → Edit → Validate → Review → Apply → Read-back verify) for the balance / protection / temperature / capacity sections.
+6. Control/Maintenance flows (Read → Edit/Measure → Validate → Review → Apply → Read-back verify): settings for the balance / protection / temperature / capacity sections, calibration (current / cell voltage / NTC under the three-concept contract), MOS control (charge/discharge FET disable with live state) and backup/restore (JSON export + staged verified restore).
 7. Reproducible APK CI/release packaging.
 
-The next major product work is physical verification of the current alpha and protocol evidence capture on supported hardware. The Control/Maintenance settings flow is implemented; writes are session-gated and commit only when every approved change verifies (with an independent post-commit confirmation read).
+The next major product work is physical verification of the current alpha and protocol evidence capture on supported hardware. All Control/Maintenance flows are implemented; writes are session-gated and commit only when every approved change verifies (with an independent post-commit confirmation read).
 
 See `PROJECT_STATUS.md` and `docs/development-plan.md` for the live execution state.
 
