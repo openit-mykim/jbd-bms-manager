@@ -18,6 +18,12 @@
     <string name="settings_value_unread">읽지 못함</string>
     <string name="settings_value_on">켜짐</string>
     <string name="settings_value_off">꺼짐</string>
+    <string name="settings_unit_mv">mV</string>
+    <string name="settings_unit_volt">V</string>
+    <string name="settings_unit_celsius">°C</string>
+    <string name="settings_unit_amp">A</string>
+    <string name="settings_unit_amp_hour">Ah</string>
+    <string name="settings_boolean_raw_range">0 – 1</string>
     <string name="settings_edit_title">%1$s 수정</string>
     <string name="settings_remove">제거</string>
     <string name="settings_clear_all">전체 취소</string>

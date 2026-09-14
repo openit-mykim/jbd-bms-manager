@@ -9,14 +9,18 @@ import java.util.Locale
 import kotlin.math.abs
 
 sealed interface SettingsDisplayText {
-    data class Literal(val value: String) : SettingsDisplayText
+    data class NumberWithUnit(
+        val number: String,
+        val unitStringResId: Int
+    ) : SettingsDisplayText
+
     data class Resource(val stringResId: Int) : SettingsDisplayText
 }
 
 data class SettingsDisplayValue(
     val text: SettingsDisplayText,
     val inputText: String,
-    val unitSuffix: String?
+    val unitStringResId: Int?
 )
 
 data class SettingsUiMessage(
@@ -105,20 +109,28 @@ object SettingsDisplay {
     }
 
     fun displayValue(field: SettingField, rawValue: Int): SettingsDisplayValue = when {
-        field in cellVoltageFields -> numericValue(rawValue, 0, "mV")
-        field in packVoltageFields -> numericValue(rawValue / 100.0, 2, "V")
+        field in cellVoltageFields -> numericValue(rawValue, 0, R.string.settings_unit_mv)
+        field in packVoltageFields -> numericValue(
+            rawValue / 100.0,
+            2,
+            R.string.settings_unit_volt
+        )
         field in temperatureFields -> {
             val celsius = rawValue / 10.0 - 273.15
-            numericValue(normalizeNearZero(celsius), 1, "°C")
+            numericValue(normalizeNearZero(celsius), 1, R.string.settings_unit_celsius)
         }
-        field in currentFields -> numericValue(rawValue / 100.0, 1, "A")
-        field == SettingField.DESIGN_CAPACITY -> numericValue(rawValue / 100.0, 1, "Ah")
+        field in currentFields -> numericValue(rawValue / 100.0, 1, R.string.settings_unit_amp)
+        field == SettingField.DESIGN_CAPACITY -> numericValue(
+            rawValue / 100.0,
+            1,
+            R.string.settings_unit_amp_hour
+        )
         field in bitFields -> SettingsDisplayValue(
             text = SettingsDisplayText.Resource(
                 if (rawValue == 1) R.string.settings_value_on else R.string.settings_value_off
             ),
             inputText = rawValue.toString(),
-            unitSuffix = null
+            unitStringResId = null
         )
         else -> error("Unsupported settings field: $field")
     }
@@ -206,7 +218,11 @@ object SettingsDisplay {
         SettingsReadOnlyNotice.BLOCKED -> R.string.settings_notice_blocked
     }
 
-    fun validationMessage(field: SettingField, result: ValidationResult): SettingsUiMessage? {
+    fun validationMessage(
+        field: SettingField,
+        result: ValidationResult,
+        stringResolver: (Int) -> String
+    ): SettingsUiMessage? {
         if (result is ValidationResult.Valid) return null
         val reason = (result as ValidationResult.Invalid).reason
         val relationString = when (reason) {
@@ -222,7 +238,7 @@ object SettingsDisplay {
         if (reason.contains(" is outside ")) {
             return SettingsUiMessage(
                 R.string.settings_validation_range,
-                listOf(displayRange(field))
+                listOf(displayRange(field, stringResolver))
             )
         }
         return SettingsUiMessage(R.string.settings_validation_fallback, listOf(reason))
@@ -272,12 +288,16 @@ object SettingsDisplay {
         is RegisterAccessError.Malformed -> R.string.settings_detail_malformed_response
     }
 
-    private fun numericValue(value: Number, decimals: Int, unit: String): SettingsDisplayValue {
+    private fun numericValue(
+        value: Number,
+        decimals: Int,
+        unitStringResId: Int
+    ): SettingsDisplayValue {
         val formatted = formatNumber(value.toDouble(), decimals)
         return SettingsDisplayValue(
-            SettingsDisplayText.Literal("$formatted $unit"),
+            SettingsDisplayText.NumberWithUnit(formatted, unitStringResId),
             formatted.replace(",", ""),
-            unit
+            unitStringResId
         )
     }
 
@@ -286,15 +306,16 @@ object SettingsDisplay {
         rawValue: Int,
         stringResolver: (Int) -> String
     ): String = when (val text = displayValue(field, rawValue).text) {
-        is SettingsDisplayText.Literal -> text.value
+        is SettingsDisplayText.NumberWithUnit ->
+            text.number + " " + stringResolver(text.unitStringResId)
         is SettingsDisplayText.Resource -> stringResolver(text.stringResId)
     }
 
-    private fun displayRange(field: SettingField): String {
-        if (field in bitFields) return "0 – 1"
-        val min = displayValue(field, field.range.minRaw).text as SettingsDisplayText.Literal
-        val max = displayValue(field, field.range.maxRaw).text as SettingsDisplayText.Literal
-        return "${min.value} – ${max.value}"
+    private fun displayRange(field: SettingField, stringResolver: (Int) -> String): String {
+        if (field in bitFields) return stringResolver(R.string.settings_boolean_raw_range)
+        val min = resolvedValue(field, field.range.minRaw, stringResolver)
+        val max = resolvedValue(field, field.range.maxRaw, stringResolver)
+        return "$min – $max"
     }
 
     private fun formatNumber(value: Double, decimals: Int): String {

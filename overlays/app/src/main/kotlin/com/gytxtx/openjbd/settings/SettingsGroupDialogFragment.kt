@@ -295,7 +295,7 @@ class SettingsGroupDialogFragment : DialogFragment() {
             input.inputType = InputType.TYPE_CLASS_NUMBER or
                 InputType.TYPE_NUMBER_FLAG_DECIMAL or InputType.TYPE_NUMBER_FLAG_SIGNED
             input.setText(display.inputText)
-            inputLayout.suffixText = display.unitSuffix
+            inputLayout.suffixText = display.unitStringResId?.let(::getString)
         }
 
         val dialog = MaterialAlertDialogBuilder(requireContext())
@@ -330,7 +330,11 @@ class SettingsGroupDialogFragment : DialogFragment() {
                 val mergedValues = section.values.mapValues { it.value.raw } +
                     stagedValues + (field to candidateRaw)
                 val validation = validateField(field, candidateRaw, mergedValues)
-                val validationMessage = SettingsDisplay.validationMessage(field, validation)
+                val validationMessage = SettingsDisplay.validationMessage(
+                    field,
+                    validation,
+                    ::getString
+                )
                 if (validationMessage != null) {
                     inputLayout.visibility = View.VISIBLE
                     inputLayout.error = resolveMessage(validationMessage)
@@ -442,7 +446,8 @@ class SettingsGroupDialogFragment : DialogFragment() {
             is WriteSessionOutcome.ValidationFailed -> outcome.failures.forEach { failure ->
                 val mapped = SettingsDisplay.validationMessage(
                     failure.change.field,
-                    ValidationResult.Invalid(failure.reason)
+                    ValidationResult.Invalid(failure.reason),
+                    ::getString
                 ) ?: SettingsUiMessage(R.string.settings_validation_fallback, listOf(failure.reason))
                 addResultLine(
                     getString(
@@ -531,7 +536,8 @@ class SettingsGroupDialogFragment : DialogFragment() {
     }
 
     private fun resolveDisplay(value: SettingsDisplayValue): String = when (val text = value.text) {
-        is SettingsDisplayText.Literal -> text.value
+        is SettingsDisplayText.NumberWithUnit ->
+            text.number + " " + getString(text.unitStringResId)
         is SettingsDisplayText.Resource -> getString(text.stringResId)
     }
 

@@ -92,7 +92,13 @@ class SettingsDisplayTest {
             SettingField.COVP,
             4_250,
             4_200
-        ) { id -> if (id == R.string.settings_field_covp) "셀 과전압 보호" else "?" }
+        ) { id ->
+            when (id) {
+                R.string.settings_field_covp -> "셀 과전압 보호"
+                R.string.settings_unit_mv -> "mV"
+                else -> "?"
+            }
+        }
 
         assertEquals("셀 과전압 보호 4,250 mV → 4,200 mV", summary)
     }
@@ -201,7 +207,11 @@ class SettingsDisplayTest {
     @Test
     fun rangeValidationMapsToLocalizedMessageWithDisplayRange() {
         val validation = validateField(SettingField.COVP, 4_501)
-        val message = SettingsDisplay.validationMessage(SettingField.COVP, validation)!!
+        val message = SettingsDisplay.validationMessage(
+            SettingField.COVP,
+            validation,
+            ::unit
+        )!!
 
         assertEquals(R.string.settings_validation_range, message.stringResId)
         assertEquals(listOf("2,000 mV – 4,500 mV"), message.formatArgs)
@@ -214,7 +224,11 @@ class SettingsDisplayTest {
             4_300,
             mapOf(SettingField.COVP to 4_250)
         )
-        val message = SettingsDisplay.validationMessage(SettingField.COVP_RELEASE, validation)!!
+        val message = SettingsDisplay.validationMessage(
+            SettingField.COVP_RELEASE,
+            validation,
+            ::unit
+        )!!
 
         assertEquals(R.string.settings_validation_covp_relation, message.stringResId)
         assertTrue(message.formatArgs.isEmpty())
@@ -225,12 +239,14 @@ class SettingsDisplayTest {
         assertNull(
             SettingsDisplay.validationMessage(
                 SettingField.COVP,
-                ValidationResult.Valid
+                ValidationResult.Valid,
+                ::unit
             )
         )
         val fallback = SettingsDisplay.validationMessage(
             SettingField.COVP,
-            ValidationResult.Invalid("unexpected validation")
+            ValidationResult.Invalid("unexpected validation"),
+            ::unit
         )!!
         assertEquals(R.string.settings_validation_fallback, fallback.stringResId)
         assertEquals(listOf("unexpected validation"), fallback.formatArgs)
@@ -254,6 +270,18 @@ class SettingsDisplayTest {
         )
     }
 
-    private fun literal(field: SettingField, raw: Int): String =
-        (SettingsDisplay.displayValue(field, raw).text as SettingsDisplayText.Literal).value
+    private fun literal(field: SettingField, raw: Int): String {
+        val text = SettingsDisplay.displayValue(field, raw).text as
+            SettingsDisplayText.NumberWithUnit
+        return "${text.number} ${unit(text.unitStringResId)}"
+    }
+
+    private fun unit(stringResId: Int): String = when (stringResId) {
+        R.string.settings_unit_mv -> "mV"
+        R.string.settings_unit_volt -> "V"
+        R.string.settings_unit_celsius -> "°C"
+        R.string.settings_unit_amp -> "A"
+        R.string.settings_unit_amp_hour -> "Ah"
+        else -> error("Unexpected unit resource: $stringResId")
+    }
 }
