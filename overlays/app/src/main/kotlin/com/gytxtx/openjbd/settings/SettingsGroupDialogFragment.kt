@@ -265,8 +265,17 @@ class SettingsGroupDialogFragment : DialogFragment() {
             label.setText(SettingsDisplay.fieldLabelResId(field))
 
             val fieldValue = section.values[field]
-            value.text = fieldValue?.let { resolveDisplay(SettingsDisplay.displayValue(field, it.raw)) }
-                ?: getString(R.string.settings_value_unread)
+            val resolvedValue = fieldValue?.let {
+                resolveDisplay(SettingsDisplay.displayValue(field, it.raw))
+            }
+            value.text = when {
+                resolvedValue == null -> getString(R.string.settings_value_unread)
+                field == SettingField.BAL_WINDOW -> getString(
+                    R.string.settings_balance_window_row_value,
+                    resolvedValue
+                )
+                else -> resolvedValue
+            }
             val registerError = section.registerErrors[field.register.address]
             error.visibility = if (registerError == null) View.GONE else View.VISIBLE
             if (registerError != null) error.text = registerErrorText(registerError)
@@ -298,11 +307,20 @@ class SettingsGroupDialogFragment : DialogFragment() {
         val inputLayout = content.findViewById<TextInputLayout>(R.id.settings_edit_input_layout)
         val input = content.findViewById<TextInputEditText>(R.id.settings_edit_input)
         val toggle = content.findViewById<SwitchMaterial>(R.id.settings_edit_toggle)
+        val balanceControls = content.findViewById<View>(R.id.settings_edit_balance_controls)
+        val decreaseButton = content.findViewById<MaterialButton>(R.id.settings_balance_decrease)
+        val increaseButton = content.findViewById<MaterialButton>(R.id.settings_balance_increase)
+        val preset5Button = content.findViewById<MaterialButton>(R.id.settings_balance_preset_5)
+        val preset10Button = content.findViewById<MaterialButton>(R.id.settings_balance_preset_10)
+        val preset15Button = content.findViewById<MaterialButton>(R.id.settings_balance_preset_15)
+        val preset20Button = content.findViewById<MaterialButton>(R.id.settings_balance_preset_20)
         val display = SettingsDisplay.displayValue(field, stagedValues[field] ?: currentRaw)
         val isBit = field.bitIndex != null
+        val isBalanceWindow = field == SettingField.BAL_WINDOW
 
         inputLayout.visibility = if (isBit) View.GONE else View.VISIBLE
         toggle.visibility = if (isBit) View.VISIBLE else View.GONE
+        balanceControls.visibility = if (isBalanceWindow) View.VISIBLE else View.GONE
         if (isBit) {
             toggle.isChecked = (stagedValues[field] ?: currentRaw) == 1
             toggle.setText(
@@ -322,6 +340,53 @@ class SettingsGroupDialogFragment : DialogFragment() {
                 InputType.TYPE_NUMBER_FLAG_DECIMAL or InputType.TYPE_NUMBER_FLAG_SIGNED
             input.setText(display.inputText)
             inputLayout.suffixText = display.unitStringResId?.let(::getString)
+        }
+
+        if (isBalanceWindow) {
+            fun setBalanceWindowInput(rawValue: Int) {
+                input.setText(SettingsDisplay.displayValue(field, rawValue).inputText)
+                input.setSelection(input.text?.length ?: 0)
+                inputLayout.error = null
+            }
+
+            fun validatedBalanceWindowInput(): Int? {
+                val parsed = SettingsDisplay.parseInput(field, input.text?.toString().orEmpty())
+                if (parsed is SettingsInputResult.Invalid) {
+                    inputLayout.error = resolveMessage(parsed.message)
+                    return null
+                }
+                val rawValue = (parsed as SettingsInputResult.Valid).rawValue
+                val message = SettingsDisplay.validationMessage(
+                    field,
+                    validateField(field, rawValue),
+                    ::getString
+                )
+                if (message != null) {
+                    inputLayout.error = resolveMessage(message)
+                    return null
+                }
+                inputLayout.error = null
+                return rawValue
+            }
+
+            decreaseButton.setOnClickListener {
+                validatedBalanceWindowInput()?.let { rawValue ->
+                    setBalanceWindowInput(stepBalanceWindow(rawValue, increase = false))
+                }
+            }
+            increaseButton.setOnClickListener {
+                validatedBalanceWindowInput()?.let { rawValue ->
+                    setBalanceWindowInput(stepBalanceWindow(rawValue, increase = true))
+                }
+            }
+            listOf(
+                preset5Button to 5,
+                preset10Button to 10,
+                preset15Button to 15,
+                preset20Button to 20
+            ).forEach { (button, rawValue) ->
+                button.setOnClickListener { setBalanceWindowInput(rawValue) }
+            }
         }
 
         val dialog = MaterialAlertDialogBuilder(requireContext())

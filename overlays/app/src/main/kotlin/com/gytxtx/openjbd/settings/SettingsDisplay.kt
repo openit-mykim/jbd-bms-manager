@@ -292,6 +292,7 @@ object SettingsDisplay {
             "puvpRelease must be higher than puvp" -> R.string.settings_validation_puvp_relation
             "chgOvercurrent must be positive" -> R.string.settings_validation_charge_current_positive
             "dsgOvercurrent must be negative" -> R.string.settings_validation_discharge_current_negative
+            BALANCE_WINDOW_STEP_REASON -> R.string.settings_validation_balance_window_step
             else -> null
         }
         if (relationString != null) return SettingsUiMessage(relationString)
