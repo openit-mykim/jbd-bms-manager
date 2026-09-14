@@ -1,0 +1,6 @@
+<resources>
+    <!-- Intentionally shared with the cell safety bands for one app-wide color language. -->
+    <color name="soc_band_normal">#2E7D32</color>
+    <color name="soc_band_caution">#EF6C00</color>
+    <color name="soc_band_danger">#C62828</color>
+</resources>

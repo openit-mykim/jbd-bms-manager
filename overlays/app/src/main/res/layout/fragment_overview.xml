@@ -170,8 +170,23 @@
                         android:layout_height="8dp"
                         android:max="100"
                         android:progress="0"
-                        app:indicatorColor="@color/accent"
+                        app:indicatorColor="@color/progress_track"
                         app:trackColor="@color/progress_track" />
+
+                    <TextView
+                        android:id="@+id/txt_soc_band"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:paddingTop="@dimen/space_8"
+                        android:text="@string/soc_band_unknown"
+                        android:textAppearance="@style/TextAppearance.OpenJbd.Supporting" />
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:paddingTop="@dimen/space_4"
+                        android:text="@string/soc_band_note"
+                        android:textAppearance="@style/TextAppearance.OpenJbd.Supporting" />
 
                     <TextView
                         android:id="@+id/txt_soc_note"

@@ -1,0 +1,7 @@
+<resources>
+    <string name="soc_band_normal">Charge level OK</string>
+    <string name="soc_band_caution">Charge recommended</string>
+    <string name="soc_band_danger">Charge now</string>
+    <string name="soc_band_unknown">—</string>
+    <string name="soc_band_note">SOC bands are app guidance only, not BMS protection behavior.</string>
+</resources>
