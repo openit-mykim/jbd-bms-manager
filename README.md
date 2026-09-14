@@ -120,7 +120,8 @@ The repository is in an early executable alpha state. Current work focuses on:
 4. JBD BMS Manager product identity.
 5. Five-tab information architecture — shell and content in place for this alpha line.
 6. Control/Maintenance flows (Read → Edit/Measure → Validate → Review → Apply → Read-back verify): settings for the balance / protection / temperature / capacity sections, calibration (current / cell voltage / NTC under the three-concept contract), MOS control (charge/discharge FET disable with live state) and backup/restore (JSON export + staged verified restore).
-7. Reproducible APK CI/release packaging.
+7. Balance diagnostics: 5 mV-step balance delta control, per-cell safety bands (measured or explicitly-defaulted thresholds) and V+mV readouts with text badges for highest/lowest/balancing.
+8. Reproducible APK CI/release packaging.
 
 The next major product work is physical verification of the current alpha and protocol evidence capture on supported hardware. All Control/Maintenance flows are implemented; writes are session-gated and commit only when every approved change verifies (with an independent post-commit confirmation read).
 

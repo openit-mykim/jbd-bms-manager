@@ -80,6 +80,14 @@ Run conservatively; calibration needs a reliable reference instrument (clamp met
 3. MOS 제어: only when interrupting charge/discharge is safe — confirm the live state, toggle one FET, verify read-back and the resulting device behavior, then restore the original state.
 4. 백업 및 복원: export a backup, change one value manually, restore from the file, review the diff list, apply and confirm staged verification; confirm the restored value persists after reconnect (`PERSISTENCE_VERIFIED` where applicable).
 
+## Balance diagnostics verification (alpha.10+)
+
+1. **Band source**: read the protection section (공장 모드) so cell OV/UV limits are known, then confirm each cell's band color matches those limits. Re-lock or disconnect and confirm the summary switches to the "default reference (NMC)" label — defaults must never be presented as measured limits.
+2. **Badge separation**: confirm highest / lowest / balancing appear as text badges (balancing wins when both apply) and that the bar color reflects only the safety band.
+3. **V + mV readouts**: each row shows the same value in both units (e.g. `3.438 V` and `3438 mV`).
+4. **Balance delta steps**: in 밸런스 설정 → 밸런스 델타, use the −5 / +5 buttons and the 5 / 10 / 15 / 20 mV presets, then apply 5 mV and 15 mV. Record whether the BMS stores the value unchanged or rounds it (read-back result), and record `PERSISTENCE_VERIFIED` after reconnecting.
+5. Any mismatch in step behaviour (e.g. a non-5 mV value being stored) is a defect — capture the result screen before retrying.
+
 ## Protocol evidence capture (before implementing writable fields)
 
 Read-only only. Capture evidence before any writable field is implemented and before the compatibility table is extended.
