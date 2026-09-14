@@ -22,8 +22,8 @@ concurrency:
 env:
   UPSTREAM_REPO: gytxtx/OpenJBD
   UPSTREAM_COMMIT: 7e3e225a128f6e0d69425b98a2670d8d69594885
-  RELEASE_TAG: v0.1.0-alpha.7
-  APK_NAME: jbd-bms-manager-v0.1.0-alpha.7.apk
+  RELEASE_TAG: v0.1.0-alpha.8
+  APK_NAME: jbd-bms-manager-v0.1.0-alpha.8.apk
 
 jobs:
   build:
@@ -58,6 +58,7 @@ jobs:
           python3 manager/scripts/apply-alpha5.py upstream-src
           python3 manager/scripts/apply-alpha6.py upstream-src
           python3 manager/scripts/apply-alpha7.py upstream-src
+          python3 manager/scripts/apply-alpha8.py upstream-src
 
       - name: Grant Gradle wrapper permission
         run: chmod +x upstream-src/gradlew
@@ -90,18 +91,20 @@ jobs:
         if: github.ref == 'refs/heads/main'
         run: |
           cat > release-notes.md <<'EOF'
-          ## JBD BMS Manager v0.1.0-alpha.7
+          ## JBD BMS Manager v0.1.0-alpha.8
 
-          유지보수 모드 프레임워크(Phase 3)와 읽기 전용 진단 패널을 추가한 테스트 빌드입니다.
+          BMS 설정 조회·수정·쓰기·재검증 흐름을 추가한 테스트 빌드입니다.
 
           ### 변경 내용
-          - 유지보수 쓰기 트랜잭션 프레임워크 추가: 읽기→검증→비교→적용→재읽기→확인 순서, 결과 모델 8종, capability 모델(검증 전 기본 읽기 전용), 감사 기록 — 단위 테스트 24건 포함
-          - 제어 탭 진단 패널: 잠금 해제 후 연결 상태·펌웨어/디바이스·확장 정보·갱신 시각을 확인하는 읽기 전용 화면 (진단 행만 활성화, 나머지 7개 항목은 준비 중 유지)
-          - 물리 검증 절차 문서 보강 (docs/device-validation.md)
+          - 밸런스 읽기 화면 완성: 밸런스 전류(지원 기기), 밸런싱 셀 수, 색상 범례, 빈 상태 구분 보강
+          - 설정 접근 프로토콜 계층: EEPROM 레지스터 읽기(0xA5)/쓰기(0x5A) 프레임, 팩토리 세션(진입·종료·커밋), 23개 설정 필드 모델·범위 검증 — 단위 테스트 포함
+          - 유지보수 세션 강화: 응답 유실에만 제한 재시도, 커밋은 전 항목 재검증 성공 시에만, 커밋 후 독립 재확인 읽기, 예외 안전 종료
+          - BLE 연결 통합: 세션 중 주기 폴링 일시정지, 설정 명령 큐·명령별 타임아웃·실패 사유 구분
+          - 제어 탭 설정 UI: 밸런스/보호/온도/용량 4개 섹션에서 현재 값 조회 → 수정 → 변경 검토 → 적용 → 재검증 결과 확인 (칼리브레이션·MOS·백업/복원은 준비 중 유지)
 
           ### 현재 제한
-          - 쓰기·보정 기능은 아직 사용자 UI에 노출되지 않습니다(검증된 프로토콜 확인 후 단계적 제공).
-          - 진단 패널은 레지스터·프로토콜 수준 진단을 아직 포함하지 않습니다(이후 단계).
+          - 실제 BMS에서의 설정 쓰기는 아직 물리 검증 전입니다(테스트 빌드). 결과 화면의 검증·커밋·재확인 상태를 반드시 확인하세요.
+          - 커밋 시 BMS 오류 카운터가 초기화됩니다(설계 반영).
           - debug key로 서명된 알파 테스트 빌드입니다.
           - JBD / Jiabaida의 공식 앱이 아닙니다.
           EOF
@@ -117,7 +120,7 @@ jobs:
           else
             gh release create "${RELEASE_TAG}" "dist/${APK_NAME}" "dist/${APK_NAME}.sha256" \
               --target "${GITHUB_SHA}" \
-              --title "JBD BMS Manager v0.1.0-alpha.7" \
+              --title "JBD BMS Manager v0.1.0-alpha.8" \
               --notes-file release-notes.md \
               --prerelease \
               --repo "${GITHUB_REPOSITORY}"
