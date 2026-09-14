@@ -22,8 +22,8 @@ concurrency:
 env:
   UPSTREAM_REPO: gytxtx/OpenJBD
   UPSTREAM_COMMIT: 7e3e225a128f6e0d69425b98a2670d8d69594885
-  RELEASE_TAG: v0.1.0-alpha.10
-  APK_NAME: jbd-bms-manager-v0.1.0-alpha.10.apk
+  RELEASE_TAG: v0.1.0-alpha.11
+  APK_NAME: jbd-bms-manager-v0.1.0-alpha.11.apk
 
 jobs:
   build:
@@ -61,6 +61,7 @@ jobs:
           python3 manager/scripts/apply-alpha8.py upstream-src
           python3 manager/scripts/apply-alpha9.py upstream-src
           python3 manager/scripts/apply-alpha10.py upstream-src
+          python3 manager/scripts/apply-alpha11.py upstream-src
 
       - name: Grant Gradle wrapper permission
         run: chmod +x upstream-src/gradlew
@@ -93,20 +94,20 @@ jobs:
         if: github.ref == 'refs/heads/main'
         run: |
           cat > release-notes.md <<'EOF'
-          ## JBD BMS Manager v0.1.0-alpha.10
+          ## JBD BMS Manager v0.1.0-alpha.11
 
-          밸런스 진단을 강화한 테스트 빌드입니다. 밸런스 정확도를 5 mV 단위로 조절할 수 있고, 셀별 안전 상태를 색상 밴드와 mV로 확인할 수 있습니다.
+          시각화 라운드(밸런스 밴드·SOC 게이지·이력 차트)를 담은 테스트 빌드입니다.
 
           ### 변경 내용
-          - 밸런스 델타 5 mV 단위 조절: −5/+5 스텝 버튼과 5 / 10 / 15 / 20 mV 프리셋(10 mV 권장). 5 mV 배수가 아니면 적용되지 않습니다(최소 5 mV ~ 최대 1000 mV)
-          - 셀 안전 밴드 색상: 정상 / 주의 / 위험 3단계 — 제어 탭에서 읽은 실제 보호 임계값(셀 과전압·저전압) 기준이며, 읽지 못한 경우 NMC 기본 기준(4.25 V / 2.8 V)과 함께 "기본 기준" 표시를 노출합니다
-          - 셀별 mV 병기: 각 셀에 `3.438 V` 와 `3438 mV` 를 함께 표시
-          - 최고 / 최저 / 밸런싱 표시를 문자 배지로 분리(색상은 안전 밴드 전용으로 정리)
+          - 개요 SOC 게이지: 3단계 색상 밴드(10% 이하 즉시 충전 / 25% 이하 충전 권장 / 그 외 충분)와 잔량 상태 문구. 값이 없거나 미연결이면 중립 표시이며, 게이지 기본 색상도 중립이라 렌더 실패 시 안심 색으로 보이지 않습니다
+          - 이력 추세 차트(상세 탭): 최근 24시간 / 7일 범위와 SOC / 팩 전압 / 셀 편차 지표 선택, 최소·평균·최대 요약. 로컬 이력만 조회하므로 BLE 미연결이어도 표시됩니다
+          - 이력 기록: 연결 중 10초마다 자동 저장, 기기 로컬 저장, 7일 뒤 자동 삭제. BMS 통신을 추가로 발생시키지 않습니다
+          - 밸런스 진단(alpha.10 포함): 5 mV 단위 밸런스 델타, 셀 안전 밴드 색상, 셀별 V+mV 표시
 
           ### 현재 제한
-          - 실기기에서의 밸런스 값 쓰기와 색상·배치 가독성은 아직 물리 검증 전입니다(테스트 빌드). 결과 화면의 검증·커밋·재확인 상태를 반드시 확인하세요.
-          - BMS가 밸런스 델타를 내부 단위로 반올림할 수 있습니다. 적용 후 재읽기 검증으로 실제 저장값을 확인하세요.
-          - 안전 밴드 색상은 참고 표시이며 BMS 보호 동작을 보장하지 않습니다.
+          - 실기기에서의 시각적 확인(색상·배치·다크 테마·차트 가독성)은 아직 물리 검증 전입니다.
+          - 안전 밴드와 SOC 밴드는 앱 참고 표시이며 BMS 보호 동작을 보장하지 않습니다.
+          - 이력은 앱을 실행한 동안에만 기록됩니다(백그라운드 상시 기록 아님).
           - 커밋 시 BMS 오류 카운터가 초기화됩니다(설계 반영).
           - debug key로 서명된 알파 테스트 빌드입니다.
           - JBD / Jiabaida의 공식 앱이 아닙니다.
@@ -123,7 +124,7 @@ jobs:
           else
             gh release create "${RELEASE_TAG}" "dist/${APK_NAME}" "dist/${APK_NAME}.sha256" \
               --target "${GITHUB_SHA}" \
-              --title "JBD BMS Manager v0.1.0-alpha.10" \
+              --title "JBD BMS Manager v0.1.0-alpha.11" \
               --notes-file release-notes.md \
               --prerelease \
               --repo "${GITHUB_REPOSITORY}"

@@ -6,9 +6,9 @@ Last updated: 2026-09-14
 
 **Maintenance sections complete — settings, calibration, MOS control and backup/restore are implemented with verified-write flows under Control**
 
-Current distributable line: `v0.1.0-alpha.x` (latest: `v0.1.0-alpha.10`).
+Current distributable line: `v0.1.0-alpha.x` (latest: `v0.1.0-alpha.11`).
 
-The repository has a reproducible GitHub Actions build that checks out the pinned OpenJBD baseline, applies the JBD BMS Manager overlay, runs unit tests (231 test cases in the materialized tree), builds the APK and publishes a GitHub prerelease.
+The repository has a reproducible GitHub Actions build that checks out the pinned OpenJBD baseline, applies the JBD BMS Manager overlay, runs unit tests (275 test cases in the materialized tree), builds the APK and publishes a GitHub prerelease.
 
 ## Current product decisions
 
@@ -22,7 +22,7 @@ Overview / Detail / Balance / Control / Settings
 Responsibilities:
 
 - Overview: compact battery-state summary. The full per-cell list was moved to Balance; the min/max/delta/average stats grid is retained for quick judgment.
-- Detail: user-oriented read-only detail page (capacities, cycles, device identity, detailed status, last-refresh timestamp). Raw/technician fields stay out of Detail.
+- Detail: user-oriented read-only detail page (capacities, cycles, device identity, detailed status, last-refresh timestamp). Raw/technician fields stay out of Detail. A local history trend chart (24 h / 7 days, SOC / pack voltage / cell delta) reads the on-device sample store, so it renders even while disconnected.
 - Balance: read-oriented cell diagnostic surface — every cell-group voltage (V + mV), min/max/average/delta, absolute-threshold safety bands (normal / caution / danger, sourced from the measured protection limits or an NMC default with an explicit "default reference" label), highest/lowest/balancing shown as text badges, active-balancing count, balance current (supported devices) and a band legend.
 - Control: locked-by-default Maintenance Mode shell — explicit unlock acknowledgement, target-BMS identity block, a read-only diagnostics panel, and all maintenance sections interactive: configuration sections (밸런스 설정 / 보호 설정 / 온도 설정 / 용량 관리) with 조회 → 수정 → 확인 → 적용 → Read-back verify; 캘리브레이션 (전류·셀 전압·NTC 보정, three-concept contract: BMS reading / external reference / resulting operation); MOS 제어 (충·방전 FET 차단/허용 with live conducting state); 백업 및 복원 (JSON export + staged, verified restore). Sessions keep the write path capability-gated: unknown variants default to read-only, and a session commits only when every approved change verifies.
 - Settings: application preferences only (verified — no maintenance entry points).
@@ -42,10 +42,12 @@ The shared inset layer covers the main toolbar plus the device-list, about and l
 
 ## Immediate next action
 
-1. Install `v0.1.0-alpha.10` on the physical Android 16 phone and verify:
+1. Install `v0.1.0-alpha.11` on the physical Android 16 phone and verify:
    - five-tab navigation renders correctly (개요/상세/밸런스/제어/설정),
    - Balance screen: cell diagnostics plus balance current / active-balancing count / legend — confirm each cell shows both V and mV, that band colors match the connected protection limits (or show the "default reference" label when limits were not read), and that highest/lowest/balancing appear as text badges rather than colors,
    - Balance delta: apply 5 / 15 / 20 mV from the presets and confirm the value is accepted and stored (record the rounding the BMS actually applies),
+   - Overview SOC gauge: confirm the band colour and text match the reported SOC, and that a disconnected / no-data state shows the neutral text rather than a charge warning,
+   - Detail history chart: after the app has been open for a few minutes, confirm samples appear for all three metrics; switching 24h / 7d and the metric buttons updates the chart without blocking the UI; confirm the chart still renders with the BMS disconnected and that the empty state appears before any samples exist,
    - Detail page content and empty states,
    - Control lock → unlock → re-lock flow and the read-only diagnostics panel (진단),
    - Control settings sections (밸런스/보호/온도/용량): 조회 succeeds (공장 모드 or 직접 읽기 per device), a small safe edit stages and reviews old → new, apply shows per-change verification + commit state + post-commit confirmation,
@@ -85,10 +87,14 @@ The shared inset layer covers the main toolbar plus the device-list, about and l
 - [x] Backup / restore implemented with tests (JSON export + staged verified restore; physical validation pending)
 - [x] Balance delta 5 mV step controls implemented with tests (presets, step clamp, step-multiple validation)
 - [x] Cell safety band display implemented with tests (measured/default thresholds, badge separation of highest/lowest/balancing)
+- [x] Overview SOC gauge implemented with tests (3-level band, neutral no-data state)
+- [x] History data layer implemented with tests (10 s sampling, 7-day retention, no extra BLE reads)
+- [x] History trend chart implemented with tests (2 ranges x 3 metrics, Canvas view, 120-bucket downsample)
 - [x] Settings limited to application preferences
 - [ ] Physical BMS monitor validation completed
 - [ ] Physical settings write validation completed (records `PERSISTENCE_VERIFIED` where applicable)
 - [ ] Physical balance delta write validation completed (observed rounding recorded)
+- [ ] Physical visualization validation completed (band colors, contrast in both themes, chart readability, screen-reader pass)
 - [ ] Physical calibration validation completed (reference instruments; current-scale precision)
 - [ ] Production signing / release policy finalized
 - [ ] Full OpenJBD source/history imported into this repository

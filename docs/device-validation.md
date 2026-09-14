@@ -88,6 +88,16 @@ Run conservatively; calibration needs a reliable reference instrument (clamp met
 4. **Balance delta steps**: in 밸런스 설정 → 밸런스 델타, use the −5 / +5 buttons and the 5 / 10 / 15 / 20 mV presets, then apply 5 mV and 15 mV. Record whether the BMS stores the value unchanged or rounds it (read-back result), and record `PERSISTENCE_VERIFIED` after reconnecting.
 5. Any mismatch in step behaviour (e.g. a non-5 mV value being stored) is a defect — capture the result screen before retrying.
 
+## Visualization verification (alpha.11+)
+
+Local history and band displays only — no BMS writes are involved, so these can be checked without unlocking Maintenance Mode.
+
+1. **SOC gauge**: confirm the band colour and status text match the reported SOC (danger ≤ 10 %, caution ≤ 25 %). Disconnect and confirm the gauge returns to the neutral colour and neutral text — a missing value must never read as a charge warning.
+2. **History chart**: leave the app open and connected for a few minutes, then confirm samples appear for SOC, pack voltage and cell delta. Switch 24h / 7d and each metric button; the chart must update without stalling the UI.
+3. **Disconnected history**: disconnect the BMS and reopen the Detail tab — the chart must still render the stored samples (it reads local storage only).
+4. **Empty state**: on a fresh install (no samples yet) confirm the neutral empty message appears and the chart area is blank — not an error.
+5. **Retention**: confirm the note stating local-only storage and 7-day automatic deletion is visible to the user.
+
 ## Protocol evidence capture (before implementing writable fields)
 
 Read-only only. Capture evidence before any writable field is implemented and before the compatibility table is extended.
