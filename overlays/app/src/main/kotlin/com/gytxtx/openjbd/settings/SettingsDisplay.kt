@@ -74,6 +74,10 @@ object SettingsDisplay {
         SettingField.BALANCE_ENABLE,
         SettingField.CHARGE_BALANCE_ENABLE
     )
+    private val mosBitFields = setOf(
+        SettingField.MOS_CHARGE_DISABLE,
+        SettingField.MOS_DISCHARGE_DISABLE
+    )
 
     fun fieldLabelResId(field: SettingField): Int = when (field) {
         SettingField.BAL_START -> R.string.settings_field_bal_start
@@ -99,6 +103,8 @@ object SettingsDisplay {
         SettingField.DSG_UNDER_TEMP -> R.string.settings_field_dsg_under_temp
         SettingField.DSG_UNDER_TEMP_RELEASE -> R.string.settings_field_dsg_under_temp_release
         SettingField.DESIGN_CAPACITY -> R.string.settings_field_design_capacity
+        SettingField.MOS_CHARGE_DISABLE -> R.string.settings_field_mos_charge_disable
+        SettingField.MOS_DISCHARGE_DISABLE -> R.string.settings_field_mos_discharge_disable
     }
 
     fun groupTitleResId(group: SettingsGroup): Int = when (group) {
@@ -106,6 +112,7 @@ object SettingsDisplay {
         SettingsGroup.PROTECTION -> R.string.control_section_protection
         SettingsGroup.TEMPERATURE -> R.string.control_section_temperature
         SettingsGroup.CAPACITY -> R.string.control_section_capacity
+        SettingsGroup.MOS -> R.string.control_section_mos
     }
 
     fun displayValue(field: SettingField, rawValue: Int): SettingsDisplayValue = when {
@@ -125,6 +132,11 @@ object SettingsDisplay {
             1,
             R.string.settings_unit_amp_hour
         )
+        field in mosBitFields -> SettingsDisplayValue(
+            text = SettingsDisplayText.Resource(toggleValueLabelResId(field, rawValue)),
+            inputText = rawValue.toString(),
+            unitStringResId = null
+        )
         field in bitFields -> SettingsDisplayValue(
             text = SettingsDisplayText.Resource(
                 if (rawValue == 1) R.string.settings_value_on else R.string.settings_value_off
@@ -136,7 +148,7 @@ object SettingsDisplay {
     }
 
     fun parseInput(field: SettingField, input: String): SettingsInputResult {
-        if (field in bitFields) {
+        if (field in bitFields || field in mosBitFields) {
             return SettingsInputResult.Invalid(SettingsUiMessage(R.string.settings_validation_use_toggle))
         }
         val decimal = input.trim().toBigDecimalOrNull()
@@ -180,6 +192,19 @@ object SettingsDisplay {
     }
 
     fun rawFromToggle(enabled: Boolean): Int = if (enabled) 1 else 0
+
+    fun toggleValueLabelResId(field: SettingField, rawValue: Int): Int =
+        if (field in mosBitFields) {
+            if (MosStateMapping.isDisabled(rawValue)) {
+                R.string.settings_value_blocked
+            } else {
+                R.string.settings_value_allowed
+            }
+        } else if (rawValue == 1) {
+            R.string.settings_value_on
+        } else {
+            R.string.settings_value_off
+        }
 
     fun buildChangeSummary(
         field: SettingField,
@@ -312,7 +337,9 @@ object SettingsDisplay {
     }
 
     private fun displayRange(field: SettingField, stringResolver: (Int) -> String): String {
-        if (field in bitFields) return stringResolver(R.string.settings_boolean_raw_range)
+        if (field in bitFields || field in mosBitFields) {
+            return stringResolver(R.string.settings_boolean_raw_range)
+        }
         val min = resolvedValue(field, field.range.minRaw, stringResolver)
         val max = resolvedValue(field, field.range.maxRaw, stringResolver)
         return "$min – $max"

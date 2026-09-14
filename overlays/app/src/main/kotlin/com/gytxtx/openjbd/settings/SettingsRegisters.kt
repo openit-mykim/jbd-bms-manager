@@ -7,7 +7,8 @@ enum class SettingsGroup {
     BALANCE,
     PROTECTION,
     TEMPERATURE,
-    CAPACITY
+    CAPACITY,
+    MOS
 }
 
 data class RegisterSpec(
@@ -183,6 +184,20 @@ enum class SettingField(
     DESIGN_CAPACITY(
         "designCapacity", SettingsGroup.CAPACITY,
         RegisterSpec(0x10, false, 10.0, "mAh"), SettingsGuardRanges.DESIGN_CAPACITY_10_MAH
+    ),
+
+    /**
+     * MOSFET control register 0xE1 per the community register map, independently matched by
+     * jbdtool and SmartBMSUtility: bit 0 disables charge and bit 1 disables discharge. These
+     * disable bits are inverted from basic-info FET status, where a set bit means conducting.
+     */
+    MOS_CHARGE_DISABLE(
+        "mosChargeDisable", SettingsGroup.MOS,
+        RegisterSpec(0xE1, false, 1.0, "bit"), SettingsGuardRanges.BOOLEAN_BIT, bitIndex = 0
+    ),
+    MOS_DISCHARGE_DISABLE(
+        "mosDischargeDisable", SettingsGroup.MOS,
+        RegisterSpec(0xE1, false, 1.0, "bit"), SettingsGuardRanges.BOOLEAN_BIT, bitIndex = 1
     );
 
     init {
