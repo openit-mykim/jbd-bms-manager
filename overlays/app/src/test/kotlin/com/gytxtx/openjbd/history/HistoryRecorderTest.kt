@@ -79,6 +79,44 @@ class HistoryRecorderTest {
     }
 
     @Test
+    fun absentCellVoltagesAreExcludedFromStoredDelta() = runTest {
+        val store = FakeHistoryStore()
+        val repository = BmsRepository().apply {
+            update(
+                snapshot(
+                    connected = true,
+                    basicInfo = basicInfo(cellCount = 12),
+                    cells = JbdCellVoltages(
+                        listOf(
+                            3.400f,
+                            3.410f,
+                            3.410f,
+                            3.410f,
+                            3.410f,
+                            3.410f,
+                            3.410f,
+                            3.410f,
+                            3.410f,
+                            3.410f,
+                            3.410f,
+                            3.420f,
+                            0.006f,
+                            0.006f
+                        )
+                    )
+                )
+            )
+        }
+        val recorder = recorder(repository, store)
+
+        recorder.start(backgroundScope)
+        advanceTimeBy(TEST_SAMPLE_INTERVAL)
+        runCurrent()
+
+        assertEquals(20, store.samples.single().cellDeltaMillivolts)
+    }
+
+    @Test
     fun appendFailureIsLoggedAndSamplingContinues() = runTest {
         val store = FakeHistoryStore(appendFailure = IllegalStateException("disk full"))
         val errors = mutableListOf<String>()
@@ -155,7 +193,8 @@ class HistoryRecorderTest {
     private fun basicInfo(
         totalVoltage: Float = 52.0f,
         current: Float = 1.0f,
-        soc: Int = 50
+        soc: Int = 50,
+        cellCount: Int = 4
     ) = JbdBasicInfo(
         totalVoltage = totalVoltage,
         current = current,
@@ -170,7 +209,7 @@ class HistoryRecorderTest {
         protectionStates = BooleanArray(16),
         chargeEnabled = true,
         dischargeEnabled = true,
-        cellCount = 4,
+        cellCount = cellCount,
         ntcCount = 1,
         softwareVersion = "1.0",
         temperaturesC = listOf(25f),

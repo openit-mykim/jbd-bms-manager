@@ -15,13 +15,14 @@ import androidx.lifecycle.repeatOnLifecycle
 import com.google.android.material.chip.Chip
 import com.google.android.material.chip.ChipGroup
 import com.google.android.material.progressindicator.LinearProgressIndicator
+import com.gytxtx.openjbd.cells.CellVoltageAnalysis
+import com.gytxtx.openjbd.cells.CellVoltagePolicy
 import com.gytxtx.openjbd.data.BmsRepository
 import com.gytxtx.openjbd.data.BmsUiState
 import com.gytxtx.openjbd.data.ConnectionState
 import com.gytxtx.openjbd.overview.SocBand
 import com.gytxtx.openjbd.overview.SocBands
 import com.gytxtx.openjbd.protocol.JbdBasicInfo
-import com.gytxtx.openjbd.protocol.JbdCellVoltages
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import java.util.Locale
@@ -147,12 +148,19 @@ class OverviewFragment : Fragment() {
         showConnectedContent()
         renderReconnectAction(snapshot)
         setStatus(snapshot.status ?: "")
-        if (snapshot.basicInfo !== lastRenderedBasicInfo) {
-            renderBasicInfo(snapshot.basicInfo!!)
+        val basicInfo = snapshot.basicInfo!!
+        val cellAnalysis = snapshot.cellVoltages?.let { voltages ->
+            CellVoltagePolicy.analyze(voltages.cells, basicInfo.cellCount)
+        }
+        if (basicInfo !== lastRenderedBasicInfo) {
+            renderBasicInfo(basicInfo)
             lastRenderedBasicInfo = snapshot.basicInfo
         }
-        if (snapshot.cellVoltages != null) {
-            renderCellStats(snapshot.cellVoltages!!)
+        if (cellAnalysis != null) {
+            balanceText.setTextIfChanged(
+                requireContext().balanceSummary(basicInfo, cellAnalysis.connectedCellIndices)
+            )
+            renderCellStats(cellAnalysis)
         }
     }
 
@@ -228,12 +236,21 @@ class OverviewFragment : Fragment() {
         }
     }
 
-    private fun renderCellStats(voltages: JbdCellVoltages) {
+    private fun renderCellStats(analysis: CellVoltageAnalysis) {
         cellStatsGrid.visibility = View.VISIBLE
-        cellMinText.setTextIfChanged(getString(R.string.format_value_voltage_3, voltages.min))
-        cellMaxText.setTextIfChanged(getString(R.string.format_value_voltage_3, voltages.max))
-        cellDeltaText.setTextIfChanged(getString(R.string.format_value_voltage_3, voltages.delta))
-        cellAverageText.setTextIfChanged(getString(R.string.format_value_voltage_3, voltages.average))
+        val stats = analysis.stats
+        if (stats == null) {
+            val absentValue = getString(R.string.absent_cell_value)
+            cellMinText.setTextIfChanged(absentValue)
+            cellMaxText.setTextIfChanged(absentValue)
+            cellDeltaText.setTextIfChanged(absentValue)
+            cellAverageText.setTextIfChanged(absentValue)
+            return
+        }
+        cellMinText.setTextIfChanged(getString(R.string.format_value_voltage_3, stats.minimum))
+        cellMaxText.setTextIfChanged(getString(R.string.format_value_voltage_3, stats.maximum))
+        cellDeltaText.setTextIfChanged(getString(R.string.format_value_voltage_3, stats.delta))
+        cellAverageText.setTextIfChanged(getString(R.string.format_value_voltage_3, stats.average))
     }
 
     private fun temperatureChip(text: String, primary: Boolean): Chip {

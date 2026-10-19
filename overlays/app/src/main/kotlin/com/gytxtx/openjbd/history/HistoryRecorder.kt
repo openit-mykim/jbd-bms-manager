@@ -1,6 +1,7 @@
 package com.gytxtx.openjbd.history
 
 import android.util.Log
+import com.gytxtx.openjbd.cells.CellVoltagePolicy
 import com.gytxtx.openjbd.data.BmsRepository
 import java.util.concurrent.atomic.AtomicBoolean
 import javax.inject.Inject
@@ -70,10 +71,12 @@ class HistoryRecorder internal constructor(
                     currentMilliamps = (basicInfo.current * MILLIAMPS_PER_AMP).roundToInt(),
                     cellDeltaMillivolts = snapshot.cellVoltages
                         ?.cells
-                        ?.takeIf { it.isNotEmpty() }
                         ?.let { cells ->
-                            ((cells.maxOrNull()!! - cells.minOrNull()!!) * MILLIVOLTS_PER_VOLT)
-                                .roundToInt()
+                            CellVoltagePolicy.analyze(cells, basicInfo.cellCount)
+                                .stats
+                                ?.delta
+                                ?.times(MILLIVOLTS_PER_VOLT)
+                                ?.roundToInt()
                         }
                 )
             )

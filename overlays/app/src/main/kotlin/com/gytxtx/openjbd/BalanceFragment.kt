@@ -19,6 +19,7 @@ import com.gytxtx.openjbd.balance.CellThresholdResolver
 import com.gytxtx.openjbd.balance.CellThresholds
 import com.gytxtx.openjbd.balance.ThresholdSource
 import com.gytxtx.openjbd.balance.voltsToMillivolts
+import com.gytxtx.openjbd.cells.CellVoltagePolicy
 import com.gytxtx.openjbd.data.BmsRepository
 import com.gytxtx.openjbd.data.BmsUiState
 import com.gytxtx.openjbd.settings.SettingsRepository
@@ -50,6 +51,8 @@ class BalanceFragment : Fragment() {
     private val cellBandCaution by lazy { requireContext().getColor(R.color.cell_band_caution) }
     private val cellBandDanger by lazy { requireContext().getColor(R.color.cell_band_danger) }
     private val cellLabelColorNormal by lazy { requireContext().getColor(R.color.text_secondary) }
+    private val cellValueColorNormal by lazy { requireContext().getColor(R.color.text_primary) }
+    private val cellValueColorAbsent by lazy { requireContext().getColor(R.color.text_secondary) }
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -91,24 +94,28 @@ class BalanceFragment : Fragment() {
             return
         }
 
+        val basicInfo = snapshot.basicInfo
+        val configuredCellCount = basicInfo?.cellCount
+        val cellAnalysis = CellVoltagePolicy.analyze(voltages.cells, configuredCellCount)
+
         placeholder.visibility = View.GONE
         content.visibility = View.VISIBLE
         cellCountText.setTextIfChanged(
             getString(
                 R.string.format_value_integer,
-                snapshot.basicInfo?.cellCount ?: voltages.cells.size
+                configuredCellCount ?: voltages.cells.size
             )
         )
 
-        val basicInfo = snapshot.basicInfo
         val balanceStates = basicInfo?.balanceStates ?: BooleanArray(0)
         val diagnostics = BalanceCellDiagnostics.analyze(
             cells = voltages.cells,
             balanceStates = balanceStates,
-            thresholds = thresholds
+            thresholds = thresholds,
+            configuredCellCount = configuredCellCount
         )
         val readout = BalanceReadoutResolver.resolve(
-            balanceStates = balanceStates,
+            balanceStates = diagnostics.map { it.isBalancing }.toBooleanArray(),
             visibleCellCount = diagnostics.size,
             hasBalanceCurrent = basicInfo?.hasBalanceCurrent == true,
             balanceCurrentA = basicInfo?.balanceCurrentA ?: 0f
@@ -128,7 +135,10 @@ class BalanceFragment : Fragment() {
             } else {
                 getString(
                     R.string.balance_summary_with_threshold_source,
-                    requireContext().balanceSummary(basicInfo),
+                    requireContext().balanceSummary(
+                        basicInfo,
+                        cellAnalysis.connectedCellIndices
+                    ),
                     thresholdSource
                 )
             }
@@ -156,10 +166,19 @@ class BalanceFragment : Fragment() {
             View.GONE
         }
 
-        cellMinText.setTextIfChanged(getString(R.string.format_value_voltage_3, voltages.min))
-        cellMaxText.setTextIfChanged(getString(R.string.format_value_voltage_3, voltages.max))
-        cellAverageText.setTextIfChanged(getString(R.string.format_value_voltage_3, voltages.average))
-        cellDeltaText.setTextIfChanged(getString(R.string.format_value_voltage_3, voltages.delta))
+        val stats = cellAnalysis.stats
+        if (stats == null) {
+            val absentValue = getString(R.string.absent_cell_value)
+            cellMinText.setTextIfChanged(absentValue)
+            cellMaxText.setTextIfChanged(absentValue)
+            cellAverageText.setTextIfChanged(absentValue)
+            cellDeltaText.setTextIfChanged(absentValue)
+        } else {
+            cellMinText.setTextIfChanged(getString(R.string.format_value_voltage_3, stats.minimum))
+            cellMaxText.setTextIfChanged(getString(R.string.format_value_voltage_3, stats.maximum))
+            cellAverageText.setTextIfChanged(getString(R.string.format_value_voltage_3, stats.average))
+            cellDeltaText.setTextIfChanged(getString(R.string.format_value_voltage_3, stats.delta))
+        }
 
         if (cellList.childCount != diagnostics.size) {
             cellList.removeAllViews()
@@ -183,6 +202,21 @@ class BalanceFragment : Fragment() {
         val value = row.findViewById<TextView>(R.id.txt_cell_value)
         val valueMv = row.findViewById<TextView>(R.id.txt_cell_value_mv)
         val progress = row.findViewById<LinearProgressIndicator>(R.id.progress_cell)
+        if (diagnostic.isAbsent) {
+            label.setTextIfChanged(
+                getString(
+                    R.string.balance_absent_cell_label,
+                    getString(R.string.cell_label, diagnostic.cellNumber)
+                )
+            )
+            label.setTextColor(cellLabelColorNormal)
+            value.setTextIfChanged(getString(R.string.absent_cell_value))
+            value.setTextColor(cellValueColorAbsent)
+            valueMv.visibility = View.GONE
+            progress.visibility = View.GONE
+            return
+        }
+
         val statusSuffix = when {
             diagnostic.isBalancing -> getString(R.string.balance_badge_balancing_suffix)
             diagnostic.highlight == CellHighlight.HIGHEST ->
@@ -191,7 +225,8 @@ class BalanceFragment : Fragment() {
                 getString(R.string.balance_badge_lowest_suffix)
             else -> ""
         }
-        val bandLabel = getString(diagnostic.band.labelResource())
+        val band = checkNotNull(diagnostic.band)
+        val bandLabel = getString(band.labelResource())
 
         label.setTextIfChanged(
             getString(
@@ -202,12 +237,15 @@ class BalanceFragment : Fragment() {
             )
         )
         label.setTextColor(cellLabelColorNormal)
+        value.setTextColor(cellValueColorNormal)
         value.setTextIfChanged(getString(R.string.format_value_voltage_3, diagnostic.voltage))
+        valueMv.visibility = View.VISIBLE
         valueMv.setTextIfChanged(
             getString(R.string.format_value_voltage_mv, voltsToMillivolts(diagnostic.voltage))
         )
+        progress.visibility = View.VISIBLE
         progress.setProgressCompat(diagnostic.progress, false)
-        progress.setIndicatorColor(diagnostic.band.color())
+        progress.setIndicatorColor(band.color())
     }
 
     private fun configureLegend() {

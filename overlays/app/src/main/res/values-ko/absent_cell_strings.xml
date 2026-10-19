@@ -1,0 +1,4 @@
+<resources>
+    <string name="absent_cell_value">—</string>
+    <string name="balance_absent_cell_label">%1$s · 데이터 없음</string>
+</resources>
