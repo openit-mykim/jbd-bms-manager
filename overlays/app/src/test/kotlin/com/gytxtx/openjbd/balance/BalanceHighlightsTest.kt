@@ -36,4 +36,25 @@ class BalanceHighlightsTest {
         assertTrue(result[0].isBalancing)
         assertFalse(result[1].isBalancing)
     }
+
+    @Test
+    fun analyzeKeepsAbsentRowsNeutralAndExcludesTheirBalancingFlags() {
+        val result = BalanceCellDiagnostics.analyze(
+            cells = listOf(3.300f, 3.310f, 0.006f, 3.330f),
+            balanceStates = booleanArrayOf(false, false, true, true),
+            thresholds = CellThresholds.nmcDefault(),
+            configuredCellCount = 2
+        )
+
+        assertFalse(result[0].isAbsent)
+        assertFalse(result[1].isAbsent)
+        assertTrue(result[2].isAbsent)
+        assertTrue(result[3].isAbsent)
+        assertFalse(result[2].isBalancing)
+        assertFalse(result[3].isBalancing)
+        assertEquals(CellHighlight.NORMAL, result[2].highlight)
+        assertEquals(CellHighlight.NORMAL, result[3].highlight)
+        assertEquals(null, result[2].band)
+        assertEquals(null, result[3].band)
+    }
 }

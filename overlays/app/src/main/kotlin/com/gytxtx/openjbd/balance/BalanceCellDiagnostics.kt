@@ -1,5 +1,7 @@
 package com.gytxtx.openjbd.balance
 
+import com.gytxtx.openjbd.cells.CellVoltagePolicy
+
 enum class CellHighlight {
     HIGHEST,
     LOWEST,
@@ -9,9 +11,10 @@ enum class CellHighlight {
 data class BalanceCellDiagnostic(
     val cellNumber: Int,
     val voltage: Float,
+    val isAbsent: Boolean,
     val isBalancing: Boolean,
     val highlight: CellHighlight,
-    val band: CellSafetyBand,
+    val band: CellSafetyBand?,
     val progress: Int
 )
 
@@ -19,28 +22,45 @@ object BalanceCellDiagnostics {
     fun analyze(
         cells: List<Float>,
         balanceStates: BooleanArray,
-        thresholds: CellThresholds
+        thresholds: CellThresholds,
+        configuredCellCount: Int? = null
     ): List<BalanceCellDiagnostic> {
         if (cells.isEmpty()) return emptyList()
 
-        val minimum = cells.minOrNull() ?: return emptyList()
-        val maximum = cells.maxOrNull() ?: return emptyList()
-        val span = maxOf(MINIMUM_SPAN_VOLTS, maximum - minimum)
+        val analysis = CellVoltagePolicy.analyze(cells, configuredCellCount)
+        val minimum = analysis.stats?.minimum
+        val maximum = analysis.stats?.maximum
+        val span = if (minimum != null && maximum != null) {
+            maxOf(MINIMUM_SPAN_VOLTS, maximum - minimum)
+        } else {
+            MINIMUM_SPAN_VOLTS
+        }
 
-        return cells.mapIndexed { index, voltage ->
-            val highlight = when (voltage) {
-                maximum -> CellHighlight.HIGHEST
-                minimum -> CellHighlight.LOWEST
+        return analysis.readings.map { reading ->
+            val highlight = when {
+                reading.isAbsent -> CellHighlight.NORMAL
+                reading.voltage == maximum -> CellHighlight.HIGHEST
+                reading.voltage == minimum -> CellHighlight.LOWEST
                 else -> CellHighlight.NORMAL
             }
-            val progress = (PROGRESS_MAX * ((voltage - minimum) / span)).toInt()
-                .coerceIn(PROGRESS_MIN, PROGRESS_MAX)
+            val progress = if (reading.isAbsent || minimum == null) {
+                0
+            } else {
+                (PROGRESS_MAX * ((reading.voltage - minimum) / span)).toInt()
+                    .coerceIn(PROGRESS_MIN, PROGRESS_MAX)
+            }
             BalanceCellDiagnostic(
-                cellNumber = index + 1,
-                voltage = voltage,
-                isBalancing = balanceStates.getOrElse(index) { false },
+                cellNumber = reading.index + 1,
+                voltage = reading.voltage,
+                isAbsent = reading.isAbsent,
+                isBalancing = !reading.isAbsent &&
+                    balanceStates.getOrElse(reading.index) { false },
                 highlight = highlight,
-                band = bandOf(voltsToMillivolts(voltage), thresholds),
+                band = if (reading.isAbsent) {
+                    null
+                } else {
+                    bandOf(voltsToMillivolts(reading.voltage), thresholds)
+                },
                 progress = progress
             )
         }
