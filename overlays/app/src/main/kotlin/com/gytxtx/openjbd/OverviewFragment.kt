@@ -16,7 +16,6 @@ import com.google.android.material.chip.Chip
 import com.google.android.material.chip.ChipGroup
 import com.google.android.material.progressindicator.LinearProgressIndicator
 import com.gytxtx.openjbd.cells.CellVoltageAnalysis
-import com.gytxtx.openjbd.cells.CellVoltagePolicy
 import com.gytxtx.openjbd.data.BmsRepository
 import com.gytxtx.openjbd.data.BmsUiState
 import com.gytxtx.openjbd.data.ConnectionState
@@ -149,9 +148,7 @@ class OverviewFragment : Fragment() {
         renderReconnectAction(snapshot)
         setStatus(snapshot.status ?: "")
         val basicInfo = snapshot.basicInfo!!
-        val cellAnalysis = snapshot.cellVoltages?.let { voltages ->
-            CellVoltagePolicy.analyze(voltages.cells, basicInfo.cellCount)
-        }
+        val cellAnalysis = snapshot.cellVoltageAnalysis
         if (basicInfo !== lastRenderedBasicInfo) {
             renderBasicInfo(basicInfo)
             lastRenderedBasicInfo = snapshot.basicInfo
