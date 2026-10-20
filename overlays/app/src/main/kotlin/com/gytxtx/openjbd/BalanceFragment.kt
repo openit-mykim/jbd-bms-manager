@@ -19,7 +19,6 @@ import com.gytxtx.openjbd.balance.CellThresholdResolver
 import com.gytxtx.openjbd.balance.CellThresholds
 import com.gytxtx.openjbd.balance.ThresholdSource
 import com.gytxtx.openjbd.balance.voltsToMillivolts
-import com.gytxtx.openjbd.cells.CellVoltagePolicy
 import com.gytxtx.openjbd.data.BmsRepository
 import com.gytxtx.openjbd.data.BmsUiState
 import com.gytxtx.openjbd.settings.SettingsRepository
@@ -89,14 +88,18 @@ class BalanceFragment : Fragment() {
 
     private fun renderState(snapshot: BmsUiState, thresholds: CellThresholds) {
         val voltages = snapshot.cellVoltages
-        if (!snapshot.connected || voltages == null || voltages.cells.isEmpty()) {
+        val cellAnalysis = snapshot.cellVoltageAnalysis
+        if (!snapshot.connected ||
+            voltages == null ||
+            voltages.cells.isEmpty() ||
+            cellAnalysis == null
+        ) {
             showEmptyContent(snapshot.connected)
             return
         }
 
         val basicInfo = snapshot.basicInfo
         val configuredCellCount = basicInfo?.cellCount
-        val cellAnalysis = CellVoltagePolicy.analyze(voltages.cells, configuredCellCount)
 
         placeholder.visibility = View.GONE
         content.visibility = View.VISIBLE
@@ -109,10 +112,9 @@ class BalanceFragment : Fragment() {
 
         val balanceStates = basicInfo?.balanceStates ?: BooleanArray(0)
         val diagnostics = BalanceCellDiagnostics.analyze(
-            cells = voltages.cells,
+            analysis = cellAnalysis,
             balanceStates = balanceStates,
-            thresholds = thresholds,
-            configuredCellCount = configuredCellCount
+            thresholds = thresholds
         )
         val readout = BalanceReadoutResolver.resolve(
             balanceStates = diagnostics.map { it.isBalancing }.toBooleanArray(),

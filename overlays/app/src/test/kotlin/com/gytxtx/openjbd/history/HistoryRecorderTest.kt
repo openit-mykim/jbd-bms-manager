@@ -1,5 +1,6 @@
 package com.gytxtx.openjbd.history
 
+import com.gytxtx.openjbd.cells.CellVoltagePolicy
 import com.gytxtx.openjbd.data.BmsRepository
 import com.gytxtx.openjbd.data.BmsUiState
 import com.gytxtx.openjbd.data.ConnectionState
@@ -81,32 +82,41 @@ class HistoryRecorderTest {
     @Test
     fun absentCellVoltagesAreExcludedFromStoredDelta() = runTest {
         val store = FakeHistoryStore()
-        val repository = BmsRepository().apply {
-            update(
+        val connectedCells = listOf(
+            3.400f,
+            3.410f,
+            3.410f,
+            3.410f,
+            3.410f,
+            3.410f,
+            3.410f,
+            3.410f,
+            3.410f,
+            3.410f,
+            3.410f,
+            3.420f,
+            0.006f,
+            0.006f
+        )
+        val repository = BmsRepository()
+        repeat(CellVoltagePolicy.ABSENT_DEBOUNCE_SAMPLES) {
+            repository.update(
                 snapshot(
                     connected = true,
-                    basicInfo = basicInfo(cellCount = 12),
-                    cells = JbdCellVoltages(
-                        listOf(
-                            3.400f,
-                            3.410f,
-                            3.410f,
-                            3.410f,
-                            3.410f,
-                            3.410f,
-                            3.410f,
-                            3.410f,
-                            3.410f,
-                            3.410f,
-                            3.410f,
-                            3.420f,
-                            0.006f,
-                            0.006f
-                        )
-                    )
+                    basicInfo = basicInfo(cellCount = 14),
+                    cells = JbdCellVoltages(connectedCells)
                 )
             )
         }
+        repository.update(
+            snapshot(
+                connected = true,
+                basicInfo = basicInfo(cellCount = 14),
+                cells = JbdCellVoltages(connectedCells.mapIndexed { index, voltage ->
+                    if (index >= 12) 3.600f else voltage
+                })
+            )
+        )
         val recorder = recorder(repository, store)
 
         recorder.start(backgroundScope)

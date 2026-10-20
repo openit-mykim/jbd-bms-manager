@@ -1,6 +1,6 @@
 package com.gytxtx.openjbd.balance
 
-import com.gytxtx.openjbd.cells.CellVoltagePolicy
+import com.gytxtx.openjbd.cells.CellVoltageAnalysis
 
 enum class CellHighlight {
     HIGHEST,
@@ -20,14 +20,12 @@ data class BalanceCellDiagnostic(
 
 object BalanceCellDiagnostics {
     fun analyze(
-        cells: List<Float>,
+        analysis: CellVoltageAnalysis,
         balanceStates: BooleanArray,
-        thresholds: CellThresholds,
-        configuredCellCount: Int? = null
+        thresholds: CellThresholds
     ): List<BalanceCellDiagnostic> {
-        if (cells.isEmpty()) return emptyList()
+        if (analysis.readings.isEmpty()) return emptyList()
 
-        val analysis = CellVoltagePolicy.analyze(cells, configuredCellCount)
         val minimum = analysis.stats?.minimum
         val maximum = analysis.stats?.maximum
         val span = if (minimum != null && maximum != null) {
