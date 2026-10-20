@@ -77,15 +77,111 @@ class CellVoltagePolicyTest {
     }
 
     @Test
+    fun zeroVoltageChannelConfirmsUpperSlotsUnusedImmediately() {
+        val analysis = CellVoltageTracker().update(
+            fourteenSlotZeroChannelCells(),
+            configuredCellCount = 14
+        )
+
+        assertEquals((0..11).toSet(), analysis.connectedCellIndices)
+        assertTrue(analysis.readings.drop(12).all { it.isAbsent })
+        assertEquals(12, analysis.effectiveCellCount)
+        assertEquals(13, analysis.zeroVoltageCellNumber)
+        assertNull(analysis.wiringShortCellNumber)
+        assertFalse(analysis.hasWiringShort)
+
+        val stats = checkNotNull(analysis.stats)
+        assertEquals(3.300f, stats.minimum, 0.0001f)
+        assertEquals(3.311f, stats.maximum, 0.0001f)
+        assertEquals(3.3055f, stats.average, 0.0001f)
+    }
+
+    @Test
+    fun zeroVoltageChannelToleranceIsFiftyMillivolts() {
+        val cells = fourteenSlotZeroChannelCells().toMutableList()
+        cells[12] = CellVoltagePolicy.ZERO_VOLTAGE_CHANNEL_TOLERANCE_VOLTS
+        var analysis = CellVoltageTracker().update(cells, configuredCellCount = 14)
+        assertEquals(13, analysis.zeroVoltageCellNumber)
+        assertEquals(12, analysis.effectiveCellCount)
+
+        cells[12] = CellVoltagePolicy.ZERO_VOLTAGE_CHANNEL_TOLERANCE_VOLTS + 0.001f
+        analysis = CellVoltageTracker().update(cells, configuredCellCount = 14)
+        assertNull(analysis.zeroVoltageCellNumber)
+        assertEquals(14, analysis.effectiveCellCount)
+    }
+
+    @Test
+    fun absentCellWithNormalNextCellCollapsesAfterDebounce() {
+        val tracker = CellVoltageTracker()
+        val cells = fourteenSlotAbsentWithNormalNextCells()
+        var analysis = tracker.update(cells, configuredCellCount = 14)
+        repeat(CellVoltagePolicy.ABSENT_DEBOUNCE_SAMPLES - 2) {
+            analysis = tracker.update(cells, configuredCellCount = 14)
+        }
+
+        assertFalse(analysis.readings[12].isAbsent)
+        assertFalse(analysis.readings[13].isAbsent)
+        assertNull(analysis.wiringShortCellNumber)
+        assertNull(analysis.zeroVoltageCellNumber)
+        assertEquals(14, analysis.effectiveCellCount)
+
+        analysis = tracker.update(cells, configuredCellCount = 14)
+
+        assertTrue(analysis.readings[12].isAbsent)
+        assertTrue(analysis.readings[13].isAbsent)
+        assertEquals(12, analysis.effectiveCellCount)
+        assertEquals(13, analysis.wiringShortCellNumber)
+        assertNull(analysis.zeroVoltageCellNumber)
+    }
+
+    @Test
+    fun wiringShortPatternRequiresNextCellAboveRecoveryThreshold() {
+        val tracker = CellVoltageTracker()
+        val cells = fourteenSlotAbsentWithNormalNextCells().toMutableList()
+        cells[13] = 0.750f
+        var analysis = tracker.update(cells, configuredCellCount = 14)
+        repeat(CellVoltagePolicy.ABSENT_DEBOUNCE_SAMPLES - 1) {
+            analysis = tracker.update(cells, configuredCellCount = 14)
+        }
+
+        assertTrue(analysis.readings[12].isAbsent)
+        assertFalse(analysis.readings[13].isAbsent)
+        assertNull(analysis.wiringShortCellNumber)
+        assertNull(analysis.zeroVoltageCellNumber)
+        assertEquals(14, analysis.effectiveCellCount)
+        assertTrue(13 in analysis.connectedCellIndices)
+    }
+
+    @Test
+    fun wiringShortCollapseRecoversWhenAbsentCellReturns() {
+        val tracker = CellVoltageTracker()
+        val shortPattern = fourteenSlotAbsentWithNormalNextCells()
+        repeat(CellVoltagePolicy.ABSENT_DEBOUNCE_SAMPLES) {
+            tracker.update(shortPattern, configuredCellCount = 14)
+        }
+
+        val recoveredCells = (0 until 14).map { index ->
+            3.300f + index * 0.001f
+        }
+        var analysis = tracker.update(recoveredCells, configuredCellCount = 14)
+        repeat(CellVoltagePolicy.PRESENT_DEBOUNCE_SAMPLES - 1) {
+            analysis = tracker.update(recoveredCells, configuredCellCount = 14)
+        }
+        assertNull(analysis.wiringShortCellNumber)
+        assertTrue(analysis.readings.none { it.isAbsent })
+        assertEquals(14, analysis.effectiveCellCount)
+    }
+
+    @Test
     fun lowVoltageRequiresConsecutiveSamplesBeforeAbsent() {
         val tracker = CellVoltageTracker()
 
         repeat(CellVoltagePolicy.ABSENT_DEBOUNCE_SAMPLES - 1) {
-            val analysis = tracker.update(listOf(0.006f), configuredCellCount = 1)
+            val analysis = tracker.update(listOf(0.300f), configuredCellCount = 1)
             assertFalse(analysis.readings.single().isAbsent)
         }
 
-        val confirmed = tracker.update(listOf(0.006f), configuredCellCount = 1)
+        val confirmed = tracker.update(listOf(0.300f), configuredCellCount = 1)
         assertTrue(confirmed.readings.single().isAbsent)
         assertNull(confirmed.stats)
     }
@@ -94,7 +190,7 @@ class CellVoltagePolicyTest {
     fun absentCellRequiresConsecutiveSamplesAboveRecoveryThreshold() {
         val tracker = CellVoltageTracker()
         repeat(CellVoltagePolicy.ABSENT_DEBOUNCE_SAMPLES) {
-            tracker.update(listOf(0.006f), configuredCellCount = 1)
+            tracker.update(listOf(0.300f), configuredCellCount = 1)
         }
 
         val middle = tracker.update(listOf(0.750f), configuredCellCount = 1)
@@ -114,19 +210,19 @@ class CellVoltagePolicyTest {
         val tracker = CellVoltageTracker()
 
         repeat(CellVoltagePolicy.ABSENT_DEBOUNCE_SAMPLES - 1) {
-            tracker.update(listOf(0.006f), configuredCellCount = 1)
+            tracker.update(listOf(0.300f), configuredCellCount = 1)
         }
         assertFalse(
             tracker.update(listOf(0.750f), configuredCellCount = 1)
                 .readings.single().isAbsent
         )
         assertFalse(
-            tracker.update(listOf(0.006f), configuredCellCount = 1)
+            tracker.update(listOf(0.300f), configuredCellCount = 1)
                 .readings.single().isAbsent
         )
 
         repeat(CellVoltagePolicy.ABSENT_DEBOUNCE_SAMPLES - 1) {
-            tracker.update(listOf(0.006f), configuredCellCount = 1)
+            tracker.update(listOf(0.300f), configuredCellCount = 1)
         }
         assertTrue(
             tracker.update(listOf(0.750f), configuredCellCount = 1)
@@ -154,7 +250,7 @@ class CellVoltagePolicyTest {
     fun thresholdBoundariesStayInMiddleBand() {
         val tracker = CellVoltageTracker()
         repeat(CellVoltagePolicy.ABSENT_DEBOUNCE_SAMPLES) {
-            tracker.update(listOf(0.006f, 0.500f), configuredCellCount = 2)
+            tracker.update(listOf(0.300f, 0.500f), configuredCellCount = 2)
         }
 
         val atBoundaries = tracker.update(
@@ -170,6 +266,18 @@ class CellVoltagePolicyTest {
         (0 until 14).map { index ->
             if (index < connectedCellCount) 3.400f + index * 0.001f else 0.006f
         }
+
+    private fun fourteenSlotZeroChannelCells(): List<Float> =
+        (0 until 14).map { index ->
+            when (index) {
+                12 -> 0.006f
+                13 -> 3.312f
+                else -> 3.300f + index * 0.001f
+            }
+        }
+
+    private fun fourteenSlotAbsentWithNormalNextCells(): List<Float> =
+        fourteenSlotZeroChannelCells().toMutableList().also { it[12] = 0.300f }
 
     private fun activeBalancingCount(diagnostics: List<BalanceCellDiagnostic>): Int =
         BalanceReadoutResolver.resolve(

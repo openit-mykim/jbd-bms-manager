@@ -19,6 +19,8 @@
     <string name="balance_threshold_source_measured">밴드 기준: 읽은 보호값 · UV ≤ %1$d mV / OV ≥ %2$d mV(참고 표시)</string>
     <string name="balance_threshold_source_default">밴드 기준: 기본 기준(NMC) · UV ≤ %1$d mV / OV ≥ %2$d mV(참고 표시)</string>
     <string name="balance_summary_with_threshold_source">%1$s\n%2$s</string>
+    <string name="balance_wiring_short_notice">합선 패턴 감지: 셀 %1$d 미연결 + 셀 %2$d 정상 → %3$dS로 인식, 상위 고스트 슬롯은 데이터 없음</string>
+    <string name="balance_zero_voltage_cell_notice">0V 채널 감지(JBD 공식 배선): 셀 %1$d 미사용 → %2$dS로 인식, 상위 슬롯은 데이터 없음</string>
     <plurals name="balance_active_cell_count">
         <item quantity="other">밸런싱 중 · %1$d셀</item>
     </plurals>

@@ -1,5 +1,7 @@
 package com.gytxtx.openjbd.cells
 
+import kotlin.math.abs
+
 data class CellVoltageReading(
     val index: Int,
     val voltage: Float,
@@ -15,18 +17,24 @@ data class ConnectedCellStats(
 
 data class CellVoltageAnalysis(
     val readings: List<CellVoltageReading>,
-    val stats: ConnectedCellStats?
+    val stats: ConnectedCellStats?,
+    val effectiveCellCount: Int? = null,
+    val wiringShortCellNumber: Int? = null,
+    val zeroVoltageCellNumber: Int? = null
 ) {
     val connectedCellIndices: Set<Int> = readings
         .asSequence()
         .filterNot { it.isAbsent }
         .map { it.index }
         .toSet()
+
+    val hasWiringShort: Boolean = wiringShortCellNumber != null
 }
 
 object CellVoltagePolicy {
     const val ABSENT_VOLTAGE_THRESHOLD_VOLTS = 0.5f
     const val PRESENT_RECOVERY_THRESHOLD_VOLTS = 1.0f
+    const val ZERO_VOLTAGE_CHANNEL_TOLERANCE_VOLTS = 0.050f
     const val ABSENT_DEBOUNCE_SAMPLES = 3
     const val PRESENT_DEBOUNCE_SAMPLES = 3
 }
@@ -88,7 +96,32 @@ class CellVoltageTracker(
                 isAbsent = isAbsent
             )
         }
-        return readings.toAnalysis()
+        val zeroVoltageChannel = detectZeroVoltageChannel(cells, configuredLimit)
+        val wiringShort = if (zeroVoltageChannel == null) {
+            detectWiringShort(readings, configuredLimit)
+        } else {
+            null
+        }
+        val unusedStart = zeroVoltageChannel?.startIndex ?: wiringShort?.ghostStartIndex
+        val collapsedReadings = if (unusedStart == null) {
+            readings
+        } else {
+            readings.mapIndexed { index, reading ->
+                if (index >= unusedStart) {
+                    reading.copy(isAbsent = true)
+                } else {
+                    reading
+                }
+            }
+        }
+        return collapsedReadings.toAnalysis(
+            effectiveCellCount = zeroVoltageChannel?.effectiveCellCount
+                ?: wiringShort?.effectiveCellCount
+                ?: configuredLimit
+                ?: cells.size,
+            wiringShortCellNumber = wiringShort?.cellNumber,
+            zeroVoltageCellNumber = zeroVoltageChannel?.cellNumber
+        )
     }
 
     @Synchronized
@@ -97,6 +130,54 @@ class CellVoltageTracker(
         belowThresholdCounts.clear()
         aboveRecoveryCounts.clear()
     }
+
+    private fun detectZeroVoltageChannel(
+        cells: List<Float>,
+        configuredLimit: Int?
+    ): ZeroVoltageChannel? {
+        for (index in cells.indices) {
+            if (configuredLimit != null && index >= configuredLimit) break
+            if (abs(cells[index]) <= CellVoltagePolicy.ZERO_VOLTAGE_CHANNEL_TOLERANCE_VOLTS) {
+                return ZeroVoltageChannel(
+                    startIndex = index,
+                    effectiveCellCount = index,
+                    cellNumber = index + 1
+                )
+            }
+        }
+        return null
+    }
+
+    private fun detectWiringShort(
+        readings: List<CellVoltageReading>,
+        configuredLimit: Int?
+    ): WiringShortDetection? {
+        for (index in 0 until readings.lastIndex) {
+            if (configuredLimit != null && index >= configuredLimit) break
+            if (!readings[index].isAbsent) continue
+            val next = readings[index + 1]
+            if (next.isAbsent || next.voltage <= recoveryThresholdVolts) continue
+            if (configuredLimit != null && index + 1 >= configuredLimit) continue
+            return WiringShortDetection(
+                ghostStartIndex = index,
+                effectiveCellCount = index,
+                cellNumber = index + 1
+            )
+        }
+        return null
+    }
+
+    private data class WiringShortDetection(
+        val ghostStartIndex: Int,
+        val effectiveCellCount: Int,
+        val cellNumber: Int
+    )
+
+    private data class ZeroVoltageChannel(
+        val startIndex: Int,
+        val effectiveCellCount: Int,
+        val cellNumber: Int
+    )
 
     private fun resizeState(size: Int) {
         while (absentStates.size < size) {
@@ -112,7 +193,11 @@ class CellVoltageTracker(
     }
 }
 
-private fun List<CellVoltageReading>.toAnalysis(): CellVoltageAnalysis {
+private fun List<CellVoltageReading>.toAnalysis(
+    effectiveCellCount: Int?,
+    wiringShortCellNumber: Int?,
+    zeroVoltageCellNumber: Int?
+): CellVoltageAnalysis {
     val readings = this
     val connectedVoltages = readings
         .asSequence()
@@ -132,5 +217,11 @@ private fun List<CellVoltageReading>.toAnalysis(): CellVoltageAnalysis {
         )
     }
 
-    return CellVoltageAnalysis(readings = readings, stats = stats)
+    return CellVoltageAnalysis(
+        readings = readings,
+        stats = stats,
+        effectiveCellCount = effectiveCellCount,
+        wiringShortCellNumber = wiringShortCellNumber,
+        zeroVoltageCellNumber = zeroVoltageCellNumber
+    )
 }
