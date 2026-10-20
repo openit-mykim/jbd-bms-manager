@@ -154,6 +154,14 @@ class OverviewFragment : Fragment() {
             lastRenderedBasicInfo = snapshot.basicInfo
         }
         if (cellAnalysis != null) {
+            statsText.setTextIfChanged(
+                getString(
+                    R.string.pack_stats,
+                    cellAnalysis.effectiveCellCount ?: basicInfo.cellCount,
+                    basicInfo.ntcCount,
+                    basicInfo.softwareVersion
+                )
+            )
             balanceText.setTextIfChanged(
                 requireContext().balanceSummary(basicInfo, cellAnalysis.connectedCellIndices)
             )

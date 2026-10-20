@@ -167,6 +167,21 @@ Evidence/details: `docs/ui-feature-proposal.md` (§4–8), `docs/navigation-desi
 
 Migration impact: none — display-only additions plus a new local `history.db` (created on first run; no existing data affected).
 
+## D018 — JBD SP14S004 unused-cell wiring rule
+
+Decision: the official JBD SP14S004 wiring rule takes priority over the generic absent-cell floor/hysteresis:
+
+- remaining upper sense wires are redundantly connected to pack+;
+- a channel whose adjacent sense-wire difference is `0 V` (tolerance ±50 mV) is an unused cell;
+- the first such channel confirms that channel and every upper slot as unused, and the pack is recognized with a lower S count;
+- this confirmation applies immediately (no 3-sample debounce), while the existing 0.5 V floor + hysteresis remains the fallback for non-zero absent readings and recovery.
+
+Reason: manual-confirmed wiring behavior is stronger evidence than a generic voltage floor, and immediate confirmation avoids reporting ghost upper cells as real.
+
+Evidence/details: JBD SP14S004 official wiring manual; `overlays/app/src/main/kotlin/com/gytxtx/openjbd/cells/CellVoltagePolicy.kt`.
+
+Migration impact: none — display/statistics only; no BMS writes.
+
 ## Change rule
 
 If a future PR changes one of these decisions materially, update this file in the same PR with:

@@ -19,6 +19,8 @@
     <string name="balance_threshold_source_measured">Band reference: read protection values · UV ≤ %1$d mV / OV ≥ %2$d mV (display guidance only)</string>
     <string name="balance_threshold_source_default">Band reference: Default criteria (NMC) · UV ≤ %1$d mV / OV ≥ %2$d mV (display guidance only)</string>
     <string name="balance_summary_with_threshold_source">%1$s\n%2$s</string>
+    <string name="balance_wiring_short_notice">Wiring short pattern: cell %1$d unconnected + cell %2$d normal → %3$dS recognized; upper ghost slots show no data</string>
+    <string name="balance_zero_voltage_cell_notice">Zero-voltage channel (official JBD wiring): cell %1$d unused → %2$dS recognized; upper slots show no data</string>
     <plurals name="balance_active_cell_count">
         <item quantity="one">Balancing active · %1$d cell</item>
         <item quantity="other">Balancing active · %1$d cells</item>

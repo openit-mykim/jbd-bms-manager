@@ -106,7 +106,9 @@ class BalanceFragment : Fragment() {
         cellCountText.setTextIfChanged(
             getString(
                 R.string.format_value_integer,
-                configuredCellCount ?: voltages.cells.size
+                cellAnalysis.effectiveCellCount
+                    ?: configuredCellCount
+                    ?: voltages.cells.size
             )
         )
 
@@ -130,20 +132,37 @@ class BalanceFragment : Fragment() {
             thresholds.underVoltageMv,
             thresholds.overVoltageMv
         )
+        val zeroVoltageCellNumber = cellAnalysis.zeroVoltageCellNumber
+        val wiringShortCellNumber = cellAnalysis.wiringShortCellNumber
+        val unusedNotice = when {
+            zeroVoltageCellNumber != null -> getString(
+                R.string.balance_zero_voltage_cell_notice,
+                zeroVoltageCellNumber,
+                cellAnalysis.effectiveCellCount ?: (zeroVoltageCellNumber - 1)
+            )
+            wiringShortCellNumber != null -> getString(
+                R.string.balance_wiring_short_notice,
+                wiringShortCellNumber,
+                wiringShortCellNumber + 1,
+                cellAnalysis.effectiveCellCount ?: (wiringShortCellNumber - 1)
+            )
+            else -> null
+        }
+        val balanceSummary = if (basicInfo == null) {
+            thresholdSource
+        } else {
+            getString(
+                R.string.balance_summary_with_threshold_source,
+                requireContext().balanceSummary(
+                    basicInfo,
+                    cellAnalysis.connectedCellIndices
+                ),
+                thresholdSource
+            )
+        }
         balanceSummaryText.visibility = View.VISIBLE
         balanceSummaryText.setTextIfChanged(
-            if (basicInfo == null) {
-                thresholdSource
-            } else {
-                getString(
-                    R.string.balance_summary_with_threshold_source,
-                    requireContext().balanceSummary(
-                        basicInfo,
-                        cellAnalysis.connectedCellIndices
-                    ),
-                    thresholdSource
-                )
-            }
+            listOfNotNull(unusedNotice, balanceSummary).joinToString("\n")
         )
 
         activeBalanceCountText.visibility = if (readout.activeBalancingCellCount > 0) {
