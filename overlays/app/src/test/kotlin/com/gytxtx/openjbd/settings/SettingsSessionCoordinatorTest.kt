@@ -98,6 +98,121 @@ class SettingsSessionCoordinatorTest {
     }
 
     @Test
+    fun calibration82RejectionStopsCandidateRegisterScanAndStillConfirmsExit() = runTest {
+        val gateway = FakeGateway(
+            ack(0x00),
+            error(0xAD, 0x82),
+            ack(0x01)
+        )
+
+        val result = SettingsSessionCoordinator(gateway).readFields(
+            listOf(
+                SettingField.CAL_IDLE_CURRENT,
+                SettingField.CAL_CHARGE_CURRENT,
+                SettingField.CAL_DISCHARGE_CURRENT
+            )
+        )
+
+        assertEquals(RegisterAccessError.ErrorStatus(0x82), result.registerErrors[0xAD])
+        assertFrames(
+            gateway,
+            JbdCommands.openFactoryMode(),
+            JbdConfigCommands.readRegister(0xAD),
+            JbdCommands.closeFactoryMode()
+        )
+        assertTrue(SettingsSessionWarning.EXIT_UNCONFIRMED !in result.warnings)
+    }
+
+    @Test
+    fun connectionLossStopsSequentialReadsWithoutRetryAndRequiresReconnect() = runTest {
+        val gateway = FakeGateway(
+            ack(0x00),
+            GatewayOutcome.TransportFailure(
+                "GATT write failed: 133",
+                reconnectRequired = true
+            ),
+            GatewayOutcome.TransportFailure("not connected", reconnectRequired = true)
+        )
+
+        val result = SettingsSessionCoordinator(gateway).readFields(
+            listOf(
+                SettingField.CAL_IDLE_CURRENT,
+                SettingField.CAL_CHARGE_CURRENT,
+                SettingField.CAL_DISCHARGE_CURRENT
+            )
+        )
+
+        assertEquals(
+            RegisterAccessError.TransportFailure("GATT write failed: 133", true),
+            result.registerErrors[0xAD]
+        )
+        assertFrames(
+            gateway,
+            JbdCommands.openFactoryMode(),
+            JbdConfigCommands.readRegister(0xAD),
+            JbdCommands.closeFactoryMode()
+        )
+        assertEquals(1, gateway.frameCount(JbdConfigCommands.readRegister(0xAD)))
+        assertEquals(0, gateway.frameCount(JbdConfigCommands.readRegister(0xAE)))
+        assertTrue(SettingsSessionWarning.RECONNECT_REQUIRED in result.warnings)
+        assertTrue(SettingsSessionWarning.EXIT_UNCONFIRMED in result.warnings)
+        assertTrue(SettingsSessionWarning.DEVICE_MAY_REMAIN_IN_FACTORY_MODE in result.warnings)
+    }
+
+    @Test
+    fun retryAfterReconnectConfirmsPendingExitBeforeNewFactorySession() = runTest {
+        val gateway = FakeGateway(
+            ack(0x00),
+            GatewayOutcome.TransportFailure("not connected", reconnectRequired = true),
+            GatewayOutcome.TransportFailure("not connected", reconnectRequired = true),
+            ack(0x01),
+            ack(0x00),
+            error(0xAD, 0x82),
+            ack(0x01)
+        )
+        val coordinator = SettingsSessionCoordinator(gateway)
+
+        val interrupted = coordinator.readFields(listOf(SettingField.CAL_IDLE_CURRENT))
+        val retried = coordinator.readFields(
+            listOf(SettingField.CAL_IDLE_CURRENT, SettingField.CAL_CHARGE_CURRENT)
+        )
+
+        assertTrue(SettingsSessionWarning.RECONNECT_REQUIRED in interrupted.warnings)
+        assertEquals(RegisterAccessError.ErrorStatus(0x82), retried.registerErrors[0xAD])
+        assertFrames(
+            gateway,
+            JbdCommands.openFactoryMode(),
+            JbdConfigCommands.readRegister(0xAD),
+            JbdCommands.closeFactoryMode(),
+            JbdCommands.closeFactoryMode(),
+            JbdCommands.openFactoryMode(),
+            JbdConfigCommands.readRegister(0xAD),
+            JbdCommands.closeFactoryMode()
+        )
+        assertTrue(SettingsSessionWarning.EXIT_UNCONFIRMED !in retried.warnings)
+        assertTrue(SettingsSessionWarning.RECONNECT_REQUIRED !in retried.warnings)
+    }
+
+    @Test
+    fun disconnectedFactoryEntryIsNotRetriedOrFollowedByDirectProbe() = runTest {
+        val gateway = FakeGateway(
+            GatewayOutcome.TransportFailure("not connected", reconnectRequired = true)
+        )
+
+        val result = SettingsSessionCoordinator(gateway).readFields(
+            listOf(SettingField.CAL_IDLE_CURRENT)
+        )
+
+        assertEquals(SettingsAccessMode.BLOCKED, result.accessMode)
+        assertEquals(
+            RegisterAccessError.TransportFailure("not connected", true),
+            result.entryFailure
+        )
+        assertFrames(gateway, JbdCommands.openFactoryMode())
+        assertTrue(SettingsSessionWarning.RECONNECT_REQUIRED in result.warnings)
+    }
+
+    @Test
     fun unconfirmedReadExitProducesFactoryModeWarning() = runTest {
         val gateway = FakeGateway(
             ack(0x00),
@@ -433,6 +548,7 @@ class SettingsSessionCoordinatorTest {
             register(0x24, 4_100),
             counterResponse(IntArray(11)),
             GatewayOutcome.NoResponse,
+            ack(0x01),
             ack(0x00),
             register(0x24, 4_100),
             ack(0x01)
@@ -446,6 +562,7 @@ class SettingsSessionCoordinatorTest {
         assertTrue(SettingsSessionWarning.EXIT_UNCONFIRMED in result.warnings)
         assertTrue(SettingsSessionWarning.DEVICE_MAY_REMAIN_IN_FACTORY_MODE in result.warnings)
         assertEquals(1, gateway.frameCount(JbdConfigCommands.exitFactoryModeWithCommit()))
+        assertEquals(2, gateway.frameCount(JbdCommands.closeFactoryMode()))
         assertEquals(2, gateway.frameCount(JbdCommands.openFactoryMode()))
     }
 
@@ -644,8 +761,8 @@ class SettingsSessionCoordinatorTest {
         private fun ack(address: Int): GatewayOutcome =
             GatewayOutcome.Response(response(address, 0x00, byteArrayOf()))
 
-        private fun error(address: Int): GatewayOutcome =
-            GatewayOutcome.Response(response(address, 0x80, byteArrayOf()))
+        private fun error(address: Int, status: Int = 0x80): GatewayOutcome =
+            GatewayOutcome.Response(response(address, status, byteArrayOf()))
 
         private fun register(address: Int, raw: Int): GatewayOutcome =
             GatewayOutcome.Response(response(address, 0x00, u16(raw)))

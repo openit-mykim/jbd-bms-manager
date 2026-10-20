@@ -95,6 +95,7 @@
     <string name="settings_warning_post_commit_unavailable">Post-commit confirmation incomplete</string>
     <string name="settings_warning_post_commit_mismatch">Post-commit confirmation mismatch</string>
     <string name="settings_warning_direct_fallback">Factory entry failed (used direct-read fallback)</string>
+    <string name="settings_warning_reconnect_required">BLE connection lost. Sequential reads stopped. Reconnect the BMS, then refresh; factory-mode exit will be confirmed before retrying.</string>
 
     <string name="settings_field_bal_start">Balance start voltage</string>
     <string name="settings_field_bal_window">Balance delta</string>

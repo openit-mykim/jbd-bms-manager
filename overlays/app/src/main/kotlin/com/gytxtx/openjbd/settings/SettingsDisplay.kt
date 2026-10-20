@@ -340,13 +340,22 @@ object SettingsDisplay {
             R.string.settings_warning_post_commit_mismatch
         SettingsSessionWarning.FACTORY_ENTRY_FAILED_DIRECT_FALLBACK ->
             R.string.settings_warning_direct_fallback
+        SettingsSessionWarning.RECONNECT_REQUIRED ->
+            R.string.settings_warning_reconnect_required
     }
 
-    fun registerErrorLabelResId(error: RegisterAccessError): Int = when (error) {
-        RegisterAccessError.NoResponse -> R.string.settings_detail_no_response
-        is RegisterAccessError.ErrorStatus -> R.string.settings_detail_error_status
-        is RegisterAccessError.TransportFailure -> R.string.settings_detail_transport_failure
-        is RegisterAccessError.Malformed -> R.string.settings_detail_malformed_response
+    fun registerErrorLabelResId(
+        error: RegisterAccessError,
+        registerAddress: Int? = null
+    ): Int = when {
+        registerAddress == 0xAD &&
+            error is RegisterAccessError.ErrorStatus &&
+            error.status == 0x82 -> R.string.calibration_error_idle_current_rejected_82
+        error === RegisterAccessError.NoResponse -> R.string.settings_detail_no_response
+        error is RegisterAccessError.ErrorStatus -> R.string.settings_detail_error_status
+        error is RegisterAccessError.TransportFailure -> R.string.settings_detail_transport_failure
+        error is RegisterAccessError.Malformed -> R.string.settings_detail_malformed_response
+        else -> error("Unsupported register access error: $error")
     }
 
     private fun numericValue(

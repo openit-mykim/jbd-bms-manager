@@ -14,7 +14,10 @@ interface SettingsGateway {
 sealed interface GatewayOutcome {
     data class Response(val frame: JbdFrame) : GatewayOutcome
     object NoResponse : GatewayOutcome
-    data class TransportFailure(val message: String) : GatewayOutcome {
+    data class TransportFailure(
+        val message: String,
+        val reconnectRequired: Boolean = false
+    ) : GatewayOutcome {
         init {
             require(message.isNotBlank()) { "Transport failure message must not be blank" }
         }

@@ -64,7 +64,10 @@ class BleSettingsGatewayTest {
 
         val result = BleSettingsGateway(host).execute(byteArrayOf(4), 0x27, 800)
 
-        assertEquals(GatewayOutcome.TransportFailure("not connected"), result)
+        assertEquals(
+            GatewayOutcome.TransportFailure("not connected", reconnectRequired = true),
+            result
+        )
         assertTrue(host.requests.isEmpty())
     }
 

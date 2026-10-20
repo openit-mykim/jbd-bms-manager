@@ -162,6 +162,25 @@ class SettingsDisplayTest {
         assertTrue(labels.contains(R.string.settings_warning_post_commit_unavailable))
         assertTrue(labels.contains(R.string.settings_warning_post_commit_mismatch))
         assertTrue(labels.contains(R.string.settings_warning_direct_fallback))
+        assertTrue(labels.contains(R.string.settings_warning_reconnect_required))
+    }
+
+    @Test
+    fun idleCalibration82RejectionUsesVariantSpecificMessage() {
+        assertEquals(
+            R.string.calibration_error_idle_current_rejected_82,
+            SettingsDisplay.registerErrorLabelResId(
+                RegisterAccessError.ErrorStatus(0x82),
+                registerAddress = 0xAD
+            )
+        )
+        assertEquals(
+            R.string.settings_detail_error_status,
+            SettingsDisplay.registerErrorLabelResId(
+                RegisterAccessError.ErrorStatus(0x82),
+                registerAddress = 0xAE
+            )
+        )
     }
 
     @Test

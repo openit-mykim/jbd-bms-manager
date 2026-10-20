@@ -6,6 +6,30 @@ import org.junit.Test
 
 class JbdConfigCommandsTest {
     @Test
+    fun factoryEntryBuildsExactCommunityVector() {
+        assertArrayEquals(
+            hex("DD 5A 00 02 56 78 FF 30 77"),
+            JbdCommands.openFactoryMode()
+        )
+    }
+
+    @Test
+    fun calibrationReadBuildsExactCommunityFrameFormat() {
+        assertArrayEquals(
+            hex("DD A5 AD 00 FF 53 77"),
+            JbdConfigCommands.readRegister(0xAD)
+        )
+    }
+
+    @Test
+    fun noCommitFactoryExitBuildsExactCommunityVector() {
+        assertArrayEquals(
+            hex("DD 5A 01 02 00 00 FF FD 77"),
+            JbdCommands.closeFactoryMode()
+        )
+    }
+
+    @Test
     fun readRegisterBuildsExactCommunityVector() {
         assertArrayEquals(
             hex("DD A5 24 00 FF DC 77"),

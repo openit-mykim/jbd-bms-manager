@@ -103,6 +103,31 @@ class SettingsRepositoryTest {
     }
 
     @Test
+    fun linkLossMarksRepositoryDisconnectedAndRetainsReconnectWarning() = runTest {
+        val host = FakeSettingsCommandHost(
+            outcomes = arrayOf(
+                ack(0x00),
+                GatewayOutcome.TransportFailure(
+                    "GATT write failed: 133",
+                    reconnectRequired = true
+                ),
+                GatewayOutcome.TransportFailure("not connected", reconnectRequired = true)
+            )
+        )
+        val repository = repository(host)
+
+        repository.readGroups(listOf(SettingsGroup.BALANCE))
+        advanceUntilIdle()
+
+        val state = repository.state.value
+        val section = state.sections.getValue(SettingsGroup.BALANCE)
+        assertTrue(state.notConnected)
+        assertTrue(SettingsSessionWarning.RECONNECT_REQUIRED in section.warnings)
+        assertTrue(SettingsSessionWarning.EXIT_UNCONFIRMED in section.warnings)
+        assertEquals(3, host.frames.size)
+    }
+
+    @Test
     fun applyChangesWrapsSessionAndRecordsCommittedResult() = runTest {
         val host = FakeSettingsCommandHost(
             outcomes = arrayOf(

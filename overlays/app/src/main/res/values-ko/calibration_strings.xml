@@ -33,6 +33,7 @@
     <string name="calibration_note_hardware_unverified">이 보정 레지스터는 테스트 단계이며 실제 BMS에서 검증해야 합니다.</string>
     <string name="calibration_note_current_scale">스케일(10 mA 단위 가정)은 실기기 검증이 필요한 항목입니다.</string>
     <string name="calibration_live_unavailable">읽지 못함</string>
+    <string name="calibration_error_idle_current_rejected_82">이 BMS에서는 무부하 전류 보정을 사용할 수 없습니다. 명시된 커뮤니티 맵은 레지스터 0xAD를 읽을 수 있는 저장값이 아니라 쓰기 동작으로만 설명합니다.</string>
 
     <string name="calibration_zero_title">무부하 전류 제로 보정을 예약할까요?</string>
     <string name="calibration_zero_warning">배터리에 전류가 흐르지 않는 상태에서만 실행하세요.</string>
