@@ -22,8 +22,8 @@ concurrency:
 env:
   UPSTREAM_REPO: gytxtx/OpenJBD
   UPSTREAM_COMMIT: 7e3e225a128f6e0d69425b98a2670d8d69594885
-  RELEASE_TAG: v0.1.0-alpha.11
-  APK_NAME: jbd-bms-manager-v0.1.0-alpha.11.apk
+  RELEASE_TAG: v0.1.0-alpha.12
+  APK_NAME: jbd-bms-manager-v0.1.0-alpha.12.apk
 
 jobs:
   build:
@@ -62,6 +62,7 @@ jobs:
           python3 manager/scripts/apply-alpha9.py upstream-src
           python3 manager/scripts/apply-alpha10.py upstream-src
           python3 manager/scripts/apply-alpha11.py upstream-src
+          python3 manager/scripts/apply-alpha12.py upstream-src
 
       - name: Grant Gradle wrapper permission
         run: chmod +x upstream-src/gradlew
@@ -94,15 +95,12 @@ jobs:
         if: github.ref == 'refs/heads/main'
         run: |
           cat > release-notes.md <<'EOF'
-          ## JBD BMS Manager v0.1.0-alpha.11
+          ## JBD BMS Manager v0.1.0-alpha.12
 
-          시각화 라운드(밸런스 밴드·SOC 게이지·이력 차트)를 담은 테스트 빌드입니다.
+          미연결 셀 제외 라운드(10S~13S/14S)를 담은 테스트 빌드입니다.
 
           ### 변경 내용
-          - 개요 SOC 게이지: 3단계 색상 밴드(10% 이하 즉시 충전 / 25% 이하 충전 권장 / 그 외 충분)와 잔량 상태 문구. 값이 없거나 미연결이면 중립 표시이며, 게이지 기본 색상도 중립이라 렌더 실패 시 안심 색으로 보이지 않습니다
-          - 이력 추세 차트(상세 탭): 최근 24시간 / 7일 범위와 SOC / 팩 전압 / 셀 편차 지표 선택, 최소·평균·최대 요약. 로컬 이력만 조회하므로 BLE 미연결이어도 표시됩니다
-          - 이력 기록: 연결 중 10초마다 자동 저장, 기기 로컬 저장, 7일 뒤 자동 삭제. BMS 통신을 추가로 발생시키지 않습니다
-          - 밸런스 진단(alpha.10 포함): 5 mV 단위 밸런스 델타, 셀 안전 밴드 색상, 셀별 V+mV 표시
+          - 미연결 셀 제외: 14S 제품에 10S~13S 연결 시 미연결 슬롯을 평균·최저·밸런싱·이력 통계에서 제외. 0.5V 하한 + 히스테리시스 디바운스(복귀 1.0V, 3프레임 연속)로 고스트 전압 깜빡임 대응. 미연결 표시는 중립 —
 
           ### 현재 제한
           - 실기기에서의 시각적 확인(색상·배치·다크 테마·차트 가독성)은 아직 물리 검증 전입니다.
@@ -124,7 +122,7 @@ jobs:
           else
             gh release create "${RELEASE_TAG}" "dist/${APK_NAME}" "dist/${APK_NAME}.sha256" \
               --target "${GITHUB_SHA}" \
-              --title "JBD BMS Manager v0.1.0-alpha.11" \
+              --title "JBD BMS Manager v0.1.0-alpha.12" \
               --notes-file release-notes.md \
               --prerelease \
               --repo "${GITHUB_REPOSITORY}"
