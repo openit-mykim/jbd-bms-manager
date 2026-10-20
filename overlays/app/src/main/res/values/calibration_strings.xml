@@ -33,6 +33,7 @@
     <string name="calibration_note_hardware_unverified">This calibration register is in the test stage and requires verification on the actual BMS.</string>
     <string name="calibration_note_current_scale">The assumed scale (10 mA units) requires verification on the actual device.</string>
     <string name="calibration_live_unavailable">Not read</string>
+    <string name="calibration_error_idle_current_rejected_82">Idle-current calibration is unavailable on this BMS. The cited community map documents register 0xAD as a write action, not a readable stored value.</string>
 
     <string name="calibration_zero_title">Stage idle-current zero calibration?</string>
     <string name="calibration_zero_warning">Run this only when no current is flowing through the battery.</string>

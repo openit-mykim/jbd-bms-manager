@@ -154,11 +154,22 @@ class BmsConnectionManager @Inject constructor(
                     currentCommand?.timeoutMs ?: COMMAND_TIMEOUT_MS
                 )
             } else {
+                val linkLost = status == GATT_ERROR_LINK_LOSS
                 completeCurrentCommand(
                     currentCommand?.settingsCallback?.let {
-                        GatewayOutcome.TransportFailure("GATT write failed: $status")
-                    }
+                        GatewayOutcome.TransportFailure(
+                            "GATT write failed: $status",
+                            reconnectRequired = linkLost
+                        )
+                    },
+                    drainQueue = !linkLost
                 )
+                if (linkLost) {
+                    failConnection(
+                        ConnectionState.CONNECTION_FAILED,
+                        getString(R.string.status_connection_failed, status)
+                    )
+                }
             }
         }
 
@@ -205,7 +216,9 @@ class BmsConnectionManager @Inject constructor(
         require(responseAddress in 0x00..0xFF) { "Response address must fit in one byte" }
         require(timeoutMs > 0) { "Settings command timeout must be positive" }
         if (!connected) {
-            callback(GatewayOutcome.TransportFailure("not connected"))
+            callback(
+                GatewayOutcome.TransportFailure("not connected", reconnectRequired = true)
+            )
             return
         }
 
@@ -217,7 +230,9 @@ class BmsConnectionManager @Inject constructor(
         )
         handler.post {
             if (!connected) {
-                callback(GatewayOutcome.TransportFailure("not connected"))
+                callback(
+                    GatewayOutcome.TransportFailure("not connected", reconnectRequired = true)
+                )
             } else {
                 commandQueue.addLast(request)
                 drainCommandQueue()
@@ -326,7 +341,10 @@ class BmsConnectionManager @Inject constructor(
             !hasConnectPermission()
         ) {
             request.settingsCallback?.invoke(
-                GatewayOutcome.TransportFailure("BLE transport is not ready")
+                GatewayOutcome.TransportFailure(
+                    "BLE transport is not ready",
+                    reconnectRequired = true
+                )
             )
             if (request.settingsCallback != null) drainCommandQueue()
             return
@@ -412,7 +430,10 @@ class BmsConnectionManager @Inject constructor(
         return info
     }
 
-    private fun completeCurrentCommand(settingsOutcome: GatewayOutcome? = null) {
+    private fun completeCurrentCommand(
+        settingsOutcome: GatewayOutcome? = null,
+        drainQueue: Boolean = true
+    ) {
         handler.removeCallbacks(commandTimeoutRunnable)
         val completed = currentCommand
         currentCommand = null
@@ -420,7 +441,7 @@ class BmsConnectionManager @Inject constructor(
         if (completed?.settingsCallback != null && settingsOutcome != null) {
             completed.settingsCallback.invoke(settingsOutcome)
         }
-        drainCommandQueue()
+        if (drainQueue) drainCommandQueue()
     }
 
     private fun failPendingSettingsCommands(message: String) {
@@ -433,7 +454,11 @@ class BmsConnectionManager @Inject constructor(
         commandQueue.clear()
         writeInFlight = false
         callbacks.forEach { callback ->
-            runCatching { callback(GatewayOutcome.TransportFailure(message)) }
+            runCatching {
+                callback(
+                    GatewayOutcome.TransportFailure(message, reconnectRequired = true)
+                )
+            }
         }
     }
 
@@ -537,6 +562,7 @@ class BmsConnectionManager @Inject constructor(
     companion object {
         private const val AUTO_RECONNECT_BASE_DELAY_MS = 5000L
         private const val AUTO_RECONNECT_MAX_DELAY_MS = 30000L
+        private const val GATT_ERROR_LINK_LOSS = 133
         private const val COMMAND_TIMEOUT_MS = 2200L
         private const val EXT_RATINGS_START = 117
         private const val EXT_BMS_ADDRESS_START = 170

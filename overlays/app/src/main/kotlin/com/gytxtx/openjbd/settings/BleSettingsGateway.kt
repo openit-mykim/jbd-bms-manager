@@ -25,7 +25,10 @@ class BleSettingsGateway internal constructor(
         timeoutMs: Long
     ): GatewayOutcome = executeMutex.withLock {
         if (!host.isConnected()) {
-            return@withLock GatewayOutcome.TransportFailure("not connected")
+            return@withLock GatewayOutcome.TransportFailure(
+                "not connected",
+                reconnectRequired = true
+            )
         }
 
         suspendCancellableCoroutine<GatewayOutcome> { continuation ->

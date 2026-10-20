@@ -84,6 +84,8 @@ class SettingsRepository internal constructor(
                 val fields = SettingField.values().filter { it.group in requestedGroups }
                 val result = gateway.withSession { coordinator.readFields(fields) }
                 val updatedAt = clock()
+                val reconnectRequired =
+                    SettingsSessionWarning.RECONNECT_REQUIRED in result.warnings
                 _state.update { current ->
                     val sections = current.sections.toMutableMap()
                     requestedGroups.forEach { group ->
@@ -100,7 +102,7 @@ class SettingsRepository internal constructor(
                     }
                     current.copy(
                         sections = sections,
-                        notConnected = false,
+                        notConnected = reconnectRequired,
                         lastError = if (result.registerErrors.isEmpty()) {
                             null
                         } else {

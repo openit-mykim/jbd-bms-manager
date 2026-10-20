@@ -252,7 +252,7 @@ class CalibrationDialogFragment : DialogFragment() {
                     getString(
                         R.string.settings_register_error,
                         address,
-                        registerErrorText(error)
+                        registerErrorText(error, address)
                     ),
                     isError = true
                 )
@@ -309,7 +309,9 @@ class CalibrationDialogFragment : DialogFragment() {
             val registerError = section.registerErrors[target.field.register.address]
             row.findViewById<TextView>(R.id.calibration_target_error).apply {
                 visibility = if (registerError == null) View.GONE else View.VISIBLE
-                if (registerError != null) text = registerErrorText(registerError)
+                if (registerError != null) {
+                    text = registerErrorText(registerError, target.field.register.address)
+                }
             }
             val editable = live != null && latestBmsState.connected &&
                 !latestSettingsState.notConnected && !applying &&
@@ -685,8 +687,13 @@ class CalibrationDialogFragment : DialogFragment() {
         })
     }
 
-    private fun registerErrorText(error: RegisterAccessError): String {
-        val label = getString(SettingsDisplay.registerErrorLabelResId(error))
+    private fun registerErrorText(
+        error: RegisterAccessError,
+        registerAddress: Int? = null
+    ): String {
+        val label = getString(
+            SettingsDisplay.registerErrorLabelResId(error, registerAddress)
+        )
         return when (error) {
             is RegisterAccessError.ErrorStatus ->
                 "$label (0x${error.status.toString(16).uppercase()})"

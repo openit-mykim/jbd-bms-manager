@@ -23,7 +23,10 @@ data class FieldValue(
 
 sealed interface RegisterAccessError {
     object NoResponse : RegisterAccessError
-    data class TransportFailure(val message: String) : RegisterAccessError
+    data class TransportFailure(
+        val message: String,
+        val reconnectRequired: Boolean = false
+    ) : RegisterAccessError
     data class ErrorStatus(val status: Int) : RegisterAccessError
     data class Malformed(val reason: String) : RegisterAccessError
 }
@@ -34,7 +37,8 @@ enum class SettingsSessionWarning {
     DEVICE_MAY_REMAIN_IN_FACTORY_MODE,
     COUNTER_SNAPSHOT_UNAVAILABLE,
     POST_COMMIT_CONFIRMATION_UNAVAILABLE,
-    POST_COMMIT_MISMATCH
+    POST_COMMIT_MISMATCH,
+    RECONNECT_REQUIRED
 }
 
 data class SettingsReadResult(
@@ -132,6 +136,8 @@ class SettingsSessionCoordinator(
     private val exitRetries: Int = 1,
     private val retryDelayMs: Long = 150
 ) {
+    private var factoryExitConfirmationPending = false
+
     init {
         require(timeoutMs > 0) { "timeoutMs must be positive" }
         require(readRetries >= 0) { "readRetries must not be negative" }
@@ -161,11 +167,32 @@ class SettingsSessionCoordinator(
         var entryFailure: RegisterAccessError? = null
         var accessMode = SettingsAccessMode.FACTORY
 
+        confirmPendingFactoryExit()?.let { recoveryError ->
+            addExitFailureWarnings(warnings, recoveryError)
+            return SettingsReadResult(
+                values = emptyMap(),
+                registerErrors = emptyMap(),
+                accessMode = SettingsAccessMode.BLOCKED,
+                warnings = warnings,
+                entryFailure = recoveryError
+            )
+        }
+
         try {
             entryFailure = enterFactory()
             if (entryFailure == null) {
                 factoryEntered = true
             } else {
+                if (entryFailure is RegisterAccessError.TransportFailure) {
+                    addReconnectWarning(warnings, entryFailure)
+                    return SettingsReadResult(
+                        values = emptyMap(),
+                        registerErrors = emptyMap(),
+                        accessMode = SettingsAccessMode.BLOCKED,
+                        warnings = warnings,
+                        entryFailure = entryFailure
+                    )
+                }
                 accessMode = SettingsAccessMode.DIRECT
                 warnings += SettingsSessionWarning.FACTORY_ENTRY_FAILED_DIRECT_FALLBACK
                 val firstAddress = registerFields.keys.first()
@@ -173,6 +200,7 @@ class SettingsSessionCoordinator(
                     is RawRead.Success -> cachedRaw[firstAddress] = directRead.data
                     is RawRead.Failure -> {
                         errors[firstAddress] = directRead.error
+                        addReconnectWarning(warnings, directRead.error)
                         return SettingsReadResult(
                             values = emptyMap(),
                             registerErrors = errors,
@@ -184,24 +212,23 @@ class SettingsSessionCoordinator(
                 }
             }
 
-            registerFields.forEach { (address, fieldsAtAddress) ->
+            for ((address, fieldsAtAddress) in registerFields) {
                 val raw = cachedRaw[address] ?: when (val read = readRaw(address)) {
                     is RawRead.Success -> read.data
                     is RawRead.Failure -> {
                         errors[address] = read.error
-                        return@forEach
+                        addReconnectWarning(warnings, read.error)
+                        if (shouldAbortRemainingReads(address, read.error)) break
+                        continue
                     }
                 }
                 decodeFields(fieldsAtAddress, raw, values)
             }
 
             if (factoryEntered) {
-                val exitConfirmed = exitFactory(commit = false)
+                val exitError = exitFactory(commit = false)
                 exitAttempted = true
-                if (!exitConfirmed) {
-                    warnings += SettingsSessionWarning.EXIT_UNCONFIRMED
-                    warnings += SettingsSessionWarning.DEVICE_MAY_REMAIN_IN_FACTORY_MODE
-                }
+                if (exitError != null) addExitFailureWarnings(warnings, exitError)
             }
         } finally {
             if (factoryEntered && !exitAttempted) {
@@ -223,13 +250,25 @@ class SettingsSessionCoordinator(
             return WriteSessionResult(outcome = WriteSessionOutcome.NotCommitted)
         }
 
+        val warnings = linkedSetOf<SettingsSessionWarning>()
+        confirmPendingFactoryExit()?.let { recoveryError ->
+            addExitFailureWarnings(warnings, recoveryError)
+            return WriteSessionResult(
+                outcome = WriteSessionOutcome.EntryFailed(recoveryError),
+                warnings = warnings
+            )
+        }
+
         val entryError = enterFactory()
         if (entryError != null) {
-            return WriteSessionResult(outcome = WriteSessionOutcome.EntryFailed(entryError))
+            addReconnectWarning(warnings, entryError)
+            return WriteSessionResult(
+                outcome = WriteSessionOutcome.EntryFailed(entryError),
+                warnings = warnings
+            )
         }
 
         val results = mutableListOf<FieldChangeResult>()
-        val warnings = linkedSetOf<SettingsSessionWarning>()
         var factoryEntered = true
         var exitAttempted = false
         var allOperationsSuccessful = true
@@ -250,6 +289,7 @@ class SettingsSessionCoordinator(
                         )
                         allOperationsSuccessful = false
                         if (read.error is RegisterAccessError.TransportFailure) {
+                            addReconnectWarning(warnings, read.error)
                             fatalTransportFailure = true
                             break
                         }
@@ -302,6 +342,7 @@ class SettingsSessionCoordinator(
                     )
                     allOperationsSuccessful = false
                     if (writeError is RegisterAccessError.TransportFailure) {
+                        addReconnectWarning(warnings, writeError)
                         fatalTransportFailure = true
                         break
                     }
@@ -345,6 +386,7 @@ class SettingsSessionCoordinator(
                         )
                         allOperationsSuccessful = false
                         if (readBack.error is RegisterAccessError.TransportFailure) {
+                            addReconnectWarning(warnings, readBack.error)
                             fatalTransportFailure = true
                         }
                     }
@@ -362,12 +404,9 @@ class SettingsSessionCoordinator(
             }
 
             val shouldCommit = allOperationsSuccessful && writtenCount > 0
-            val exitConfirmed = exitFactory(commit = shouldCommit)
+            val exitError = exitFactory(commit = shouldCommit)
             exitAttempted = true
-            if (!exitConfirmed) {
-                warnings += SettingsSessionWarning.EXIT_UNCONFIRMED
-                warnings += SettingsSessionWarning.DEVICE_MAY_REMAIN_IN_FACTORY_MODE
-            }
+            if (exitError != null) addExitFailureWarnings(warnings, exitError)
             factoryEntered = false
 
             val outcome = if (shouldCommit) {
@@ -387,6 +426,9 @@ class SettingsSessionCoordinator(
                 if (confirmationAttempt.exitUnconfirmed) {
                     warnings += SettingsSessionWarning.EXIT_UNCONFIRMED
                     warnings += SettingsSessionWarning.DEVICE_MAY_REMAIN_IN_FACTORY_MODE
+                }
+                if (confirmationAttempt.reconnectRequired) {
+                    warnings += SettingsSessionWarning.RECONNECT_REQUIRED
                 }
             }
 
@@ -448,7 +490,12 @@ class SettingsSessionCoordinator(
         }
         GatewayOutcome.NoResponse -> RawRead.Failure(RegisterAccessError.NoResponse)
         is GatewayOutcome.TransportFailure ->
-            RawRead.Failure(RegisterAccessError.TransportFailure(outcome.message))
+            RawRead.Failure(
+                RegisterAccessError.TransportFailure(
+                    outcome.message,
+                    outcome.reconnectRequired
+                )
+            )
     }
 
     private suspend fun readErrorCounters(): IntArray? = when (
@@ -496,8 +543,21 @@ class SettingsSessionCoordinator(
             )
         }
 
-        if (enterFactory() != null) {
-            return ConfirmationAttempt(confirmation = null)
+        val recoveryError = confirmPendingFactoryExit()
+        if (recoveryError != null) {
+            return ConfirmationAttempt(
+                confirmation = null,
+                exitUnconfirmed = true,
+                reconnectRequired = recoveryError.requiresReconnect()
+            )
+        }
+
+        val entryError = enterFactory()
+        if (entryError != null) {
+            return ConfirmationAttempt(
+                confirmation = null,
+                reconnectRequired = entryError.requiresReconnect()
+            )
         }
 
         var factoryEntered = true
@@ -534,13 +594,14 @@ class SettingsSessionCoordinator(
                 }
             }
 
-            val exitConfirmed = exitFactory(commit = false)
+            val exitError = exitFactory(commit = false)
             exitAttempted = true
             factoryEntered = false
-            if (!readsAvailable || !exitConfirmed) {
+            if (!readsAvailable || exitError != null) {
                 return ConfirmationAttempt(
                     confirmation = null,
-                    exitUnconfirmed = !exitConfirmed
+                    exitUnconfirmed = exitError != null,
+                    reconnectRequired = exitError?.requiresReconnect() == true
                 )
             }
             return ConfirmationAttempt(PostCommitConfirmation(values, mismatched))
@@ -553,7 +614,7 @@ class SettingsSessionCoordinator(
 
     private suspend fun enterFactory(): RegisterAccessError? {
         val address = JbdCommands.CMD_FACTORY_MODE.toInt() and 0xFF
-        return commandError(
+        val error = commandError(
             executeWithNoResponseRetries(
                 JbdCommands.openFactoryMode(),
                 address,
@@ -561,9 +622,11 @@ class SettingsSessionCoordinator(
             ),
             address
         )
+        if (error == null) factoryExitConfirmationPending = true
+        return error
     }
 
-    private suspend fun exitFactory(commit: Boolean): Boolean {
+    private suspend fun exitFactory(commit: Boolean): RegisterAccessError? {
         val address = JbdCommands.CMD_CLOSE_FACTORY_MODE.toInt() and 0xFF
         val frame = if (commit) {
             JbdConfigCommands.exitFactoryModeWithCommit()
@@ -575,8 +638,13 @@ class SettingsSessionCoordinator(
         } else {
             executeWithNoResponseRetries(frame, address, exitRetries)
         }
-        return commandError(outcome, address) == null
+        val error = commandError(outcome, address)
+        if (error == null) factoryExitConfirmationPending = false
+        return error
     }
+
+    private suspend fun confirmPendingFactoryExit(): RegisterAccessError? =
+        if (factoryExitConfirmationPending) exitFactory(commit = false) else null
 
     private suspend fun executeWithNoResponseRetries(
         frame: ByteArray,
@@ -617,8 +685,40 @@ class SettingsSessionCoordinator(
             else -> null
         }
         GatewayOutcome.NoResponse -> RegisterAccessError.NoResponse
-        is GatewayOutcome.TransportFailure -> RegisterAccessError.TransportFailure(outcome.message)
+        is GatewayOutcome.TransportFailure -> RegisterAccessError.TransportFailure(
+            outcome.message,
+            outcome.reconnectRequired
+        )
     }
+
+    private fun shouldAbortRemainingReads(
+        address: Int,
+        error: RegisterAccessError
+    ): Boolean = error is RegisterAccessError.TransportFailure ||
+        (address in CALIBRATION_ACTION_REGISTER_RANGE &&
+            error is RegisterAccessError.ErrorStatus &&
+            error.status == CALIBRATION_UNSUPPORTED_STATUS)
+
+    private fun addExitFailureWarnings(
+        warnings: MutableSet<SettingsSessionWarning>,
+        error: RegisterAccessError
+    ) {
+        warnings += SettingsSessionWarning.EXIT_UNCONFIRMED
+        warnings += SettingsSessionWarning.DEVICE_MAY_REMAIN_IN_FACTORY_MODE
+        addReconnectWarning(warnings, error)
+    }
+
+    private fun addReconnectWarning(
+        warnings: MutableSet<SettingsSessionWarning>,
+        error: RegisterAccessError
+    ) {
+        if (error.requiresReconnect()) {
+            warnings += SettingsSessionWarning.RECONNECT_REQUIRED
+        }
+    }
+
+    private fun RegisterAccessError.requiresReconnect(): Boolean =
+        this is RegisterAccessError.TransportFailure && reconnectRequired
 
     private fun RegisterAccessError.toChangeDetail(phase: ChangePhase): ChangeDetail = when (this) {
         RegisterAccessError.NoResponse -> ChangeDetail.NoResponse(phase)
@@ -634,11 +734,14 @@ class SettingsSessionCoordinator(
 
     private data class ConfirmationAttempt(
         val confirmation: PostCommitConfirmation?,
-        val exitUnconfirmed: Boolean = false
+        val exitUnconfirmed: Boolean = false,
+        val reconnectRequired: Boolean = false
     )
 
     companion object {
         const val DEFAULT_TIMEOUT_MS: Long = 3_000L
+        private const val CALIBRATION_UNSUPPORTED_STATUS = 0x82
+        private val CALIBRATION_ACTION_REGISTER_RANGE = 0xAD..0xD7
         private val U16_CODEC = JbdConfigCodec.u16(1.0, "raw")
     }
 }

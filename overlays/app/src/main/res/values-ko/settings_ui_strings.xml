@@ -95,6 +95,7 @@
     <string name="settings_warning_post_commit_unavailable">커밋 후 재확인 미완료</string>
     <string name="settings_warning_post_commit_mismatch">커밋 후 재확인 불일치</string>
     <string name="settings_warning_direct_fallback">공장 모드 진입 실패(직접 읽기 대체)</string>
+    <string name="settings_warning_reconnect_required">BLE 연결이 끊겨 순차 조회를 중단했습니다. BMS를 재연결한 뒤 새로고침하세요. 재시도 전에 팩토리 모드 종료를 확인합니다.</string>
 
     <string name="settings_field_bal_start">밸런스 시작 전압</string>
     <string name="settings_field_bal_window">밸런스 델타</string>
