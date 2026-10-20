@@ -22,8 +22,8 @@ concurrency:
 env:
   UPSTREAM_REPO: gytxtx/OpenJBD
   UPSTREAM_COMMIT: 7e3e225a128f6e0d69425b98a2670d8d69594885
-  RELEASE_TAG: v0.1.0-alpha.12
-  APK_NAME: jbd-bms-manager-v0.1.0-alpha.12.apk
+  RELEASE_TAG: v0.1.0-alpha.14
+  APK_NAME: jbd-bms-manager-v0.1.0-alpha.14.apk
 
 jobs:
   build:
@@ -63,6 +63,8 @@ jobs:
           python3 manager/scripts/apply-alpha10.py upstream-src
           python3 manager/scripts/apply-alpha11.py upstream-src
           python3 manager/scripts/apply-alpha12.py upstream-src
+          python3 manager/scripts/apply-alpha13.py upstream-src
+          python3 manager/scripts/apply-alpha14.py upstream-src
 
       - name: Grant Gradle wrapper permission
         run: chmod +x upstream-src/gradlew
@@ -95,9 +97,9 @@ jobs:
         if: github.ref == 'refs/heads/main'
         run: |
           cat > release-notes.md <<'EOF'
-          ## JBD BMS Manager v0.1.0-alpha.12
+          ## JBD BMS Manager v0.1.0-alpha.14
 
-          미연결 셀 제외 라운드(10S~13S/14S)를 담은 테스트 빌드입니다.
+          합선 감지선 팩 인식(0V 채널 미사용 확정·S수 하향) 및 캘리브레이션 접근 차단 수정을 담은 테스트 빌드입니다.
 
           ### 변경 내용
           - 미연결 셀 제외: 14S 제품에 10S~13S 연결 시 미연결 슬롯을 평균·최저·밸런싱·이력 통계에서 제외. 0.5V 하한 + 히스테리시스 디바운스(복귀 1.0V, 3프레임 연속)로 고스트 전압 깜빡임 대응. 미연결 표시는 중립 —
@@ -122,7 +124,7 @@ jobs:
           else
             gh release create "${RELEASE_TAG}" "dist/${APK_NAME}" "dist/${APK_NAME}.sha256" \
               --target "${GITHUB_SHA}" \
-              --title "JBD BMS Manager v0.1.0-alpha.12" \
+              --title "JBD BMS Manager v0.1.0-alpha.14" \
               --notes-file release-notes.md \
               --prerelease \
               --repo "${GITHUB_REPOSITORY}"
