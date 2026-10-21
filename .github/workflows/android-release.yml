@@ -1,4 +1,4 @@
-name: Android Alpha Build
+name: Android Release Build
 
 on:
   workflow_dispatch:
@@ -7,7 +7,7 @@ on:
     paths:
       - "overlays/**"
       - "scripts/apply-*.py"
-      - ".github/workflows/android-alpha.yml"
+      - ".github/workflows/android-release.yml"
 
 permissions:
   contents: write
@@ -16,14 +16,14 @@ concurrency:
   # Per-ref groups so parallel feature-branch builds never cancel each other
   # or an in-progress main/release build. Same-ref pushes still supersede
   # older runs for that ref only.
-  group: android-alpha-${{ github.ref }}
+  group: android-release-${{ github.ref }}
   cancel-in-progress: true
 
 env:
   UPSTREAM_REPO: gytxtx/OpenJBD
   UPSTREAM_COMMIT: 7e3e225a128f6e0d69425b98a2670d8d69594885
-  RELEASE_TAG: v0.1.0-alpha.14
-  APK_NAME: jbd-bms-manager-v0.1.0-alpha.14.apk
+  RELEASE_TAG: v0.1.1
+  APK_NAME: jbd-bms-manager-v0.1.1.apk
 
 jobs:
   build:
@@ -51,20 +51,7 @@ jobs:
           cache-dependency-path: upstream-src/**/*.gradle*
 
       - name: Apply JBD BMS Manager product overlay
-        run: |
-          python3 manager/scripts/apply-product-overlay.py upstream-src
-          python3 manager/scripts/apply-alpha3.py upstream-src
-          python3 manager/scripts/apply-alpha4.py upstream-src
-          python3 manager/scripts/apply-alpha5.py upstream-src
-          python3 manager/scripts/apply-alpha6.py upstream-src
-          python3 manager/scripts/apply-alpha7.py upstream-src
-          python3 manager/scripts/apply-alpha8.py upstream-src
-          python3 manager/scripts/apply-alpha9.py upstream-src
-          python3 manager/scripts/apply-alpha10.py upstream-src
-          python3 manager/scripts/apply-alpha11.py upstream-src
-          python3 manager/scripts/apply-alpha12.py upstream-src
-          python3 manager/scripts/apply-alpha13.py upstream-src
-          python3 manager/scripts/apply-alpha14.py upstream-src
+        run: python3 manager/scripts/apply-product-overlay.py upstream-src
 
       - name: Grant Gradle wrapper permission
         run: chmod +x upstream-src/gradlew
@@ -86,46 +73,48 @@ jobs:
       - name: Upload APK artifact
         uses: actions/upload-artifact@v7
         with:
-          name: jbd-bms-manager-alpha-apk
+          name: jbd-bms-manager-apk
           path: |
             dist/${{ env.APK_NAME }}
             dist/${{ env.APK_NAME }}.sha256
           if-no-files-found: error
           retention-days: 90
 
-      - name: Write prerelease notes
+      - name: Write release notes
         if: github.ref == 'refs/heads/main'
         run: |
           cat > release-notes.md <<'EOF'
-          ## JBD BMS Manager v0.1.0-alpha.14
+          ## JBD BMS Manager v0.1.1
 
-          합선 감지선 팩 인식(0V 채널 미사용 확정·S수 하향) 및 캘리브레이션 접근 차단 수정을 담은 테스트 빌드입니다.
+          GATT 쓰기 직렬화 수정과 캘리브레이션 안정화를 담은 정식 릴리스입니다.
 
           ### 변경 내용
-          - 미연결 셀 제외: 14S 제품에 10S~13S 연결 시 미연결 슬롯을 평균·최저·밸런싱·이력 통계에서 제외. 0.5V 하한 + 히스테리시스 디바운스(복귀 1.0V, 3프레임 연속)로 고스트 전압 깜빡임 대응. 미연결 표시는 중립 —
+          - GATT 쓰기 직렬화: 응답 완료와 write 콜백 완료를 분리하고, 시작이 거부된 쓰기는 순서를 보존한 채 제한적으로 재시도합니다. 중복 쓰기는 발생하지 않습니다.
+          - write 콜백 유실 감시: 콜백이 오지 않으면 큐가 멈추지 않고 연결을 정리한 뒤 재연결합니다.
+          - 미연결 셀 제외: 14S 제품에 10S~13S 연결 시 미연결 슬롯을 평균·최저·밸런싱·이력 통계에서 제외합니다. 0.5V 하한 + 히스테리시스 디바운스로 고스트 전압 깜빡임에 대응합니다.
 
           ### 현재 제한
           - 실기기에서의 시각적 확인(색상·배치·다크 테마·차트 가독성)은 아직 물리 검증 전입니다.
           - 안전 밴드와 SOC 밴드는 앱 참고 표시이며 BMS 보호 동작을 보장하지 않습니다.
           - 이력은 앱을 실행한 동안에만 기록됩니다(백그라운드 상시 기록 아님).
           - 커밋 시 BMS 오류 카운터가 초기화됩니다(설계 반영).
-          - debug key로 서명된 알파 테스트 빌드입니다.
+          - debug key로 서명된 빌드입니다.
           - JBD / Jiabaida의 공식 앱이 아닙니다.
           EOF
 
-      - name: Publish GitHub prerelease
+      - name: Publish GitHub release
         if: github.ref == 'refs/heads/main'
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
           if gh release view "${RELEASE_TAG}" --repo "${GITHUB_REPOSITORY}" >/dev/null 2>&1; then
             gh release upload "${RELEASE_TAG}" "dist/${APK_NAME}" "dist/${APK_NAME}.sha256" --clobber --repo "${GITHUB_REPOSITORY}"
-            gh release edit "${RELEASE_TAG}" --notes-file release-notes.md --prerelease --repo "${GITHUB_REPOSITORY}"
+            gh release edit "${RELEASE_TAG}" --notes-file release-notes.md --prerelease=false --latest --repo "${GITHUB_REPOSITORY}"
           else
             gh release create "${RELEASE_TAG}" "dist/${APK_NAME}" "dist/${APK_NAME}.sha256" \
               --target "${GITHUB_SHA}" \
-              --title "JBD BMS Manager v0.1.0-alpha.14" \
+              --title "JBD BMS Manager v0.1.1" \
               --notes-file release-notes.md \
-              --prerelease \
+              --latest \
               --repo "${GITHUB_REPOSITORY}"
           fi
