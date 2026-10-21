@@ -17,6 +17,7 @@ import android.os.Build
 import android.os.Handler
 import android.os.Looper
 import com.gytxtx.openjbd.ble.BleConstants
+import com.gytxtx.openjbd.ble.GattWriteQueue
 import com.gytxtx.openjbd.data.BmsRepository
 import com.gytxtx.openjbd.data.BmsUiState
 import com.gytxtx.openjbd.data.ConnectionState
@@ -29,7 +30,6 @@ import com.gytxtx.openjbd.protocol.JbdParser
 import com.gytxtx.openjbd.settings.GatewayOutcome
 import com.gytxtx.openjbd.settings.SettingsCommandHost
 import dagger.hilt.android.qualifiers.ApplicationContext
-import java.util.ArrayDeque
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -40,15 +40,15 @@ class BmsConnectionManager @Inject constructor(
 ) : SettingsCommandHost {
     private val handler = Handler(Looper.getMainLooper())
     private val frameAssembler = JbdFrameAssembler()
-    private val commandQueue = ArrayDeque<CommandRequest>()
+    private val commandQueue = GattWriteQueue<CommandRequest>(GATT_WRITE_MAX_START_RETRIES)
 
     private var adapter: BluetoothAdapter? = null
     private var gatt: BluetoothGatt? = null
     private var writeCharacteristic: BluetoothGattCharacteristic? = null
     @Volatile
     private var connected = false
-    private var writeInFlight = false
-    private var currentCommand: CommandRequest? = null
+    private val currentCommand: CommandRequest?
+        get() = commandQueue.activeItem
     private var connectedDeviceName: String? = null
     private var connectedDeviceAddress: String? = null
     private var autoReconnectEnabled = false
@@ -64,9 +64,8 @@ class BmsConnectionManager @Inject constructor(
     private val pollRunnable = Runnable {
         if (settingsSessionActive ||
             !connected ||
-            writeInFlight ||
-            currentCommand != null ||
-            commandQueue.isNotEmpty()
+            commandQueue.writeCallbackPending ||
+            !commandQueue.isEmpty
         ) {
             return@Runnable
         }
@@ -81,6 +80,14 @@ class BmsConnectionManager @Inject constructor(
         )
     }
 
+    private val writeStartRetryRunnable = Runnable { drainCommandQueue() }
+
+    private val writeCallbackWatchdogRunnable = Runnable {
+        if (!commandQueue.writeCallbackPending) return@Runnable
+        commandQueue.abandonLostWriteCallback()
+        failConnection(ConnectionState.CONNECTION_FAILED, getString(R.string.status_connection_lost))
+    }
+
     private val reconnectRunnable = Runnable {
         reconnectScheduled = false
         if (!shouldAutoReconnect() || connected) return@Runnable
@@ -90,54 +97,59 @@ class BmsConnectionManager @Inject constructor(
     private val gattCallback = object : BluetoothGattCallback() {
         @SuppressLint("MissingPermission")
         override fun onConnectionStateChange(bluetoothGatt: BluetoothGatt, status: Int, newState: Int) {
-            if (gatt !== bluetoothGatt) { closeGattIfPermitted(bluetoothGatt); return }
-            if (status != BluetoothGatt.GATT_SUCCESS && newState != BluetoothProfile.STATE_DISCONNECTED) {
-                failConnection(ConnectionState.CONNECTION_FAILED, getString(R.string.status_connection_failed, status))
-                return
-            }
-            if (newState == BluetoothProfile.STATE_CONNECTED) {
-                if (!hasConnectPermission()) {
-                    failConnection(ConnectionState.PERMISSION_REQUIRED, getString(R.string.status_auto_connect_permission_required))
-                    return
+            handler.post {
+                if (gatt !== bluetoothGatt) { closeGattIfPermitted(bluetoothGatt); return@post }
+                if (status != BluetoothGatt.GATT_SUCCESS && newState != BluetoothProfile.STATE_DISCONNECTED) {
+                    failConnection(ConnectionState.CONNECTION_FAILED, getString(R.string.status_connection_failed, status))
+                    return@post
                 }
-                connected = true
-                reconnectAttempts = 0
-                updateState { it.withConnectionState(ConnectionState.DISCOVERING_SERVICES, true, getString(R.string.status_connected_discovering)) }
-                if (!bluetoothGatt.discoverServices()) {
-                    failConnection(ConnectionState.SERVICE_DISCOVERY_FAILED, getString(R.string.status_service_discovery_start_failed))
-                }
-            } else if (newState == BluetoothProfile.STATE_DISCONNECTED) {
-                connected = false
-                failPendingSettingsCommands("disconnected")
-                writeCharacteristic = null
-                handler.removeCallbacks(pollRunnable); handler.removeCallbacks(commandTimeoutRunnable); frameAssembler.reset(); gatt = null
-                closeGattIfPermitted(bluetoothGatt)
-                if (!intentionalDisconnect && shouldAutoReconnect()) {
-                    scheduleReconnect(getString(R.string.status_connection_lost))
-                } else if (!intentionalDisconnect) {
-                    publishDisconnected(ConnectionState.CONNECTION_FAILED, getString(R.string.status_connection_lost), true)
-                } else {
-                    publishDisconnected(ConnectionState.DISCONNECTED, getString(R.string.status_select_bms))
+                if (newState == BluetoothProfile.STATE_CONNECTED) {
+                    if (!hasConnectPermission()) {
+                        failConnection(ConnectionState.PERMISSION_REQUIRED, getString(R.string.status_auto_connect_permission_required))
+                        return@post
+                    }
+                    connected = true
+                    reconnectAttempts = 0
+                    updateState { it.withConnectionState(ConnectionState.DISCOVERING_SERVICES, true, getString(R.string.status_connected_discovering)) }
+                    if (!bluetoothGatt.discoverServices()) {
+                        failConnection(ConnectionState.SERVICE_DISCOVERY_FAILED, getString(R.string.status_service_discovery_start_failed))
+                    }
+                } else if (newState == BluetoothProfile.STATE_DISCONNECTED) {
+                    connected = false
+                    failPendingSettingsCommands("disconnected")
+                    writeCharacteristic = null
+                    handler.removeCallbacks(pollRunnable); handler.removeCallbacks(commandTimeoutRunnable); frameAssembler.reset(); gatt = null
+                    closeGattIfPermitted(bluetoothGatt)
+                    if (!intentionalDisconnect && shouldAutoReconnect()) {
+                        scheduleReconnect(getString(R.string.status_connection_lost))
+                    } else if (!intentionalDisconnect) {
+                        publishDisconnected(ConnectionState.CONNECTION_FAILED, getString(R.string.status_connection_lost), true)
+                    } else {
+                        publishDisconnected(ConnectionState.DISCONNECTED, getString(R.string.status_select_bms))
+                    }
                 }
             }
         }
 
         override fun onServicesDiscovered(bluetoothGatt: BluetoothGatt, status: Int) {
-            if (status != BluetoothGatt.GATT_SUCCESS) {
-                failConnection(ConnectionState.SERVICE_DISCOVERY_FAILED, getString(R.string.status_service_discovery_failed, status))
-                return
-            }
-            val service = bluetoothGatt.getService(BleConstants.SERVICE_UUID) ?: run {
-                failConnection(ConnectionState.SERVICE_NOT_FOUND, getString(R.string.status_jbd_service_not_found)); return
-            }
-            writeCharacteristic = service.getCharacteristic(BleConstants.WRITE_UUID)
-            val notifyCharacteristic = service.getCharacteristic(BleConstants.NOTIFY_UUID)
-            if (writeCharacteristic == null || notifyCharacteristic == null) {
-                failConnection(ConnectionState.CHARACTERISTICS_NOT_FOUND, getString(R.string.status_jbd_characteristics_not_found)); return
-            }
-            updateState { it.withConnectionState(ConnectionState.ENABLING_NOTIFICATIONS, true, getString(R.string.status_enabling_notifications)) }
-            if (!enableNotifications(bluetoothGatt, notifyCharacteristic)) {
-                failConnection(ConnectionState.NOTIFICATIONS_FAILED, getString(R.string.status_notifications_failed))
+            handler.post {
+                if (gatt !== bluetoothGatt) { closeGattIfPermitted(bluetoothGatt); return@post }
+                if (status != BluetoothGatt.GATT_SUCCESS) {
+                    failConnection(ConnectionState.SERVICE_DISCOVERY_FAILED, getString(R.string.status_service_discovery_failed, status))
+                    return@post
+                }
+                val service = bluetoothGatt.getService(BleConstants.SERVICE_UUID) ?: run {
+                    failConnection(ConnectionState.SERVICE_NOT_FOUND, getString(R.string.status_jbd_service_not_found)); return@post
+                }
+                writeCharacteristic = service.getCharacteristic(BleConstants.WRITE_UUID)
+                val notifyCharacteristic = service.getCharacteristic(BleConstants.NOTIFY_UUID)
+                if (writeCharacteristic == null || notifyCharacteristic == null) {
+                    failConnection(ConnectionState.CHARACTERISTICS_NOT_FOUND, getString(R.string.status_jbd_characteristics_not_found)); return@post
+                }
+                updateState { it.withConnectionState(ConnectionState.ENABLING_NOTIFICATIONS, true, getString(R.string.status_enabling_notifications)) }
+                if (!enableNotifications(bluetoothGatt, notifyCharacteristic)) {
+                    failConnection(ConnectionState.NOTIFICATIONS_FAILED, getString(R.string.status_notifications_failed))
+                }
             }
         }
 
@@ -146,38 +158,53 @@ class BmsConnectionManager @Inject constructor(
         override fun onCharacteristicChanged(bluetoothGatt: BluetoothGatt, characteristic: BluetoothGattCharacteristic, value: ByteArray) = handleIncoming(value)
 
         override fun onCharacteristicWrite(bluetoothGatt: BluetoothGatt, characteristic: BluetoothGattCharacteristic, status: Int) {
-            writeInFlight = false
-            if (status == BluetoothGatt.GATT_SUCCESS && currentCommand != null) {
-                handler.removeCallbacks(commandTimeoutRunnable)
-                handler.postDelayed(
-                    commandTimeoutRunnable,
-                    currentCommand?.timeoutMs ?: COMMAND_TIMEOUT_MS
-                )
-            } else {
+            handler.post {
+                if (gatt !== bluetoothGatt) return@post
+                if (!commandQueue.writeCallbackPending) return@post
+                commandQueue.onWriteCallback()
+                handler.removeCallbacks(writeCallbackWatchdogRunnable)
+
+                val command = currentCommand
+                if (status == BluetoothGatt.GATT_SUCCESS) {
+                    if (command != null) {
+                        handler.removeCallbacks(commandTimeoutRunnable)
+                        handler.postDelayed(commandTimeoutRunnable, command.timeoutMs)
+                    } else {
+                        drainCommandQueue()
+                    }
+                    return@post
+                }
+
                 val linkLost = status == GATT_ERROR_LINK_LOSS
-                completeCurrentCommand(
-                    currentCommand?.settingsCallback?.let {
-                        GatewayOutcome.TransportFailure(
-                            "GATT write failed: $status",
-                            reconnectRequired = linkLost
-                        )
-                    },
-                    drainQueue = !linkLost
-                )
+                if (command != null) {
+                    completeCurrentCommand(
+                        command.settingsCallback?.let {
+                            GatewayOutcome.TransportFailure(
+                                "GATT write failed: $status",
+                                reconnectRequired = linkLost
+                            )
+                        },
+                        drainQueue = !linkLost
+                    )
+                }
                 if (linkLost) {
                     failConnection(
                         ConnectionState.CONNECTION_FAILED,
                         getString(R.string.status_connection_failed, status)
                     )
+                } else if (command == null) {
+                    drainCommandQueue()
                 }
             }
         }
 
         @SuppressLint("MissingPermission")
         override fun onDescriptorWrite(bluetoothGatt: BluetoothGatt, descriptor: BluetoothGattDescriptor, status: Int) {
-            if (gatt !== bluetoothGatt) { closeGattIfPermitted(bluetoothGatt); return }
-            if (status == BluetoothGatt.GATT_SUCCESS) startReading()
-            else failConnection(ConnectionState.NOTIFICATIONS_FAILED, getString(R.string.status_notifications_failed))
+            handler.post {
+                if (gatt !== bluetoothGatt) { closeGattIfPermitted(bluetoothGatt); return@post }
+                if (status == BluetoothGatt.GATT_SUCCESS) startReading()
+                else failConnection(ConnectionState.NOTIFICATIONS_FAILED, getString(R.string.status_notifications_failed))
+            }
         }
     }
 
@@ -234,7 +261,7 @@ class BmsConnectionManager @Inject constructor(
                     GatewayOutcome.TransportFailure("not connected", reconnectRequired = true)
                 )
             } else {
-                commandQueue.addLast(request)
+                commandQueue.enqueue(request)
                 drainCommandQueue()
             }
         }
@@ -310,56 +337,66 @@ class BmsConnectionManager @Inject constructor(
     }
 
     private fun enqueuePollCycle() {
-        commandQueue.addLast(CommandRequest.read(JbdCommands.CMD_BASIC_INFO, CommandKind.BASIC_INFO))
-        commandQueue.addLast(CommandRequest.read(JbdCommands.CMD_CELL_VOLTAGE, CommandKind.CELL_VOLTAGES))
+        commandQueue.enqueue(CommandRequest.read(JbdCommands.CMD_BASIC_INFO, CommandKind.BASIC_INFO))
+        commandQueue.enqueue(CommandRequest.read(JbdCommands.CMD_CELL_VOLTAGE, CommandKind.CELL_VOLTAGES))
         if (!extendedInfoRequested) {
             extendedInfoRequested = true
-            commandQueue.addLast(CommandRequest(JbdCommands.CMD_FACTORY_MODE, CommandKind.FACTORY_MODE, JbdCommands.openFactoryMode()))
-            commandQueue.addLast(CommandRequest.read(JbdCommands.CMD_SERIAL_NUMBER, CommandKind.SERIAL_NUMBER))
-            commandQueue.addLast(CommandRequest.read(JbdCommands.CMD_BARCODE, CommandKind.BARCODE))
-            commandQueue.addLast(CommandRequest.read(JbdCommands.CMD_MANUFACTURER, CommandKind.MANUFACTURER))
-            commandQueue.addLast(CommandRequest.read(JbdCommands.CMD_BATTERY_MODEL, CommandKind.BATTERY_MODEL))
-            commandQueue.addLast(CommandRequest(JbdCommands.CMD_EXTENDED_PARAMS, CommandKind.EXT_RATINGS, JbdCommands.readExtendedParams(EXT_RATINGS_START, 8)))
-            commandQueue.addLast(CommandRequest(JbdCommands.CMD_EXTENDED_PARAMS, CommandKind.EXT_BMS_ADDRESS, JbdCommands.readExtendedParams(EXT_BMS_ADDRESS_START, 6)))
-            commandQueue.addLast(CommandRequest(JbdCommands.CMD_EXTENDED_PARAMS, CommandKind.EXT_BMS_MODEL, JbdCommands.readExtendedParams(EXT_BMS_MODEL_START, 8)))
-            commandQueue.addLast(CommandRequest(JbdCommands.CMD_CLOSE_FACTORY_MODE, CommandKind.CLOSE_FACTORY_MODE, JbdCommands.closeFactoryMode()))
+            commandQueue.enqueue(CommandRequest(JbdCommands.CMD_FACTORY_MODE, CommandKind.FACTORY_MODE, JbdCommands.openFactoryMode()))
+            commandQueue.enqueue(CommandRequest.read(JbdCommands.CMD_SERIAL_NUMBER, CommandKind.SERIAL_NUMBER))
+            commandQueue.enqueue(CommandRequest.read(JbdCommands.CMD_BARCODE, CommandKind.BARCODE))
+            commandQueue.enqueue(CommandRequest.read(JbdCommands.CMD_MANUFACTURER, CommandKind.MANUFACTURER))
+            commandQueue.enqueue(CommandRequest.read(JbdCommands.CMD_BATTERY_MODEL, CommandKind.BATTERY_MODEL))
+            commandQueue.enqueue(CommandRequest(JbdCommands.CMD_EXTENDED_PARAMS, CommandKind.EXT_RATINGS, JbdCommands.readExtendedParams(EXT_RATINGS_START, 8)))
+            commandQueue.enqueue(CommandRequest(JbdCommands.CMD_EXTENDED_PARAMS, CommandKind.EXT_BMS_ADDRESS, JbdCommands.readExtendedParams(EXT_BMS_ADDRESS_START, 6)))
+            commandQueue.enqueue(CommandRequest(JbdCommands.CMD_EXTENDED_PARAMS, CommandKind.EXT_BMS_MODEL, JbdCommands.readExtendedParams(EXT_BMS_MODEL_START, 8)))
+            commandQueue.enqueue(CommandRequest(JbdCommands.CMD_CLOSE_FACTORY_MODE, CommandKind.CLOSE_FACTORY_MODE, JbdCommands.closeFactoryMode()))
         }
     }
 
     private fun drainCommandQueue() {
-        if (!connected || writeInFlight || currentCommand != null) return
-        val request = commandQueue.pollFirst() ?: run { handler.removeCallbacks(pollRunnable); handler.postDelayed(pollRunnable, refreshIntervalMs); return }
+        if (!connected) return
+        if (commandQueue.writeCallbackPending || currentCommand != null) return
+        val request = commandQueue.beginNext()
+        if (request == null) {
+            handler.removeCallbacks(pollRunnable)
+            handler.postDelayed(pollRunnable, refreshIntervalMs)
+            return
+        }
         sendCommand(request)
     }
 
     @SuppressLint("MissingPermission")
     private fun sendCommand(request: CommandRequest) {
-        if (gatt == null ||
-            writeCharacteristic == null ||
-            writeInFlight ||
-            currentCommand != null ||
-            !hasConnectPermission()
-        ) {
+        val g = gatt
+        val wc = writeCharacteristic
+        if (g == null || wc == null || !hasConnectPermission()) {
+            commandQueue.completeActive()
             request.settingsCallback?.invoke(
                 GatewayOutcome.TransportFailure(
                     "BLE transport is not ready",
                     reconnectRequired = true
                 )
             )
-            if (request.settingsCallback != null) drainCommandQueue()
+            drainCommandQueue()
             return
         }
-        currentCommand = request; writeInFlight = true
-        val g = gatt!!; val wc = writeCharacteristic!!
         val started = if (Build.VERSION.SDK_INT >= 33) g.writeCharacteristic(wc, request.command, BluetoothGattCharacteristic.WRITE_TYPE_DEFAULT) == BluetoothStatusCodes.SUCCESS
         else { @Suppress("DEPRECATION") wc.writeType = BluetoothGattCharacteristic.WRITE_TYPE_DEFAULT; wc.value = request.command; g.writeCharacteristic(wc) }
         if (!started) {
-            completeCurrentCommand(
-                request.settingsCallback?.let {
+            if (commandQueue.retryStartFailure()) {
+                handler.removeCallbacks(writeStartRetryRunnable)
+                handler.postDelayed(writeStartRetryRunnable, GATT_WRITE_START_RETRY_DELAY_MS)
+            } else {
+                request.settingsCallback?.invoke(
                     GatewayOutcome.TransportFailure("GATT write could not start")
-                }
-            )
+                )
+                drainCommandQueue()
+            }
+            return
         }
+        commandQueue.onWriteStarted()
+        handler.removeCallbacks(writeCallbackWatchdogRunnable)
+        handler.postDelayed(writeCallbackWatchdogRunnable, GATT_WRITE_CALLBACK_TIMEOUT_MS)
     }
 
     private fun handleIncoming(value: ByteArray) {
@@ -435,9 +472,7 @@ class BmsConnectionManager @Inject constructor(
         drainQueue: Boolean = true
     ) {
         handler.removeCallbacks(commandTimeoutRunnable)
-        val completed = currentCommand
-        currentCommand = null
-        writeInFlight = false
+        val completed = commandQueue.completeActive()
         if (completed?.settingsCallback != null && settingsOutcome != null) {
             completed.settingsCallback.invoke(settingsOutcome)
         }
@@ -445,14 +480,10 @@ class BmsConnectionManager @Inject constructor(
     }
 
     private fun failPendingSettingsCommands(message: String) {
-        val callbacks = buildList {
-            currentCommand?.settingsCallback?.let(::add)
-            commandQueue.mapNotNullTo(this) { it.settingsCallback }
-        }
+        val callbacks = commandQueue.clear().mapNotNull { it.settingsCallback }
         handler.removeCallbacks(commandTimeoutRunnable)
-        currentCommand = null
-        commandQueue.clear()
-        writeInFlight = false
+        handler.removeCallbacks(writeStartRetryRunnable)
+        handler.removeCallbacks(writeCallbackWatchdogRunnable)
         callbacks.forEach { callback ->
             runCatching {
                 callback(
@@ -563,6 +594,9 @@ class BmsConnectionManager @Inject constructor(
         private const val AUTO_RECONNECT_BASE_DELAY_MS = 5000L
         private const val AUTO_RECONNECT_MAX_DELAY_MS = 30000L
         private const val GATT_ERROR_LINK_LOSS = 133
+        private const val GATT_WRITE_MAX_START_RETRIES = 2
+        private const val GATT_WRITE_START_RETRY_DELAY_MS = 60L
+        private const val GATT_WRITE_CALLBACK_TIMEOUT_MS = 3000L
         private const val COMMAND_TIMEOUT_MS = 2200L
         private const val EXT_RATINGS_START = 117
         private const val EXT_BMS_ADDRESS_START = 170
