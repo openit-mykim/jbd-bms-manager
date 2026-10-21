@@ -185,7 +185,7 @@
     <string name="setting_about">앱 정보</string>
     <string name="setting_about_subtitle">앱 버전 및 프로젝트 저장소</string>
     <string name="about_title">앱 정보</string>
-    <string name="about_version">버전 0.1.0-alpha.1</string>
+    <string name="about_version">버전 0.1.1</string>
     <string name="about_description">JBD BMS Manager는 JBD / Xiaoxiang BMS를 위한 로컬 Android BLE 모니터입니다. 계정이나 클라우드 없이 배터리 상태를 확인하며, 향후 유지보수 모드를 별도로 제공합니다.</string>
     <string name="about_github">GitHub 저장소</string>
     <string name="about_item_app_version">앱 버전</string>

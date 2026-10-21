@@ -1,14 +1,14 @@
 # Project Status
 
-Last updated: 2026-09-14
+Last updated: 2026-10-21
 
 ## Current phase
 
 **Maintenance sections complete — settings, calibration, MOS control and backup/restore are implemented with verified-write flows under Control**
 
-Current distributable line: `v0.1.0-alpha.x` (latest: `v0.1.0-alpha.12`).
+Current release: `v0.1.1`.
 
-The repository has a reproducible GitHub Actions build that checks out the pinned OpenJBD baseline, applies the JBD BMS Manager overlay, runs unit tests (275 test cases in the materialized tree), builds the APK and publishes a GitHub prerelease.
+The repository has a reproducible GitHub Actions build that checks out the pinned OpenJBD baseline, applies the JBD BMS Manager overlay, runs unit tests (311 test cases in the materialized tree), builds the APK and publishes a GitHub release.
 
 ## Current product decisions
 
@@ -38,11 +38,11 @@ See `docs/navigation-design.md`, `docs/maintenance-mode.md` and `docs/protocol-d
 
 ## Android 16 status
 
-The shared inset layer covers the main toolbar plus the device-list, about and licenses toolbars. The fix is included in the alpha.5+ builds; physical verification on the Android 16 device is still pending.
+The shared inset layer covers the main toolbar plus the device-list, about and licenses toolbars. The fix is included in the current builds; physical verification on the Android 16 device is still pending.
 
 ## Immediate next action
 
-1. Install `v0.1.0-alpha.12` on the physical Android 16 phone and verify:
+1. Install `v0.1.1` on the physical Android 16 phone and verify:
    - five-tab navigation renders correctly (개요/상세/밸런스/제어/설정),
    - Balance screen: cell diagnostics plus balance current / active-balancing count / legend — confirm each cell shows both V and mV, that band colors match the connected protection limits (or show the "default reference" label when limits were not read), and that highest/lowest/balancing appear as text badges rather than colors,
    - Balance delta: apply 5 / 15 / 20 mV from the presets and confirm the value is accepted and stored (record the rounding the BMS actually applies),

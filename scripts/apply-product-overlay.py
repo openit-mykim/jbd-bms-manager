@@ -42,8 +42,8 @@ def main() -> None:
 
     gradle = root / "app" / "build.gradle.kts"
     replace_required(gradle, 'applicationId = "com.gytxtx.openjbd"', 'applicationId = "com.openit.jbdbmsmanager"')
-    replace_required(gradle, "versionCode = 1", "versionCode = 3")
-    replace_required(gradle, 'versionName = "0.1.0"', 'versionName = "0.1.0-alpha.2"')
+    replace_required(gradle, "versionCode = 1", "versionCode = 16")
+    replace_required(gradle, 'versionName = "0.1.0"', 'versionName = "0.1.1"')
 
     strings = root / "app" / "src" / "main" / "res" / "values" / "strings.xml"
     replace_required(strings, '<string name="app_name">OpenJBD MVP</string>', '<string name="app_name">JBD BMS Manager</string>')
@@ -52,7 +52,7 @@ def main() -> None:
         '<string name="setting_language_zh">Simplified Chinese</string>\n    <string name="setting_language_en">English</string>',
         '<string name="setting_language_zh">Simplified Chinese</string>\n    <string name="setting_language_ko">Korean</string>\n    <string name="setting_language_en">English</string>',
     )
-    replace_optional(strings, '<string name="about_version">Version 0.1.0</string>', '<string name="about_version">Version 0.1.0-alpha.2</string>')
+    replace_optional(strings, '<string name="about_version">Version 0.1.0</string>', '<string name="about_version">Version 0.1.1</string>')
     replace_optional(
         strings,
         'OpenJBD is a local, account-free Android BLE monitor for JBD / Xiaoxiang BMS devices. It focuses on safely reading battery status without cloud services.',
@@ -83,6 +83,22 @@ def main() -> None:
         'private fun languageLabel(value: String) = when (value) { AppSettings.VALUE_KO -> getString(R.string.setting_language_ko); AppSettings.VALUE_ZH -> getString(R.string.setting_language_zh); AppSettings.VALUE_EN -> getString(R.string.setting_language_en); else -> getString(R.string.setting_language_system) }',
     )
 
+    manifest = root / "app" / "src" / "main" / "AndroidManifest.xml"
+    replace_required(manifest, 'android:icon="@mipmap/ic_launcher"', 'android:icon="@drawable/jbd_app_icon"')
+    replace_required(manifest, 'android:roundIcon="@mipmap/ic_launcher_round"', 'android:roundIcon="@drawable/jbd_app_icon"')
+
+    drawable_dir = root / "app" / "src" / "main" / "res" / "drawable"
+    drawable_dir.mkdir(parents=True, exist_ok=True)
+    for stale in (drawable_dir / "jbd_app_icon.xml", drawable_dir / "jbd_app_icon.webp"):
+        if stale.exists():
+            stale.unlink()
+
+    icon_values: list[int] = []
+    for idx in range(1, 6):
+        text = (repo_root / "assets" / f"icon.part{idx}.txt").read_text(encoding="utf-8").strip()
+        icon_values.extend(int(value) for value in text.split(",") if value)
+    (drawable_dir / "jbd_app_icon.png").write_bytes(bytes(icon_values))
+
     styles = root / "app" / "src" / "main" / "res" / "values" / "styles.xml"
     replace_optional(styles, '        <item name="android:windowOptOutEdgeToEdgeEnforcement">true</item>\n', "")
 
@@ -91,7 +107,7 @@ def main() -> None:
 
     marker = root / "JBD_BMS_MANAGER_BUILD.txt"
     marker.write_text(
-        "JBD BMS Manager alpha overlay\n"
+        "JBD BMS Manager product overlay\n"
         f"OpenJBD baseline: {UPSTREAM_COMMIT}\n"
         "Changes: Android 16 system-bar insets, Korean localization, product identity.\n",
         encoding="utf-8",

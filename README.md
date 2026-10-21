@@ -106,31 +106,31 @@ Upstream project:
 
 This repository was created independently rather than with GitHub's native Fork button. Local clones should treat OpenJBD as the `upstream` remote.
 
-For reproducible alpha builds, GitHub Actions checks out the pinned OpenJBD commit, applies this repository's product overlay, runs unit tests, builds the debug APK, and publishes the APK as a prerelease artifact.
+For reproducible release builds, GitHub Actions checks out the pinned OpenJBD commit, applies this repository's product overlay, runs unit tests, builds the debug APK, and publishes the APK as a GitHub release asset.
 
-See `docs/upstream-sync.md`, `scripts/bootstrap-upstream.sh`, and `scripts/apply-product-overlay.py`.
+See `docs/upstream-sync.md`, `scripts/bootstrap-upstream.sh`, `scripts/apply-product-overlay.py`, and `docs/release-process.md`.
 
 ## Current project state
 
-The repository is in an early executable alpha state. Current work focuses on:
+The repository is in an early executable release state (`v0.1.1`). Current work focuses on:
 
 1. OpenJBD monitoring baseline.
 2. Android 16 edge-to-edge / system-bar compatibility.
 3. Korean localization.
 4. JBD BMS Manager product identity.
-5. Five-tab information architecture — shell and content in place for this alpha line.
+5. Five-tab information architecture — shell and content in place for the 0.1.x line.
 6. Control/Maintenance flows (Read → Edit/Measure → Validate → Review → Apply → Read-back verify): settings for the balance / protection / temperature / capacity sections, calibration (current / cell voltage / NTC under the three-concept contract), MOS control (charge/discharge FET disable with live state) and backup/restore (JSON export + staged verified restore).
 7. Balance diagnostics: 5 mV-step balance delta control, per-cell safety bands (measured or explicitly-defaulted thresholds) and V+mV readouts with text badges for highest/lowest/balancing.
 8. Visualization: overview SOC gauge (3-level band), detail history trend chart (24 h / 7 d, SOC / pack voltage / cell delta) backed by an on-device 10 s sample store with 7-day retention.
 9. Reproducible APK CI/release packaging.
 
-The next major product work is physical verification of the current alpha and protocol evidence capture on supported hardware. All Control/Maintenance flows are implemented; writes are session-gated and commit only when every approved change verifies (with an independent post-commit confirmation read).
+The next major product work is physical verification of the current release and protocol evidence capture on supported hardware. All Control/Maintenance flows are implemented; writes are session-gated and commit only when every approved change verifies (with an independent post-commit confirmation read).
 
 See `PROJECT_STATUS.md` and `docs/development-plan.md` for the live execution state.
 
 ## Installation
 
-Download the latest prerelease APK from the repository **Releases** page. The package is currently a debug-signed alpha build intended for direct testing, not Play Store distribution.
+Download the latest release APK from the repository **Releases** page. The package is a debug-signed build (`v0.1.1`) intended for direct testing, not Play Store distribution.
 
 Android may require permission to install apps from the browser or file manager used to open the APK.
 

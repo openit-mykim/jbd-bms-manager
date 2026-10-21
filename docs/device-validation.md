@@ -43,9 +43,9 @@ Relevant configuration values:
 
 Compare pack/cell voltage and current against suitable reference instruments before calibration testing.
 
-## App UI / navigation verification (alpha builds)
+## App UI / navigation verification (release builds)
 
-Verify on the reference Android 16 phone after installing the current alpha:
+Verify on the reference Android 16 phone after installing the current release:
 
 - five-tab bottom navigation (개요 / 상세 / 밸런스 / 제어 / 설정) renders and switches correctly;
 - Balance tab with a connected BMS: every cell voltage, highest/lowest highlighting, balancing marks and min/max/average/delta statistics, balance current (when the device reports it), active-balancing count and the highlight legend;
@@ -60,7 +60,7 @@ Verify on the reference Android 16 phone after installing the current alpha:
 
 Record each violation with a screenshot and the app version (tag).
 
-## Settings flow verification (alpha.8+)
+## Settings flow verification (0.1.0+)
 
 Run in order, conservatively (prefer a small, non-safety-critical change first — e.g. balancing window or design capacity — before touching protection thresholds):
 
@@ -71,7 +71,7 @@ Run in order, conservatively (prefer a small, non-safety-critical change first �
 5. `PERSISTENCE`: disconnect, reconnect (and power-cycle if appropriate), re-read the same section. Persistence is verified only when the new value is still present — record `PERSISTENCE_VERIFIED`.
 6. On any mismatch, no-commit result or unknown warning, stop and capture the full result screen before retrying.
 
-## Calibration / MOS / backup verification (alpha.9+)
+## Calibration / MOS / backup verification (0.1.0+)
 
 Run conservatively; calibration needs a reliable reference instrument (clamp meter / calibrated DMM / thermometer) and never guess values:
 
@@ -80,7 +80,7 @@ Run conservatively; calibration needs a reliable reference instrument (clamp met
 3. MOS 제어: only when interrupting charge/discharge is safe — confirm the live state, toggle one FET, verify read-back and the resulting device behavior, then restore the original state.
 4. 백업 및 복원: export a backup, change one value manually, restore from the file, review the diff list, apply and confirm staged verification; confirm the restored value persists after reconnect (`PERSISTENCE_VERIFIED` where applicable).
 
-## Balance diagnostics verification (alpha.10+)
+## Balance diagnostics verification (0.1.0+)
 
 1. **Band source**: read the protection section (공장 모드) so cell OV/UV limits are known, then confirm each cell's band color matches those limits. Re-lock or disconnect and confirm the summary switches to the "default reference (NMC)" label — defaults must never be presented as measured limits.
 2. **Badge separation**: confirm highest / lowest / balancing appear as text badges (balancing wins when both apply) and that the bar color reflects only the safety band.
@@ -88,7 +88,7 @@ Run conservatively; calibration needs a reliable reference instrument (clamp met
 4. **Balance delta steps**: in 밸런스 설정 → 밸런스 델타, use the −5 / +5 buttons and the 5 / 10 / 15 / 20 mV presets, then apply 5 mV and 15 mV. Record whether the BMS stores the value unchanged or rounds it (read-back result), and record `PERSISTENCE_VERIFIED` after reconnecting.
 5. Any mismatch in step behaviour (e.g. a non-5 mV value being stored) is a defect — capture the result screen before retrying.
 
-## Visualization verification (alpha.11+)
+## Visualization verification (0.1.0+)
 
 Local history and band displays only — no BMS writes are involved, so these can be checked without unlocking Maintenance Mode.
 

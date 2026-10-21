@@ -138,7 +138,7 @@ Future backups, service history and calibration records are keyed to the registe
 
 ## Current implementation shell
 
-The current alpha still persists only the last device from the OpenJBD baseline. Therefore the executable UI must not pretend that a true multi-device registry already exists.
+The current release still persists only the last device from the OpenJBD baseline. Therefore the executable UI must not pretend that a true multi-device registry already exists.
 
 Current behavior:
 
