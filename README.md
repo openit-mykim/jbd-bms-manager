@@ -134,24 +134,21 @@ Download the latest release APK from the repository **Releases** page. The packa
 
 Android may require permission to install apps from the browser or file manager used to open the APK.
 
-## Hermes + Paseo workflow
+## Hermes + Claude Code workflow
 
-This project is designed for Hermes to coordinate work through Paseo worktree isolation.
-
-Repository-level Paseo settings are in `paseo.json`.
+This project is designed for Hermes to coordinate work through Git worktree isolation.
 
 Typical isolated task:
 
 ```bash
-paseo run \
-  --new-workspace worktree \
-  --worktree-mode branch-off \
-  --new-branch feat/five-tab-navigation \
-  --base origin/main \
-  "Read AGENTS.md, PROJECT_STATUS.md and docs/navigation-design.md. Implement the active scoped task, run focused verification, and report changed files plus test evidence."
+git fetch origin
+git worktree add ../jbd-five-tab-nav -b feat/five-tab-navigation origin/main
+cd ../jbd-five-tab-nav && claude
 ```
 
-Use `origin/main`, not an unqualified local `main`, as the normal Paseo worktree base.
+In the worktree: "Read AGENTS.md, PROJECT_STATUS.md and docs/navigation-design.md. Implement the active scoped task, run focused verification, and report changed files plus test evidence."
+
+Use `origin/main`, not an unqualified local `main`, as the normal worktree base.
 
 ## Documentation map
 
@@ -163,7 +160,7 @@ Use `origin/main`, not an unqualified local `main`, as the normal Paseo worktree
 - `docs/development-plan.md` — detailed phase-by-phase implementation plan
 - `docs/architecture.md` — application/layer architecture
 - `docs/maintenance-mode.md` — Control/Maintenance UX and write transaction design
-- `docs/hermes-paseo.md` — orchestration and worktree workflow
+- `docs/hermes-claude.md` — orchestration and worktree workflow
 - `docs/testing.md` — test and physical-device validation policy
 - `docs/upstream-sync.md` — OpenJBD provenance and sync procedure
 - `docs/repository-governance.md` — branching, PR, CI and release policy

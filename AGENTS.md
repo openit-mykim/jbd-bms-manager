@@ -1,6 +1,6 @@
 # Agent Execution Contract
 
-This repository is intended to be developed and maintained primarily through **Hermes Agent + Paseo worktree orchestration**.
+This repository is intended to be developed and maintained primarily through **Hermes Agent + Claude Code worktree orchestration**.
 
 If you are an AI coding agent, read this file first, then read:
 
@@ -10,7 +10,7 @@ If you are an AI coding agent, read this file first, then read:
 4. `docs/maintenance-mode.md`
 5. `docs/testing.md`
 6. `docs/upstream-sync.md`
-7. `docs/hermes-paseo.md`
+7. `docs/hermes-claude.md`
 
 Do not begin implementation from README alone.
 
@@ -39,20 +39,19 @@ The expected initial sequence is:
 8. Add backup / restore and diagnostics.
 9. Harden tests and release process.
 
-## Paseo worktree policy
+## Claude worktree policy
 
-Use a **separate Paseo worktree for every non-trivial task**. Branch from `origin/main`, not a possibly stale local `main`.
+Use a **separate Git worktree for every non-trivial task**. Branch from `origin/main`, not a possibly stale local `main`.
 
 Preferred pattern:
 
 ```bash
-paseo run \
-  --new-workspace worktree \
-  --worktree-mode branch-off \
-  --new-branch feat/<scope>-<short-desc> \
-  --base origin/main \
-  "<task>"
+git fetch origin
+git worktree add ../<repo>-<short-desc> -b feat/<scope>-<short-desc> origin/main
+cd ../<repo>-<short-desc> && claude
 ```
+
+Claude Code runs in the worktree directly (`claude` CLI, Max subscription auth). The single canonical clone stays clean for review.
 
 Use these branch prefixes:
 
@@ -67,7 +66,7 @@ Do not allow two agents to edit the same files in different worktrees unless the
 
 ## Agent delegation
 
-Hermes is the coordinating agent. It may use Paseo to delegate independent work such as:
+Hermes is the coordinating agent. It may use Claude Code to delegate independent work such as:
 
 - protocol research
 - UI implementation

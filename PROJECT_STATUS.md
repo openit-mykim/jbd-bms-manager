@@ -64,7 +64,7 @@ The shared inset layer covers the main toolbar plus the device-list, about and l
 - [x] Repository created: `openit-mykim/jbd-bms-manager`
 - [x] MIT license selected
 - [x] Agent execution contract added
-- [x] Hermes + Paseo operating model documented
+- [x] Hermes + Paseo operating model documented → migrated to Hermes + Claude Code 2026-11-16
 - [x] Upstream OpenJBD baseline pinned
 - [x] Reproducible unit-test/debug-APK CI established
 - [x] Korean localization added

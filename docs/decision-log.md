@@ -182,6 +182,16 @@ Evidence/details: JBD SP14S004 official wiring manual; `overlays/app/src/main/ko
 
 Migration impact: none — display/statistics only; no BMS writes.
 
+## D019 — Execution layer migrated from Paseo to Claude Code
+
+Old decision: D008/D009 — Paseo worktrees for non-trivial implementation and review; branch from `origin/main`.
+
+New decision: Hermes coordinates; Claude Code runs directly in isolated Git worktrees (`git fetch origin` → `git worktree add -b <branch> origin/main` → `claude`, Max subscription auth). Single canonical clone per repository. Branch naming and `origin/main` base rules unchanged.
+
+Evidence/reason: owner directive 2026-11-16; in-progress branches preserved to origin (Travit 9/9 branches pushed with upstream; preservation commits for uncommitted work) before daemon removal.
+
+Migration impact: `docs/hermes-paseo.md` → `docs/hermes-claude.md`; `paseo.json` deleted; AGENTS.md/HERMES.md/README/README.ko/docs/github-setup.md updated.
+
 ## Change rule
 
 If a future PR changes one of these decisions materially, update this file in the same PR with:

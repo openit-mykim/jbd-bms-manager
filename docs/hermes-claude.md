@@ -1,10 +1,10 @@
-# Hermes + Paseo Development Workflow
+# Hermes + Claude Code Development Workflow
 
-This project is intended for long-running, agent-assisted development with Hermes as coordinator and Paseo as the worktree/task execution layer.
+This project is intended for long-running, agent-assisted development with Hermes as coordinator and Claude Code as the worktree/task execution layer.
 
 ## Operating model
 
-Hermes owns planning, decomposition, task assignment, review and handoff. Paseo provides isolated workspaces so implementation tasks can proceed without contaminating the main checkout.
+Hermes owns planning, decomposition, task assignment, review and handoff. Claude Code provides isolated worktrees so implementation tasks can proceed without contaminating the main checkout.
 
 Use one worktree per non-trivial task. Keep `main` clean and use it only as the integration branch.
 
@@ -17,7 +17,7 @@ Hermes selects the next roadmap item
         ↓
 Hermes decomposes work into narrow tasks
         ↓
-Paseo creates isolated worktree(s)
+Claude Code creates isolated worktree(s)
         ↓
 Agent implements + verifies
         ↓
@@ -41,22 +41,21 @@ Suggested branch names:
 
 Avoid vague names such as `agent-work`, `temp`, `new-feature` or `fixes`.
 
-## Paseo execution pattern
+## Claude Code execution pattern
 
-When using Paseo, create a fresh branch from the remote integration branch rather than a possibly stale local checkout.
+When using Claude Code, create a fresh worktree from the remote integration branch rather than a possibly stale local checkout.
 
 Example pattern:
 
 ```bash
-paseo run \
-  --new-workspace worktree \
-  --worktree-mode branch-off \
-  --new-branch fix/android16-insets \
-  --base origin/main \
-  "Fix Android 16 system-bar overlap. Read AGENTS.md and the relevant docs first, keep the change scoped, run focused verification, and report changed files plus test evidence."
+git fetch origin
+git worktree add ../jbd-android16-insets -b fix/android16-insets origin/main
+cd ../jbd-android16-insets && claude
 ```
 
-Exact Paseo flags may change by installed version. If the local CLI differs, preserve the workflow intent: isolated worktree, explicit branch, explicit base, narrow task, explicit verification.
+In the worktree: "Fix Android 16 system-bar overlap. Read AGENTS.md and the relevant docs first, keep the change scoped, run focused verification, and report changed files plus test evidence."
+
+No extra orchestration flags are needed: one worktree per non-trivial task, explicit branch, explicit base, narrow task, explicit verification.
 
 ## Parallel work
 

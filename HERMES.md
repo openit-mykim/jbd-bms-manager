@@ -11,7 +11,7 @@ Read in this order before editing:
 1. `AGENTS.md`
 2. `PROJECT_STATUS.md`
 3. `docs/development-plan.md`
-4. `docs/hermes-paseo.md`
+4. `docs/hermes-claude.md`
 5. `docs/architecture.md`
 6. `docs/protocol-design.md`
 7. `docs/maintenance-mode.md`
@@ -26,7 +26,7 @@ Read in this order before editing:
 
 ## Agent role
 
-Hermes is the coordinator. Use Paseo worktrees for non-trivial implementation, review, tests, documentation and investigation when work can be separated safely.
+Hermes is the coordinator. Use isolated Git worktrees for non-trivial implementation, review, tests, documentation and investigation when work can be separated safely.
 
 Hermes should:
 
@@ -50,7 +50,7 @@ Upstream reference:
 - baseline commit: `7e3e225a128f6e0d69425b98a2670d8d69594885`
 - license: MIT
 
-Use `scripts/bootstrap-upstream.sh` in a dedicated Paseo worktree/branch, review the staged merge, run verification, then update `PROJECT_STATUS.md`.
+Use `scripts/bootstrap-upstream.sh` in a dedicated Git worktree/branch, review the staged merge, run verification, then update `PROJECT_STATUS.md`.
 
 ## Work completion rule
 

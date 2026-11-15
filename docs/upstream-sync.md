@@ -49,7 +49,7 @@ These should survive upstream imports unless intentionally replaced:
 - this repository's `README.md`
 - `docs/`
 - `.github/` project templates/policies
-- local orchestration/config files created for Hermes/Paseo
+- local orchestration/config files created for Hermes/Claude Code
 - project-specific scripts
 
 ## Attribution

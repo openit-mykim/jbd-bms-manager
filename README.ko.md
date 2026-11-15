@@ -99,7 +99,7 @@ GitHub의 **Releases**에서 최신 `jbd-bms-manager-*.apk`를 내려받아 Andr
 
 ## 개발 및 에이전트 운영
 
-이 저장소는 Hermes Agent + Paseo 기반 장기 개발을 고려해 구성되어 있습니다.
+이 저장소는 Hermes Agent + Claude Code 기반 장기 개발을 고려해 구성되어 있습니다.
 
 에이전트는 다음 순서로 읽고 작업합니다.
 
@@ -111,7 +111,7 @@ GitHub의 **Releases**에서 최신 `jbd-bms-manager-*.apk`를 내려받아 Andr
 6. `docs/navigation-design.md`
 7. 관련 세부 문서
 
-Paseo에서는 비단순 작업을 독립 worktree로 수행하고, 테스트 및 빌드 결과를 확인한 뒤 PR로 통합합니다.
+Claude Code에서는 비단순 작업을 독립 worktree로 수행하고, 테스트 및 빌드 결과를 확인한 뒤 PR로 통합합니다.
 
 ## Upstream
 
