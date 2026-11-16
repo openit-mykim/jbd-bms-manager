@@ -28,6 +28,8 @@ git -C "$build_dir" checkout --quiet --force "$upstream_commit"
 git -C "$build_dir" clean -fdq -e local.properties -e .gradle -e build -e app/build
 
 python3 "$repo_root/scripts/apply-product-overlay.py" "$build_dir"
+# Mobile dev standard: text sizes, spacing grid and translations are checked automatically.
+python3 "$repo_root/scripts/check-design-tokens.py" "$build_dir"
 
 sdk="${ANDROID_HOME:-${ANDROID_SDK_ROOT:-}}"
 if [[ -n "$sdk" && ! -f "$build_dir/local.properties" ]]; then

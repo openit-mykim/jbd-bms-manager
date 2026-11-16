@@ -58,7 +58,7 @@ SPACING_DIMEN_MAP = {
     "space_14": "space_16",
     "space_18": "space_16",
 }
-LITERAL_SPACING_MAP = {"6dp": "8dp", "10dp": "12dp", "14dp": "16dp", "18dp": "16dp", "20dp": "16dp"}
+LITERAL_SPACING_MAP = {"2dp": "4dp", "6dp": "8dp", "10dp": "12dp", "14dp": "16dp", "18dp": "16dp", "20dp": "16dp"}
 
 
 def normalize_layout_spacing(layout_dir: Path) -> None:
