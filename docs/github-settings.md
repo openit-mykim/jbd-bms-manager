@@ -14,6 +14,15 @@ This document records the intended GitHub-side configuration. Some settings shou
 - Pull request template: `.github/PULL_REQUEST_TEMPLATE.md`
 - Issue templates: `.github/ISSUE_TEMPLATE/`
 
+Applied on 2026-11-16:
+
+- Description and the suggested topics below are set.
+- Merge commits and squash merge: ON. Automatically delete head branches: ON.
+- Secret scanning and push protection: ON. Dependabot alerts: ON.
+- Main branch protection: intentionally OFF. The owner merges and pushes to
+  `main` directly; requiring pull requests would block that workflow. Revisit
+  when a second maintainer joins.
+
 ## Recommended General settings
 
 Repository description:
