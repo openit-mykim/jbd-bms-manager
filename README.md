@@ -154,7 +154,7 @@ Use `origin/main`, not an unqualified local `main`, as the normal worktree base.
 
 - `AGENTS.md` — authoritative coding-agent execution contract
 - `HERMES.md` — Hermes project entry point
-- `PROJECT_STATUS.md` — current phase and immediate next action
+- `PROJECT_STATUS.md` — canonical features, remaining work and test items
 - `README.ko.md` — Korean project README
 - `docs/navigation-design.md` — authoritative five-tab information architecture
 - `docs/development-plan.md` — detailed phase-by-phase implementation plan
