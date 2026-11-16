@@ -10,7 +10,7 @@
         android:layout_height="wrap_content"
         android:orientation="vertical"
         android:paddingTop="@dimen/space_8"
-        android:paddingBottom="@dimen/space_18">
+        android:paddingBottom="@dimen/space_16">
 
         <com.google.android.material.card.MaterialCardView
             style="@style/OpenJbdMaterialCard"
@@ -153,7 +153,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:gravity="center"
-                android:paddingTop="@dimen/space_18"
+                android:paddingTop="@dimen/space_16"
                 android:text="@string/parameters_placeholder_title"
                 android:textAppearance="@style/TextAppearance.OpenJbd.EmptyTitle" />
 
@@ -161,7 +161,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:gravity="center"
-                android:paddingTop="@dimen/space_6"
+                android:paddingTop="@dimen/space_8"
                 android:text="@string/parameters_placeholder_subtitle"
                 android:textAppearance="@style/TextAppearance.OpenJbd.EmptyBody" />
         </LinearLayout>

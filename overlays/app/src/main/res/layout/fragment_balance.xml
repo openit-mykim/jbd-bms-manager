@@ -10,7 +10,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:paddingBottom="@dimen/space_18">
+        android:paddingBottom="@dimen/space_16">
 
         <LinearLayout
             android:id="@+id/placeholder_balance"
@@ -35,7 +35,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:gravity="center"
-                android:paddingTop="@dimen/space_18"
+                android:paddingTop="@dimen/space_16"
                 android:text="@string/balance_title"
                 android:textAppearance="@style/TextAppearance.OpenJbd.EmptyTitle" />
 
@@ -44,7 +44,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:gravity="center"
-                android:paddingTop="@dimen/space_6"
+                android:paddingTop="@dimen/space_8"
                 android:text="@string/empty_cells"
                 android:textAppearance="@style/TextAppearance.OpenJbd.EmptyBody" />
         </LinearLayout>
@@ -69,7 +69,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="vertical"
-                    android:padding="@dimen/space_14">
+                    android:padding="@dimen/space_16">
 
                     <TextView
                         android:layout_width="match_parent"
@@ -97,7 +97,7 @@
                         android:id="@+id/txt_balance_active_count"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:paddingTop="@dimen/space_6"
+                        android:paddingTop="@dimen/space_8"
                         android:textColor="@color/accent_dark"
                         android:textStyle="bold"
                         android:visibility="gone" />
@@ -116,7 +116,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="vertical"
-                    android:padding="@dimen/space_14">
+                    android:padding="@dimen/space_16">
 
                     <TextView
                         android:layout_width="match_parent"
@@ -128,7 +128,7 @@
                         android:id="@+id/txt_balance_current"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:paddingTop="@dimen/space_6"
+                        android:paddingTop="@dimen/space_8"
                         android:text="@string/placeholder_value"
                         android:textAppearance="@style/TextAppearance.OpenJbd.MetricValue" />
                 </LinearLayout>
@@ -157,7 +157,7 @@
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:orientation="vertical"
-                            android:padding="@dimen/space_14">
+                            android:padding="@dimen/space_16">
 
                             <TextView
                                 android:layout_width="match_parent"
@@ -169,7 +169,7 @@
                                 android:id="@+id/txt_balance_cell_min"
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
-                                android:paddingTop="@dimen/space_6"
+                                android:paddingTop="@dimen/space_8"
                                 android:text="@string/placeholder_value"
                                 android:textAppearance="@style/TextAppearance.OpenJbd.MetricValue" />
                         </LinearLayout>
@@ -186,7 +186,7 @@
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:orientation="vertical"
-                            android:padding="@dimen/space_14">
+                            android:padding="@dimen/space_16">
 
                             <TextView
                                 android:layout_width="match_parent"
@@ -198,7 +198,7 @@
                                 android:id="@+id/txt_balance_cell_max"
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
-                                android:paddingTop="@dimen/space_6"
+                                android:paddingTop="@dimen/space_8"
                                 android:text="@string/placeholder_value"
                                 android:textAppearance="@style/TextAppearance.OpenJbd.MetricValue" />
                         </LinearLayout>
@@ -222,7 +222,7 @@
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:orientation="vertical"
-                            android:padding="@dimen/space_14">
+                            android:padding="@dimen/space_16">
 
                             <TextView
                                 android:layout_width="match_parent"
@@ -234,7 +234,7 @@
                                 android:id="@+id/txt_balance_cell_average"
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
-                                android:paddingTop="@dimen/space_6"
+                                android:paddingTop="@dimen/space_8"
                                 android:text="@string/placeholder_value"
                                 android:textAppearance="@style/TextAppearance.OpenJbd.MetricValue" />
                         </LinearLayout>
@@ -251,7 +251,7 @@
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:orientation="vertical"
-                            android:padding="@dimen/space_14">
+                            android:padding="@dimen/space_16">
 
                             <TextView
                                 android:layout_width="match_parent"
@@ -263,7 +263,7 @@
                                 android:id="@+id/txt_balance_cell_delta"
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
-                                android:paddingTop="@dimen/space_6"
+                                android:paddingTop="@dimen/space_8"
                                 android:text="@string/placeholder_value"
                                 android:textAppearance="@style/TextAppearance.OpenJbd.MetricValue" />
                         </LinearLayout>

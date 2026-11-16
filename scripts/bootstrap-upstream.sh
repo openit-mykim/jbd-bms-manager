@@ -1,9 +1,10 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-UPSTREAM_URL="https://github.com/gytxtx/OpenJBD.git"
+props="$(dirname "${BASH_SOURCE[0]}")/../version.properties"
+UPSTREAM_URL="https://github.com/$(sed -n 's/^upstreamRepo=//p' "$props").git"
 UPSTREAM_REMOTE="upstream"
-UPSTREAM_REF="7e3e225a128f6e0d69425b98a2670d8d69594885"
+UPSTREAM_REF="$(sed -n 's/^upstreamCommit=//p' "$props")"
 
 if [[ -n "$(git status --porcelain)" ]]; then
   echo "Working tree is not clean. Commit or stash changes first." >&2
@@ -60,7 +61,7 @@ Next steps:
   5. run: bash scripts/verify.sh
   6. update PROJECT_STATUS.md
   7. commit merge with a message such as:
-     chore(upstream): import OpenJBD baseline 7e3e225
+     chore(upstream): import OpenJBD baseline ${UPSTREAM_REF:0:7}
 
 Do not commit blindly if conflicts remain.
 EOF

@@ -10,7 +10,7 @@
         android:id="@+id/txt_coming_soon_section"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:textAppearance="?attr/textAppearanceHeadline5" />
+        android:textAppearance="@style/TextAppearance.OpenJbd.EmptyTitle" />
 
     <TextView
         android:id="@+id/txt_coming_soon"
