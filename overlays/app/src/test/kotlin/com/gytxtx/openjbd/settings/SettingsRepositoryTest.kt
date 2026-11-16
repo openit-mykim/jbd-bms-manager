@@ -1,5 +1,9 @@
 package com.gytxtx.openjbd.settings
 
+import com.gytxtx.openjbd.maintenance.DeviceIdentity
+import com.gytxtx.openjbd.maintenance.WriteDecision
+
+
 import com.gytxtx.openjbd.protocol.JbdFrame
 import java.util.ArrayDeque
 import kotlinx.coroutines.test.StandardTestDispatcher
@@ -11,6 +15,11 @@ import org.junit.Assert.assertFalse
 import org.junit.Assert.assertSame
 import org.junit.Assert.assertTrue
 import org.junit.Test
+
+private val ALLOWED_FOR_TEST = WriteDecision.Allowed(
+    WriteDecision.Basis.EXPERIMENTAL_CONSENT,
+    DeviceIdentity("00:11:22:33:44:55", "SP14S004", "1.0")
+)
 
 class SettingsRepositoryTest {
     @Test
@@ -173,14 +182,42 @@ class SettingsRepositoryTest {
         assertTrue(host.events.isEmpty())
     }
 
+    @Test
+    fun deniedWriteSendsNoFrameAndReportsNotPermitted() = runTest {
+        val host = FakeSettingsCommandHost()
+        val authorizer = FakeAuthorizer(
+            WriteDecision.Denied(WriteDecision.DenyReason.NOT_CONSENTED)
+        )
+        val repository = repository(host, authorizer = authorizer)
+
+        val result = repository.applyChanges(listOf(FieldChange(SettingField.COVP, 4_100)))
+
+        assertEquals(
+            WriteSessionOutcome.NotPermitted(WriteDecision.DenyReason.NOT_CONSENTED),
+            result.outcome
+        )
+        assertTrue(host.frames.isEmpty())
+        assertTrue(authorizer.recorded.isEmpty())
+    }
+
     private fun TestScope.repository(
         host: FakeSettingsCommandHost,
-        clock: () -> Long = { 1L }
+        clock: () -> Long = { 1L },
+        authorizer: SettingsWriteAuthorizer = FakeAuthorizer(ALLOWED_FOR_TEST)
     ): SettingsRepository = SettingsRepository(
         BleSettingsGateway(host),
         clock,
-        StandardTestDispatcher(testScheduler)
+        StandardTestDispatcher(testScheduler),
+        authorizer
     )
+
+    private class FakeAuthorizer(private val decision: WriteDecision) : SettingsWriteAuthorizer {
+        val recorded = mutableListOf<WriteSessionResult>()
+        override fun authorize(): WriteDecision = decision
+        override fun recordSession(decision: WriteDecision.Allowed, result: WriteSessionResult) {
+            recorded += result
+        }
+    }
 
     private class FakeSettingsCommandHost(
         private val connected: Boolean = true,

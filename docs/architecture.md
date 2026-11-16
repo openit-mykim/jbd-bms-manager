@@ -140,6 +140,8 @@ Possible capability inputs include:
 
 Unknown devices should default to conservative, read-only behavior until write compatibility is confirmed.
 
+Implementation (D020): `WriteAuthorization` decides every write session at the repository layer via `WritePolicy` — unlocked for this device **and** (verified compatibility profile **or** device-bound experimental consent). Identity is `address|bmsModel|firmwareVersion` from the basic-info and device-info reads. Denied sessions send no frame; permitted sessions are recorded in the local maintenance audit log.
+
 ## Android UI / system bars
 
 The OpenJBD baseline targets recent Android versions. Android 16 enforces edge-to-edge behavior for apps targeting API 36, so JBD BMS Manager uses explicit window-inset handling rather than relying on opt-out flags.

@@ -89,6 +89,9 @@
     <string name="mos_validation_live_unavailable">실시간 MOSFET 상태를 아직 받지 못했습니다. 기본 정보가 갱신된 뒤 다시 시도하세요.</string>
     <string name="mos_validation_other_protected">보호 동작 중이라 다른 쪽 MOSFET이 꺼져 있습니다. 지금 바꾸면 보호가 풀린 뒤에도 꺼진 채로 남을 수 있어 변경을 거부했습니다.</string>
     <string name="mos_validation_mixed_session">MOS 제어는 다른 설정과 함께 적용할 수 없습니다.</string>
+    <string name="settings_outcome_not_permitted_locked">쓰지 않음 — 이 BMS에 대해 유지보수 모드가 잠겨 있습니다. 제어 화면에서 잠금을 해제하세요.</string>
+    <string name="settings_outcome_not_permitted_identity">쓰지 않음 — BMS 주소와 펌웨어 버전을 아직 읽지 못했습니다. 갱신이 끝난 뒤 다시 시도하세요.</string>
+    <string name="settings_outcome_not_permitted_consent">쓰지 않음 — 검증되지 않은 BMS입니다. 먼저 제어 화면에서 이 기기의 실험적 쓰기를 허용하세요.</string>
     <string name="settings_validation_fallback">설정 값이 올바르지 않습니다: %1$s</string>
 
     <string name="settings_outcome_committed">커밋 완료</string>

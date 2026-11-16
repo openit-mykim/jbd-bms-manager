@@ -26,4 +26,14 @@
     <string name="control_diagnostics_empty">진단 정보를 읽으려면 BMS를 연결하세요.</string>
     <string name="control_diagnostics_footer">추가 레지스터 및 프로토콜 수준 진단은 이후 단계에서 확장됩니다.</string>
     <string name="control_calibration_available">조회·보정</string>
+    <string name="control_write_permission_title">쓰기 권한</string>
+    <string name="control_write_permission_no_identity">BMS 주소와 펌웨어 버전을 읽기 전까지는 읽기 전용입니다.</string>
+    <string name="control_write_permission_verified">검증된 모델: 유지보수 모드가 해제된 동안 쓰기가 허용됩니다.</string>
+    <string name="control_write_permission_read_only">검증되지 않은 BMS(모델 %1$s, 펌웨어 %2$s): 기본은 읽기 전용입니다. 이 기기의 실험적 쓰기를 허용하기 전까지 쓰기가 차단됩니다.</string>
+    <string name="control_write_permission_experimental">이 기기에 실험적 쓰기가 허용되어 있습니다(모델 %1$s, 펌웨어 %2$s). 모든 쓰기는 기기 내 감사 로그에 기록됩니다.</string>
+    <string name="control_write_permission_grant">실험적 쓰기 허용…</string>
+    <string name="control_write_permission_revoke">실험적 쓰기 허용 철회</string>
+    <string name="control_write_consent_title">실험적 쓰기를 허용할까요?</string>
+    <string name="control_write_consent_message">이 BMS는 이 앱에서 검증되지 않았습니다.\n\n주소: %1$s\n모델: %2$s\n펌웨어: %3$s\n\n보호값·보정값·MOS 설정이 잘못되면 배터리가 위험해질 수 있습니다. 기술자이고, 설정 백업이 있으며, 팩을 별도로 측정할 수 있을 때만 진행하세요.\n\n이 허용은 이 기기·펌웨어에만 적용되고 철회할 때까지 유지되며, 모든 쓰기는 기기 내 감사 로그에 기록됩니다.</string>
+    <string name="control_write_consent_confirm">이해했습니다. 이 기기에 허용</string>
 </resources>

@@ -89,6 +89,9 @@
     <string name="mos_validation_live_unavailable">Live MOSFET state is not available yet. Wait for a basic-info update and try again.</string>
     <string name="mos_validation_other_protected">The other MOSFET is off while a protection is active. Changing it now could keep it off after the protection clears, so the change was refused.</string>
     <string name="mos_validation_mixed_session">MOS control must be applied on its own, separately from other settings.</string>
+    <string name="settings_outcome_not_permitted_locked">Not written — Maintenance Mode is locked for this BMS. Unlock it in Control.</string>
+    <string name="settings_outcome_not_permitted_identity">Not written — the BMS address and firmware version have not been read yet. Wait for a full refresh.</string>
+    <string name="settings_outcome_not_permitted_consent">Not written — this BMS is not a verified model. Allow experimental writes for it in Control first.</string>
     <string name="settings_validation_fallback">Invalid setting: %1$s</string>
 
     <string name="settings_outcome_committed">Committed</string>

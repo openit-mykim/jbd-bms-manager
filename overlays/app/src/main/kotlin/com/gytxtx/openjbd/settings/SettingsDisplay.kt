@@ -329,6 +329,14 @@ object SettingsDisplay {
         WriteSessionOutcome.NotCommitted -> R.string.settings_outcome_not_committed
         is WriteSessionOutcome.CommitUnconfirmed -> R.string.settings_outcome_commit_unconfirmed
         WriteSessionOutcome.Applied -> R.string.settings_outcome_applied
+        is WriteSessionOutcome.NotPermitted -> when (outcome.reason) {
+            com.gytxtx.openjbd.maintenance.WriteDecision.DenyReason.LOCKED ->
+                R.string.settings_outcome_not_permitted_locked
+            com.gytxtx.openjbd.maintenance.WriteDecision.DenyReason.NO_DEVICE_IDENTITY ->
+                R.string.settings_outcome_not_permitted_identity
+            com.gytxtx.openjbd.maintenance.WriteDecision.DenyReason.NOT_CONSENTED ->
+                R.string.settings_outcome_not_permitted_consent
+        }
         is WriteSessionOutcome.ValidationFailed -> R.string.settings_outcome_validation_failed
         is WriteSessionOutcome.EntryFailed -> R.string.settings_outcome_entry_failed
     }

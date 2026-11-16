@@ -13,6 +13,8 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
+import com.gytxtx.openjbd.maintenance.WriteAuthorization
+import com.gytxtx.openjbd.maintenance.WriteDecision
 
 data class SettingsSectionState(
     val values: Map<SettingField, FieldValue> = emptyMap(),
@@ -42,13 +44,15 @@ data class SettingsState(
 class SettingsRepository internal constructor(
     private val gateway: BleSettingsGateway,
     private val clock: () -> Long,
-    dispatcher: CoroutineDispatcher
+    dispatcher: CoroutineDispatcher,
+    private val authorizer: SettingsWriteAuthorizer
 ) {
     @Inject
-    constructor(gateway: BleSettingsGateway) : this(
+    constructor(gateway: BleSettingsGateway, authorization: WriteAuthorization) : this(
         gateway,
         System::currentTimeMillis,
-        Dispatchers.IO
+        Dispatchers.IO,
+        authorization
     )
 
     private val scope = CoroutineScope(SupervisorJob() + dispatcher)
@@ -147,6 +151,19 @@ class SettingsRepository internal constructor(
                 }
             }
         }
+        // D005 gate, checked at the moment of writing (not only in the UI): no frame is sent
+        // unless Maintenance Mode is unlocked for this device and it is verified or consented.
+        val decision = authorizer.authorize()
+        if (decision is WriteDecision.Denied) {
+            val result = WriteSessionResult(
+                outcome = WriteSessionOutcome.NotPermitted(decision.reason)
+            )
+            _state.update {
+                it.copy(lastError = WRITE_NOT_PERMITTED_MESSAGE, lastWriteResult = result)
+            }
+            return result
+        }
+        decision as WriteDecision.Allowed
         if (!writeInProgress.compareAndSet(false, true)) {
             return WriteSessionResult(
                 outcome = WriteSessionOutcome.EntryFailed(
@@ -164,6 +181,7 @@ class SettingsRepository internal constructor(
                     if (error.message != NOT_CONNECTED_MESSAGE) throw error
                     notConnectedWriteResult()
                 }
+                authorizer.recordSession(decision, result)
                 _state.update {
                     it.copy(
                         notConnected = !gateway.isConnected(),
@@ -206,6 +224,7 @@ class SettingsRepository internal constructor(
         WriteSessionOutcome.Committed, WriteSessionOutcome.Applied -> null
         WriteSessionOutcome.NotCommitted -> WRITE_NOT_COMMITTED_MESSAGE
         is WriteSessionOutcome.CommitUnconfirmed -> WRITE_COMMIT_UNCONFIRMED_MESSAGE
+        is WriteSessionOutcome.NotPermitted -> WRITE_NOT_PERMITTED_MESSAGE
         is WriteSessionOutcome.ValidationFailed -> WRITE_VALIDATION_ERROR_MESSAGE
         is WriteSessionOutcome.EntryFailed -> when (val error = result.outcome.error) {
             is RegisterAccessError.TransportFailure -> error.message
@@ -223,5 +242,6 @@ class SettingsRepository internal constructor(
         const val WRITE_COMMIT_UNCONFIRMED_MESSAGE =
             "The BMS did not acknowledge the commit; re-read the values before trusting them"
         const val WRITE_BUSY_MESSAGE = "Another settings write session is still running"
+        const val WRITE_NOT_PERMITTED_MESSAGE = "Writes are not permitted for this device"
     }
 }

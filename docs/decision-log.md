@@ -192,6 +192,16 @@ Evidence/reason: owner directive 2026-11-16; in-progress branches preserved to o
 
 Migration impact: `docs/hermes-paseo.md` → `docs/hermes-claude.md`; `paseo.json` deleted; AGENTS.md/HERMES.md/README/README.ko/docs/github-setup.md updated.
 
+## D020 — Write gate: verified profile or device-bound experimental consent
+
+Old decision: D005 — unknown devices default to read-only; writes require positive capability evidence. In v0.1.1 this was not enforced in code: the capability resolver was test-only and any BMS that accepted factory-mode entry was writable after the UI-only unlock.
+
+New decision: every write session is authorized in `SettingsRepository.applyChanges` (not only in the UI) by `WriteAuthorization` / `WritePolicy`. A write is allowed only when Maintenance Mode is unlocked for the connected device **and** either the device matches a verified entry of the local compatibility table, or a technician has given explicit experimental consent for that exact device. Consent is bound to the fingerprint `address|bmsModel|firmwareVersion` (a firmware change voids it), persists until revoked, and is shown on the Control screen. Without a readable address and firmware version no write is possible. Denied sessions send no frame (`NotPermitted`). Every permitted session, consent grant and revocation is appended to a local audit log (`files/maintenance_audit.log`, bounded, never uploaded). The unlock is in memory only, survives screen rotation, and is bound to the device it was granted for.
+
+Evidence/reason: 2026-11-16 code review (#29). Strict enforcement with the empty compatibility table would block every write, including the physical validation needed to add table entries (#23); option 2 keeps D005's read-only default while allowing evidence collection under explicit, audited consent.
+
+Migration impact: users of v0.1.1 must allow experimental writes once per device on the Control screen before writing. The compatibility table still ships empty; entries are added only from recorded hardware evidence.
+
 ## Change rule
 
 If a future PR changes one of these decisions materially, update this file in the same PR with:
