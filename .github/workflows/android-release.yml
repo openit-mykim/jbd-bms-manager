@@ -38,7 +38,7 @@ concurrency:
   # Never cancel a main build mid-publish; superseded PR builds may be cancelled.
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
-env:
+# Versions and the pinned upstream come from version.properties (see the first step).
 
 jobs:
   build:
