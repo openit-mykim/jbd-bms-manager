@@ -2,11 +2,23 @@ name: Android Release Build
 
 on:
   workflow_dispatch:
+  # Pushes to main build and publish; every PR to main (any branch prefix) gets the
+  # same build as a check. Docs-only changes are skipped by the path filter.
   push:
-    branches: ["main", "feat/**", "fix/**", "refactor/**", "test/**", "chore/**"]
+    branches: ["main"]
     paths:
       - "overlays/**"
+      - "assets/**"
       - "scripts/apply-*.py"
+      - "scripts/verify.sh"
+      - ".github/workflows/android-release.yml"
+  pull_request:
+    branches: ["main"]
+    paths:
+      - "overlays/**"
+      - "assets/**"
+      - "scripts/apply-*.py"
+      - "scripts/verify.sh"
       - ".github/workflows/android-release.yml"
 
 permissions:
@@ -17,7 +29,8 @@ concurrency:
   # or an in-progress main/release build. Same-ref pushes still supersede
   # older runs for that ref only.
   group: android-release-${{ github.ref }}
-  cancel-in-progress: true
+  # Never cancel a main build mid-publish; superseded PR builds may be cancelled.
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 env:
   UPSTREAM_REPO: gytxtx/OpenJBD
@@ -59,6 +72,14 @@ jobs:
       - name: Run unit tests
         working-directory: upstream-src
         run: ./gradlew testDebugUnitTest
+
+      - name: Upload test reports on failure
+        if: failure()
+        uses: actions/upload-artifact@v7
+        with:
+          name: unit-test-reports
+          path: upstream-src/app/build/reports/tests/
+          if-no-files-found: ignore
 
       - name: Build debug APK
         working-directory: upstream-src

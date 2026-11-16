@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 from __future__ import annotations
 
+import re
 import shutil
 import sys
 from pathlib import Path
@@ -13,6 +14,15 @@ def replace_required(path: Path, old: str, new: str) -> None:
     if old not in text:
         raise RuntimeError(f"Expected text not found in {path}: {old[:120]!r}")
     path.write_text(text.replace(old, new), encoding="utf-8")
+
+
+def replace_line_required(path: Path, pattern: str, new: str) -> None:
+    """Replace exactly one whole-line regex match; fails loudly when upstream changed."""
+    text = path.read_text(encoding="utf-8")
+    updated, count = re.subn(pattern, new, text, count=0, flags=re.MULTILINE)
+    if count != 1:
+        raise RuntimeError(f"Expected exactly one line matching {pattern!r} in {path}, found {count}")
+    path.write_text(updated, encoding="utf-8")
 
 
 def replace_optional(path: Path, old: str, new: str) -> None:
@@ -42,8 +52,9 @@ def main() -> None:
 
     gradle = root / "app" / "build.gradle.kts"
     replace_required(gradle, 'applicationId = "com.gytxtx.openjbd"', 'applicationId = "com.openit.jbdbmsmanager"')
-    replace_required(gradle, "versionCode = 1", "versionCode = 16")
-    replace_required(gradle, 'versionName = "0.1.0"', 'versionName = "0.1.1"')
+    # Whole-line matches: a substring match of "versionCode = 1" would also hit "= 16".
+    replace_line_required(gradle, r"^(\s*)versionCode = \d+$", r"\g<1>versionCode = 16")
+    replace_line_required(gradle, r'^(\s*)versionName = "[^"]*"$', r'\g<1>versionName = "0.1.1"')
 
     strings = root / "app" / "src" / "main" / "res" / "values" / "strings.xml"
     replace_required(strings, '<string name="app_name">OpenJBD MVP</string>', '<string name="app_name">JBD BMS Manager</string>')
@@ -100,7 +111,16 @@ def main() -> None:
     (drawable_dir / "jbd_app_icon.png").write_bytes(bytes(icon_values))
 
     styles = root / "app" / "src" / "main" / "res" / "values" / "styles.xml"
-    replace_optional(styles, '        <item name="android:windowOptOutEdgeToEdgeEnforcement">true</item>\n', "")
+    # Core Android 16 fix: removing the edge-to-edge opt-out must never silently no-op.
+    replace_required(styles, '        <item name="android:windowOptOutEdgeToEdgeEnforcement">true</item>\n', "")
+
+    # Offer Korean in the Android 13+ per-app language picker.
+    locales = root / "app" / "src" / "main" / "res" / "xml" / "locales_config.xml"
+    replace_required(
+        locales,
+        '    <locale android:name="en" />\n',
+        '    <locale android:name="en" />\n    <locale android:name="ko" />\n',
+    )
 
     for path in (root / "app" / "src" / "main").rglob("*.kt"):
         replace_optional(path, "https://github.com/gytxtx/OpenJBD", "https://github.com/openit-mykim/jbd-bms-manager")
