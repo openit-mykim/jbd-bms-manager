@@ -76,12 +76,26 @@
     <string name="settings_validation_puvp_relation">Pack under-voltage release must be higher than pack under-voltage protection.</string>
     <string name="settings_validation_charge_current_positive">Charge over-current must be positive.</string>
     <string name="settings_validation_discharge_current_negative">Discharge over-current must be negative.</string>
+    <string name="settings_validation_cell_order">Cell under-voltage protection must be lower than cell over-voltage protection.</string>
+    <string name="settings_validation_pack_order">Pack under-voltage protection must be lower than pack over-voltage protection.</string>
+    <string name="settings_validation_chg_ot_relation">Charge over-temperature release must be lower than charge over-temperature protection.</string>
+    <string name="settings_validation_chg_ut_relation">Charge under-temperature release must be higher than charge under-temperature protection.</string>
+    <string name="settings_validation_chg_temp_order">Charge under-temperature protection must be lower than charge over-temperature protection.</string>
+    <string name="settings_validation_dsg_ot_relation">Discharge over-temperature release must be lower than discharge over-temperature protection.</string>
+    <string name="settings_validation_dsg_ut_relation">Discharge under-temperature release must be higher than discharge under-temperature protection.</string>
+    <string name="settings_validation_dsg_temp_order">Discharge under-temperature protection must be lower than discharge over-temperature protection.</string>
+    <string name="settings_outcome_applied">Command applied — confirm with the live state</string>
+    <string name="settings_detail_acknowledged">Acknowledged by the BMS</string>
+    <string name="mos_validation_live_unavailable">Live MOSFET state is not available yet. Wait for a basic-info update and try again.</string>
+    <string name="mos_validation_other_protected">The other MOSFET is off while a protection is active. Changing it now could keep it off after the protection clears, so the change was refused.</string>
+    <string name="mos_validation_mixed_session">MOS control must be applied on its own, separately from other settings.</string>
     <string name="settings_validation_fallback">Invalid setting: %1$s</string>
 
     <string name="settings_outcome_committed">Committed</string>
     <string name="settings_outcome_not_committed">Not committed</string>
     <string name="settings_outcome_validation_failed">Validation failed</string>
     <string name="settings_outcome_entry_failed">Could not start write session</string>
+    <string name="settings_outcome_commit_unconfirmed">Commit not acknowledged — re-read before trusting the values</string>
     <string name="settings_detail_verified">Applied and verified</string>
     <string name="settings_detail_read_back_mismatch">Read-back mismatch</string>
     <string name="settings_detail_no_response">No response</string>

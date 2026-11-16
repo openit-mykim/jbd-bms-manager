@@ -502,8 +502,19 @@ class SettingsGroupDialogFragment : DialogFragment() {
     private fun applyChanges() {
         val section = latestState.sections.getValue(group)
         val currentRaws = section.values.mapValues { it.value.raw }
+        val mosLiveState = if (group == SettingsGroup.MOS) {
+            bmsRepository.getSnapshot().basicInfo?.let { info ->
+                MosLiveState(
+                    fetState = (if (info.chargeEnabled) 1 else 0) or
+                        (if (info.dischargeEnabled) 2 else 0),
+                    protectionActive = info.protectionState != 0
+                )
+            }
+        } else {
+            null
+        }
         val changes = stagedValues.map { (field, rawValue) ->
-            FieldChange(field, rawValue, currentRaws)
+            FieldChange(field, rawValue, currentRaws, mosLiveState)
         }
         if (changes.isEmpty()) return
 
@@ -514,7 +525,9 @@ class SettingsGroupDialogFragment : DialogFragment() {
             val result = repository.applyChanges(changes)
             lastResult = result
             applying = false
-            if (result.outcome is WriteSessionOutcome.Committed) {
+            if (result.outcome is WriteSessionOutcome.Committed ||
+                result.outcome is WriteSessionOutcome.Applied
+            ) {
                 stagedValues.clear()
                 repository.readGroups(listOf(group))
             }

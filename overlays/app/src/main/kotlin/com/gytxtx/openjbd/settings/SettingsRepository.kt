@@ -7,6 +7,7 @@ import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -28,7 +29,9 @@ data class SettingsState(
     },
     val notConnected: Boolean = true,
     val lastError: String? = null,
-    val lastWriteResult: WriteSessionResult? = null
+    val lastWriteResult: WriteSessionResult? = null,
+    /** True while a write session runs; it outlives the dialog that started it. */
+    val writeInProgress: Boolean = false
 )
 
 /**
@@ -51,6 +54,7 @@ class SettingsRepository internal constructor(
     private val scope = CoroutineScope(SupervisorJob() + dispatcher)
     private val coordinator = SettingsSessionCoordinator(gateway)
     private val readInProgress = AtomicBoolean(false)
+    private val writeInProgress = AtomicBoolean(false)
     private val _state = MutableStateFlow(
         SettingsState(notConnected = !gateway.isConnected())
     )
@@ -125,6 +129,12 @@ class SettingsRepository internal constructor(
         }
     }
 
+    /**
+     * Runs one write session in the application-scoped [scope], not in the caller's scope.
+     * A dialog destroyed by rotation or dismissal cancels only its wait; the BLE session itself
+     * always finishes (including the commit / no-commit factory exit) and the result is kept in
+     * [SettingsState.lastWriteResult] for the recreated UI. Concurrent sessions are rejected.
+     */
     suspend fun applyChanges(changes: List<FieldChange>): WriteSessionResult {
         if (!gateway.isConnected()) {
             return notConnectedWriteResult().also { result ->
@@ -137,21 +147,37 @@ class SettingsRepository internal constructor(
                 }
             }
         }
-
-        val result = try {
-            gateway.withSession { coordinator.applyChanges(changes) }
-        } catch (error: IllegalStateException) {
-            if (error.message != NOT_CONNECTED_MESSAGE) throw error
-            notConnectedWriteResult()
-        }
-        _state.update {
-            it.copy(
-                notConnected = !gateway.isConnected(),
-                lastError = writeErrorSummary(result),
-                lastWriteResult = result
+        if (!writeInProgress.compareAndSet(false, true)) {
+            return WriteSessionResult(
+                outcome = WriteSessionOutcome.EntryFailed(
+                    RegisterAccessError.TransportFailure(WRITE_BUSY_MESSAGE)
+                )
             )
         }
-        return result
+        _state.update { it.copy(writeInProgress = true) }
+
+        return scope.async {
+            try {
+                val result = try {
+                    gateway.withSession { coordinator.applyChanges(changes) }
+                } catch (error: IllegalStateException) {
+                    if (error.message != NOT_CONNECTED_MESSAGE) throw error
+                    notConnectedWriteResult()
+                }
+                _state.update {
+                    it.copy(
+                        notConnected = !gateway.isConnected(),
+                        lastError = writeErrorSummary(result),
+                        lastWriteResult = result,
+                        writeInProgress = false
+                    )
+                }
+                result
+            } finally {
+                writeInProgress.set(false)
+                _state.update { if (it.writeInProgress) it.copy(writeInProgress = false) else it }
+            }
+        }.await()
     }
 
     private fun markReadFailed(
@@ -177,8 +203,9 @@ class SettingsRepository internal constructor(
     )
 
     private fun writeErrorSummary(result: WriteSessionResult): String? = when (result.outcome) {
-        WriteSessionOutcome.Committed -> null
+        WriteSessionOutcome.Committed, WriteSessionOutcome.Applied -> null
         WriteSessionOutcome.NotCommitted -> WRITE_NOT_COMMITTED_MESSAGE
+        is WriteSessionOutcome.CommitUnconfirmed -> WRITE_COMMIT_UNCONFIRMED_MESSAGE
         is WriteSessionOutcome.ValidationFailed -> WRITE_VALIDATION_ERROR_MESSAGE
         is WriteSessionOutcome.EntryFailed -> when (val error = result.outcome.error) {
             is RegisterAccessError.TransportFailure -> error.message
@@ -193,5 +220,8 @@ class SettingsRepository internal constructor(
         const val SETTINGS_WRITE_ERROR_MESSAGE = "Settings write session could not start"
         const val WRITE_NOT_COMMITTED_MESSAGE = "Settings changes were not committed"
         const val WRITE_VALIDATION_ERROR_MESSAGE = "Settings changes failed validation"
+        const val WRITE_COMMIT_UNCONFIRMED_MESSAGE =
+            "The BMS did not acknowledge the commit; re-read the values before trusting them"
+        const val WRITE_BUSY_MESSAGE = "Another settings write session is still running"
     }
 }

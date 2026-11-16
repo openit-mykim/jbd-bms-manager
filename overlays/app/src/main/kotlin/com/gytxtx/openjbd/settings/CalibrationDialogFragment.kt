@@ -227,7 +227,7 @@ class CalibrationDialogFragment : DialogFragment() {
                     section.accessMode,
                     section.values,
                     section.registerErrors
-                ) || section.values[field]?.raw == raw
+                )
         }
     }
 
@@ -377,11 +377,12 @@ class CalibrationDialogFragment : DialogFragment() {
             operationNoteResId(target.kind)
         )
 
-        val currentRaw = section.values.getValue(target.field).raw
+        // Calibration registers are commands; a readable value is informational only.
+        val currentRaw = section.values[target.field]?.raw
         val initialRaw = stagedValues[target.field] ?: currentRaw
-        val display = SettingsDisplay.displayValue(target.field, initialRaw)
+        val display = SettingsDisplay.displayValue(target.field, initialRaw ?: target.field.range.minRaw)
         input.inputType = InputType.TYPE_CLASS_NUMBER or InputType.TYPE_NUMBER_FLAG_DECIMAL
-        input.setText(display.inputText)
+        input.setText(if (initialRaw == null) "" else display.inputText)
         inputLayout.suffixText = display.unitStringResId?.let(::getString)
 
         fun updateOperationPreview() {
@@ -447,8 +448,9 @@ class CalibrationDialogFragment : DialogFragment() {
     }
 
     private fun stageValue(field: SettingField, raw: Int, section: SettingsSectionState) {
-        if (section.values.getValue(field).raw == raw) stagedValues.remove(field)
-        else stagedValues[field] = raw
+        // Always stage: re-sending the same value is a valid calibration command
+        // (e.g. zeroing idle current when the register already reads 0).
+        stagedValues[field] = raw
         render()
     }
 
@@ -461,7 +463,7 @@ class CalibrationDialogFragment : DialogFragment() {
                 setPadding(0, 0, 0, resources.getDimensionPixelSize(R.dimen.space_4))
             }
             row.addView(TextView(requireContext()).apply {
-                text = changeSummary(field, section.values.getValue(field).raw, newRaw)
+                text = changeSummary(field, section.values[field]?.raw, newRaw)
                 setTextAppearance(R.style.TextAppearance_OpenJbd_ListItemSubtitle)
             }, LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f))
             row.addView(MaterialButton(requireContext()).apply {
@@ -481,7 +483,7 @@ class CalibrationDialogFragment : DialogFragment() {
         val section = latestSettingsState.sections.getValue(group)
         if (stagedValues.isEmpty() || applying) return
         val summaries = stagedValues.map { (field, raw) ->
-            changeSummary(field, section.values.getValue(field).raw, raw)
+            changeSummary(field, section.values[field]?.raw, raw)
         }
         val message = summaries.joinToString("\n") + "\n\n" +
             getString(R.string.settings_confirm_warning) + "\n\n" +
@@ -649,9 +651,9 @@ class CalibrationDialogFragment : DialogFragment() {
         CalibrationGuidanceKey.NTC_REFERENCE -> R.string.calibration_guidance_ntc
     }
 
-    private fun changeSummary(field: SettingField, oldRaw: Int, newRaw: Int): String =
+    private fun changeSummary(field: SettingField, oldRaw: Int?, newRaw: Int): String =
         fieldLabel(field) + " " +
-            resolveDisplay(SettingsDisplay.displayValue(field, oldRaw)) + " → " +
+            (oldRaw?.let { resolveDisplay(SettingsDisplay.displayValue(field, it)) } ?: "—") + " → " +
             resolveDisplay(SettingsDisplay.displayValue(field, newRaw))
 
     private fun fieldLabel(field: SettingField): String = getString(

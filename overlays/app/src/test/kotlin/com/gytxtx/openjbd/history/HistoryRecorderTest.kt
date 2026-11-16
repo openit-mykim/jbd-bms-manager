@@ -42,7 +42,8 @@ class HistoryRecorderTest {
                 snapshot(
                     connected = true,
                     basicInfo = basicInfo(totalVoltage = 51.234f, current = -2.345f, soc = 67),
-                    cells = JbdCellVoltages(listOf(3.301f, 3.315f, 3.299f))
+                    cells = JbdCellVoltages(listOf(3.301f, 3.315f, 3.299f)),
+                    basicInfoAtMillis = 123_456L
                 )
             )
         }
@@ -160,6 +161,21 @@ class HistoryRecorderTest {
     }
 
     @Test
+    fun staleBasicInfoIsNotRecordedWhilePollingIsPaused() = runTest {
+        val store = FakeHistoryStore()
+        val repository = BmsRepository().apply {
+            update(snapshot(connected = true, basicInfo = basicInfo(), basicInfoAtMillis = 1L))
+        }
+        val recorder = recorder(repository, store, clock = { 1L + HistoryPolicy.MAX_SAMPLE_AGE_MILLIS + 1 })
+
+        recorder.start(backgroundScope)
+        advanceTimeBy(TEST_SAMPLE_INTERVAL)
+        runCurrent()
+
+        assertEquals(0, store.samples.size)
+    }
+
+    @Test
     fun startPrunesOnceImmediately() = runTest {
         val store = FakeHistoryStore()
         val now = 900_000_000L
@@ -189,7 +205,8 @@ class HistoryRecorderTest {
     private fun snapshot(
         connected: Boolean,
         basicInfo: JbdBasicInfo?,
-        cells: JbdCellVoltages? = null
+        cells: JbdCellVoltages? = null,
+        basicInfoAtMillis: Long? = if (basicInfo != null) 1L else null
     ): BmsUiState = BmsUiState.withConnectionState(
         connectionState = if (connected) ConnectionState.READY else ConnectionState.DISCONNECTED,
         connected = connected,
@@ -198,7 +215,7 @@ class HistoryRecorderTest {
         status = null,
         basicInfo = basicInfo,
         cellVoltages = cells
-    )
+    ).copy(basicInfoAtMillis = basicInfoAtMillis)
 
     private fun basicInfo(
         totalVoltage: Float = 52.0f,

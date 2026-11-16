@@ -60,11 +60,14 @@ class HistoryRecorder internal constructor(
         try {
             val snapshot = repository.getSnapshot()
             val basicInfo = snapshot.basicInfo
-            if (!HistoryPolicy.shouldRecord(snapshot.connected, basicInfo != null)) return
+            val now = clock()
+            if (basicInfo == null ||
+                !HistoryPolicy.shouldRecord(snapshot.connected, snapshot.basicInfoAtMillis, now)
+            ) return
 
             store.append(
                 HistorySample(
-                    timestampMillis = clock(),
+                    timestampMillis = now,
                     socPercent = checkNotNull(basicInfo).soc,
                     packMillivolts = (basicInfo.totalVoltage * MILLIVOLTS_PER_VOLT).roundToInt(),
                     currentMilliamps = (basicInfo.current * MILLIAMPS_PER_AMP).roundToInt(),
