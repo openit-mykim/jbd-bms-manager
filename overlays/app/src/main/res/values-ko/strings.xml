@@ -194,4 +194,6 @@
     <string name="licenses_title">라이선스</string>
     <string name="license_mit">MIT 라이선스</string>
     <string name="license_apache_2">Apache License 2.0</string>
+    <string name="dashboard_live">실시간 BMS 데이터</string>
+    <string name="dashboard_waiting_data">BMS 데이터를 기다리는 중</string>
 </resources>
