@@ -68,7 +68,9 @@ jobs:
         run: |
           mkdir -p dist
           cp upstream-src/app/build/outputs/apk/debug/app-debug.apk "dist/${APK_NAME}"
-          sha256sum "dist/${APK_NAME}" > "dist/${APK_NAME}.sha256"
+          # Write the digest with a bare file name so `sha256sum -c` works
+          # from the download directory.
+          (cd dist && sha256sum "${APK_NAME}" > "${APK_NAME}.sha256")
 
       - name: Upload APK artifact
         uses: actions/upload-artifact@v7
@@ -107,9 +109,11 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
+          # Published releases are immutable (docs/release-process.md).
+          # A main push that does not bump RELEASE_TAG must not replace the
+          # existing APK, so skip publishing instead of clobbering assets.
           if gh release view "${RELEASE_TAG}" --repo "${GITHUB_REPOSITORY}" >/dev/null 2>&1; then
-            gh release upload "${RELEASE_TAG}" "dist/${APK_NAME}" "dist/${APK_NAME}.sha256" --clobber --repo "${GITHUB_REPOSITORY}"
-            gh release edit "${RELEASE_TAG}" --notes-file release-notes.md --prerelease=false --latest --repo "${GITHUB_REPOSITORY}"
+            echo "::warning::Release ${RELEASE_TAG} already exists; skipping publish. Bump the version to release this build."
           else
             gh release create "${RELEASE_TAG}" "dist/${APK_NAME}" "dist/${APK_NAME}.sha256" \
               --target "${GITHUB_SHA}" \
