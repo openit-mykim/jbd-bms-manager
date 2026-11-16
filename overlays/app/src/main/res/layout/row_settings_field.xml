@@ -6,9 +6,9 @@
     android:minHeight="@dimen/touch_target_min"
     android:orientation="horizontal"
     android:paddingStart="@dimen/space_16"
-    android:paddingTop="@dimen/space_10"
+    android:paddingTop="@dimen/space_12"
     android:paddingEnd="@dimen/space_12"
-    android:paddingBottom="@dimen/space_10">
+    android:paddingBottom="@dimen/space_12">
 
     <LinearLayout
         android:layout_width="0dp"
@@ -27,14 +27,14 @@
             android:id="@+id/settings_field_value"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:paddingTop="@dimen/space_2"
+            android:paddingTop="@dimen/space_4"
             android:textAppearance="@style/TextAppearance.OpenJbd.ListItemSubtitle" />
 
         <TextView
             android:id="@+id/settings_field_error"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:paddingTop="@dimen/space_2"
+            android:paddingTop="@dimen/space_4"
             android:textColor="@color/error"
             android:textAppearance="@style/TextAppearance.MaterialComponents.Caption"
             android:visibility="gone" />

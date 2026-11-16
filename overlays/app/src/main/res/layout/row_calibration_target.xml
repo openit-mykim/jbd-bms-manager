@@ -5,9 +5,9 @@
     android:minHeight="@dimen/touch_target_min"
     android:orientation="horizontal"
     android:paddingStart="@dimen/space_16"
-    android:paddingTop="@dimen/space_10"
+    android:paddingTop="@dimen/space_12"
     android:paddingEnd="@dimen/space_12"
-    android:paddingBottom="@dimen/space_10">
+    android:paddingBottom="@dimen/space_12">
 
     <LinearLayout
         android:layout_width="0dp"
@@ -26,7 +26,7 @@
             android:id="@+id/calibration_target_guidance"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:paddingTop="@dimen/space_2"
+            android:paddingTop="@dimen/space_4"
             android:textAppearance="@style/TextAppearance.MaterialComponents.Caption" />
 
         <TextView
@@ -40,14 +40,14 @@
             android:id="@+id/calibration_target_stored"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:paddingTop="@dimen/space_2"
+            android:paddingTop="@dimen/space_4"
             android:textAppearance="@style/TextAppearance.OpenJbd.ListItemSubtitle" />
 
         <TextView
             android:id="@+id/calibration_target_error"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:paddingTop="@dimen/space_2"
+            android:paddingTop="@dimen/space_4"
             android:textAppearance="@style/TextAppearance.MaterialComponents.Caption"
             android:textColor="@color/error"
             android:visibility="gone" />

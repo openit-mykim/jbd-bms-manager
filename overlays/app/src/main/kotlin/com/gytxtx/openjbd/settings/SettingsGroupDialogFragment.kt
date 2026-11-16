@@ -672,14 +672,10 @@ class SettingsGroupDialogFragment : DialogFragment() {
     }
 
     private fun formatTimestamp(millis: Long): String =
-        SimpleDateFormat(DATE_TIME_PATTERN, Locale.getDefault()).apply {
-            timeZone = TimeZone.getTimeZone(KST_TIME_ZONE)
-        }.format(Date(millis))
+        com.gytxtx.openjbd.DisplayFormats.dateTime(millis)
 
     companion object {
         private const val ARG_GROUP = "settings_group"
-        private const val DATE_TIME_PATTERN = "yyyy-MM-dd HH:mm:ss"
-        private const val KST_TIME_ZONE = "Asia/Seoul"
 
         fun newInstance(group: SettingsGroup) = SettingsGroupDialogFragment().apply {
             arguments = Bundle().apply { putString(ARG_GROUP, group.name) }

@@ -7,14 +7,14 @@
 set -euo pipefail
 
 repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-workflow="$repo_root/.github/workflows/android-release.yml"
+props="$repo_root/version.properties"
 build_dir="${JBD_BUILD_DIR:-$repo_root/.build/upstream-src}"
 
-# Single source of truth for the pinned baseline: the release workflow env.
-upstream_repo="$(sed -n 's/^  UPSTREAM_REPO: *//p' "$workflow")"
-upstream_commit="$(sed -n 's/^  UPSTREAM_COMMIT: *//p' "$workflow")"
+# Single source of truth for the pinned baseline: version.properties.
+upstream_repo="$(sed -n 's/^upstreamRepo=//p' "$props")"
+upstream_commit="$(sed -n 's/^upstreamCommit=//p' "$props")"
 if [[ -z "$upstream_repo" || -z "$upstream_commit" ]]; then
-  echo "Could not read UPSTREAM_REPO / UPSTREAM_COMMIT from $workflow" >&2
+  echo "Could not read upstreamRepo / upstreamCommit from $props" >&2
   exit 2
 fi
 

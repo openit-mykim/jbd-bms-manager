@@ -9,4 +9,9 @@
     <string name="history_summary">Min %1$s · Avg %2$s · Max %3$s</string>
     <string name="history_note">History is stored only on this device and automatically deleted after 7 days. Samples are recorded every 10 seconds.</string>
     <string name="history_chart_description">History chart: %1$s · %2$s · %3$d samples</string>
+    <string name="history_clear">Delete history</string>
+    <string name="history_clear_title">Delete all history on this phone?</string>
+    <string name="history_clear_message">The trend chart samples stored on this phone will be deleted. This cannot be undone. The BMS itself is not changed.</string>
+    <string name="history_clear_confirm">Delete</string>
+    <string name="history_clear_cancel">Cancel</string>
 </resources>

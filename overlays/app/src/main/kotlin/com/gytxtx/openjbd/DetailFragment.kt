@@ -107,6 +107,19 @@ class DetailFragment : Fragment() {
                 refreshHistory()
             }
         }
+        view.findViewById<View>(R.id.history_clear_button).setOnClickListener {
+            com.google.android.material.dialog.MaterialAlertDialogBuilder(requireContext())
+                .setTitle(R.string.history_clear_title)
+                .setMessage(R.string.history_clear_message)
+                .setNegativeButton(R.string.history_clear_cancel, null)
+                .setPositiveButton(R.string.history_clear_confirm) { _, _ ->
+                    viewLifecycleOwner.lifecycleScope.launch {
+                        historyStore.clear()
+                        refreshHistory()
+                    }
+                }
+                .show()
+        }
     }
 
     private fun refreshHistory() {
@@ -247,7 +260,7 @@ class DetailFragment : Fragment() {
             balance = { ctx.balanceSummary(it) },
             protection = { ctx.protectionSummary(it) },
             updatedAt = {
-                SimpleDateFormat(DATE_TIME_PATTERN, Locale.getDefault()).format(Date(it))
+                DisplayFormats.dateTime(it)
             }
         )
     }
@@ -304,7 +317,6 @@ class DetailFragment : Fragment() {
     }
 
     private companion object {
-        const val DATE_TIME_PATTERN = "yyyy-MM-dd HH:mm:ss"
         const val MAX_BUCKETS = 120
     }
 

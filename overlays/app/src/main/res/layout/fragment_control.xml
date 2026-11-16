@@ -10,7 +10,7 @@
         android:layout_height="wrap_content"
         android:orientation="vertical"
         android:paddingTop="@dimen/space_8"
-        android:paddingBottom="@dimen/space_18">
+        android:paddingBottom="@dimen/space_16">
 
         <LinearLayout
             android:id="@+id/control_locked_content"
@@ -33,7 +33,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:gravity="center"
-                android:paddingTop="@dimen/space_18"
+                android:paddingTop="@dimen/space_16"
                 android:text="@string/control_maintenance_title"
                 android:textAppearance="@style/TextAppearance.OpenJbd.EmptyTitle" />
 
@@ -644,7 +644,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginStart="@dimen/space_16"
-                    android:layout_marginTop="@dimen/space_18"
+                    android:layout_marginTop="@dimen/space_16"
                     android:layout_marginEnd="@dimen/space_16"
                     android:padding="@dimen/space_12"
                     android:text="@string/control_diagnostics_footer"
@@ -655,7 +655,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="@dimen/space_16"
-                android:layout_marginTop="@dimen/space_18"
+                android:layout_marginTop="@dimen/space_16"
                 android:layout_marginEnd="@dimen/space_16"
                 android:padding="@dimen/space_12"
                 android:text="@string/control_remaining_planned_notice"

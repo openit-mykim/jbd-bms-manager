@@ -275,6 +275,8 @@ class HistoryRecorderTest {
         override suspend fun count(): Long = samples.size.toLong()
 
         override suspend fun latestTimestamp(): Long? = samples.maxOfOrNull { it.timestampMillis }
+
+        override suspend fun clear() = samples.clear()
     }
 
     private companion object {
