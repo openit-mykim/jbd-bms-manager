@@ -10,6 +10,7 @@ on:
       - "overlays/**"
       - "assets/**"
       - "scripts/apply-*.py"
+      - "scripts/check-design-tokens.py"
       - "scripts/verify.sh"
       - "scripts/release-guard.sh"
       - "version.properties"
@@ -21,6 +22,7 @@ on:
       - "overlays/**"
       - "assets/**"
       - "scripts/apply-*.py"
+      - "scripts/check-design-tokens.py"
       - "scripts/verify.sh"
       - "scripts/release-guard.sh"
       - "version.properties"
@@ -79,6 +81,9 @@ jobs:
 
       - name: Apply JBD BMS Manager product overlay
         run: python3 manager/scripts/apply-product-overlay.py upstream-src
+
+      - name: Design token check (text sizes, spacing grid, translations)
+        run: python3 manager/scripts/check-design-tokens.py upstream-src
 
       - name: Grant Gradle wrapper permission
         run: chmod +x upstream-src/gradlew
