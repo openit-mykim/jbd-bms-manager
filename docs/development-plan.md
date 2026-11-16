@@ -1,5 +1,7 @@
 # Development Plan
 
+> **Status (2026-11-16):** Phases 1-6 are implemented in `v0.1.1`; physical hardware validation is tracked in issue #23. Remaining work is tracked in #1 (upstream history merge), #9 (signing, lint, UI regression tests) and #24 (multi-BMS). `PROJECT_STATUS.md` is the canonical status.
+
 This plan is the execution roadmap for Hermes and Paseo workers. Work should proceed phase by phase unless a blocker requires a temporary research branch.
 
 ## Phase 0 — Baseline import and repository bootstrap
@@ -247,7 +249,7 @@ Only after the core BLE app is stable:
 - additional JBD variants
 - service log export
 - battery health analytics
-- optional local historical charts
+- ~~optional local historical charts~~ — shipped in `v0.1.1` (Detail history trend chart, 24 h / 7 d, on-device 7-day retention)
 - device profile library
 
 Do not let optional expansion delay safe implementation of the maintenance core.

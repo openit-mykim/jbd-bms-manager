@@ -4,14 +4,19 @@ Testing is layered so agents can move quickly without replacing evidence with as
 
 ## 1. Fast local checks
 
-Run the smallest relevant checks while editing. Examples after the OpenJBD source is imported:
+This repository is overlay-only: there is no `gradlew` at the repository root. `scripts/verify.sh` clones the pinned OpenJBD baseline into `.build/upstream-src`, applies `overlays/` with `scripts/apply-product-overlay.py`, then runs Gradle there.
 
 ```bash
-./gradlew testDebugUnitTest
-./gradlew assembleDebug
+bash scripts/verify.sh               # unit tests (testDebugUnitTest) + debug APK (assembleDebug)
+bash scripts/verify.sh --tests-only  # unit tests only, skips the APK build
 ```
 
-If a narrower module/test target exists, run it first.
+To iterate on a single test class after one `verify.sh` run, use the prepared tree (re-run `verify.sh` after editing `overlays/` so the overlay is re-applied):
+
+```bash
+cd .build/upstream-src
+./gradlew testDebugUnitTest --tests 'com.gytxtx.openjbd.data.BmsRepositoryCellVoltageTest'
+```
 
 ## 2. Protocol tests
 
@@ -75,12 +80,13 @@ If no physical BMS was available, state `NOT HARDWARE VERIFIED` in the PR. Do no
 
 ## 6. Verification script
 
-After source import, maintain `scripts/verify.sh` as the default repository check. It should stay predictable and reasonably bounded. The initial intent is:
+`scripts/verify.sh` is the default local repository check and mirrors CI (workflow "Android Release Build"). It should stay predictable and reasonably bounded:
 
 ```text
-unit tests
-→ debug build
-→ selected static checks when configured
+clone pinned OpenJBD into .build/upstream-src
+→ apply overlays/
+→ ./gradlew testDebugUnitTest
+→ ./gradlew assembleDebug (skipped with --tests-only)
 ```
 
 Do not make every small worktree run an unnecessarily expensive full integration suite if focused evidence is enough during development. Broader checks belong at PR/integration boundaries.

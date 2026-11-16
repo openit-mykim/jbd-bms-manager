@@ -58,8 +58,7 @@ Recommended protections:
 - Require pull request before merging
 - Require conversation resolution
 - Require status checks
-- Required check: Android unit tests
-- Required check: debug APK build
+- Required check: `build` (the single job of workflow "Android Release Build", which runs unit tests and the debug APK build)
 - Block force pushes
 - Block branch deletion
 - Require CODEOWNER review when another reviewer is available

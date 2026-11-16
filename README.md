@@ -60,20 +60,17 @@ Core monitor capabilities include:
 
 Control is the top-level entry to the technician workspace and is locked by default.
 
-Planned service functions:
+Implemented service functions (`v0.1.1`):
 
-- Pack voltage calibration
+- Settings read / write: balance, protection, temperature and capacity sections (balance delta in 5 mV steps)
+- Current calibration: idle (zero), charge and discharge
 - Cell voltage calibration
-- Idle current calibration
-- Charge current calibration
-- Discharge current calibration
-- Capacity / SOC management
-- Protection parameter read / write
-- Balance parameter read / write
-- Temperature parameter management
-- Charge / discharge MOS control
-- Configuration backup / restore
-- Raw BMS information and diagnostics
+- NTC (temperature sensor) calibration
+- Charge / discharge MOS control (FET disable / enable with live state)
+- Configuration backup (JSON export) / staged, verified restore
+- Target BMS identification and read-only raw diagnostics
+
+Pack voltage calibration is not provided. Unknown BMS variants stay read-only. See `PROJECT_STATUS.md` for the canonical feature, remaining-work and test status.
 
 Maintenance writes follow a staged workflow:
 

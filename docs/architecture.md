@@ -158,12 +158,8 @@ All standalone Activity toolbars must also receive status-bar insets. Both portr
 
 ## Localization
 
-Initial languages:
-
-- Korean
-- English
-
-Additional upstream languages can be retained where practical.
+- Korean and English: complete.
+- Simplified Chinese (from upstream OpenJBD): retained, but only partially translated for the new product screens; untranslated strings fall back to English.
 
 ## Safety boundaries
 
