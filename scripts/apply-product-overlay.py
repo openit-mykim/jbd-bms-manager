@@ -172,6 +172,16 @@ def main() -> None:
         )
 
     normalize_layout_spacing(root / "app" / "src" / "main" / "res" / "layout")
+
+    # Upstream's Parameters page was split into Detail (user) and Control diagnostics
+    # (technician); nothing references it any more, so it is not shipped.
+    for dead in (
+        root / "app" / "src" / "main" / "kotlin" / "com" / "gytxtx" / "openjbd" / "ParametersFragment.kt",
+        root / "app" / "src" / "main" / "res" / "layout" / "fragment_parameters.xml",
+    ):
+        if not dead.exists():
+            raise RuntimeError(f"Expected upstream file not found (upstream changed?): {dead}")
+        dead.unlink()
     # The upstream resource test pins row_setting_item's vertical padding to space_10;
     # the grid remap above makes it space_12, so the expectation moves with it.
     resource_test = root / "app" / "src" / "test" / "kotlin" / "com" / "gytxtx" / "openjbd" / "ui" / "Material2ResourceTest.kt"

@@ -391,7 +391,7 @@ class BmsConnectionManager @Inject constructor(
             return
         }
         val started = if (Build.VERSION.SDK_INT >= 33) g.writeCharacteristic(wc, request.command, BluetoothGattCharacteristic.WRITE_TYPE_DEFAULT) == BluetoothStatusCodes.SUCCESS
-        else { @Suppress("DEPRECATION") wc.writeType = BluetoothGattCharacteristic.WRITE_TYPE_DEFAULT; wc.value = request.command; g.writeCharacteristic(wc) }
+        else legacyWriteCharacteristic(g, wc, request.command)
         if (!started) {
             if (commandQueue.retryStartFailure()) {
                 handler.removeCallbacks(writeStartRetryRunnable)
@@ -407,6 +407,19 @@ class BmsConnectionManager @Inject constructor(
         commandQueue.onWriteStarted()
         handler.removeCallbacks(writeCallbackWatchdogRunnable)
         handler.postDelayed(writeCallbackWatchdogRunnable, GATT_WRITE_CALLBACK_TIMEOUT_MS)
+    }
+
+    /** Pre-API-33 characteristic write; the annotated helper keeps the suppression valid Kotlin. */
+    @Suppress("DEPRECATION")
+    @SuppressLint("MissingPermission")
+    private fun legacyWriteCharacteristic(
+        gatt: BluetoothGatt,
+        characteristic: BluetoothGattCharacteristic,
+        value: ByteArray
+    ): Boolean {
+        characteristic.writeType = BluetoothGattCharacteristic.WRITE_TYPE_DEFAULT
+        characteristic.value = value
+        return gatt.writeCharacteristic(characteristic)
     }
 
     private fun handleIncoming(value: ByteArray) {
