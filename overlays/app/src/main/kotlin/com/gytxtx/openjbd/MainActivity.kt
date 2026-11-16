@@ -51,11 +51,10 @@ class MainActivity : AppCompatActivity() {
         val page = savedInstanceState?.getInt(STATE_CURRENT_PAGE, PAGE_OVERVIEW) ?: PAGE_OVERVIEW
         val itemId = navItemId(page)
         if (bottomNavigationView.selectedItemId == itemId) showPage(page) else bottomNavigationView.selectedItemId = itemId
-        maybeAutoConnect()
-    }
-
-    override fun onStart() {
-        super.onStart()
+        // Only on a cold start: recreation (rotation, language change) must not tear down a live
+        // BLE link, which would abort an in-flight settings session mid-write.
+        if (savedInstanceState == null) maybeAutoConnect()
+        // One collector per Activity instance; repeatOnLifecycle restarts it on every STARTED.
         lifecycleScope.launch {
             repeatOnLifecycle(androidx.lifecycle.Lifecycle.State.STARTED) {
                 repository.uiState.collect { renderState(it) }

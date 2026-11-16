@@ -82,6 +82,7 @@
     <string name="settings_outcome_not_committed">Not committed</string>
     <string name="settings_outcome_validation_failed">Validation failed</string>
     <string name="settings_outcome_entry_failed">Could not start write session</string>
+    <string name="settings_outcome_commit_unconfirmed">Commit not acknowledged — re-read before trusting the values</string>
     <string name="settings_detail_verified">Applied and verified</string>
     <string name="settings_detail_read_back_mismatch">Read-back mismatch</string>
     <string name="settings_detail_no_response">No response</string>

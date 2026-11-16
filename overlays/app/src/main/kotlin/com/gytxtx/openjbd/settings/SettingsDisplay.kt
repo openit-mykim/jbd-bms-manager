@@ -314,6 +314,7 @@ object SettingsDisplay {
     fun outcomeLabelResId(outcome: WriteSessionOutcome): Int = when (outcome) {
         WriteSessionOutcome.Committed -> R.string.settings_outcome_committed
         WriteSessionOutcome.NotCommitted -> R.string.settings_outcome_not_committed
+        is WriteSessionOutcome.CommitUnconfirmed -> R.string.settings_outcome_commit_unconfirmed
         is WriteSessionOutcome.ValidationFailed -> R.string.settings_outcome_validation_failed
         is WriteSessionOutcome.EntryFailed -> R.string.settings_outcome_entry_failed
     }

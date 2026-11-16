@@ -279,7 +279,13 @@ class BmsConnectionManager @Inject constructor(
         if (!enabled) { handler.removeCallbacks(reconnectRunnable); reconnectScheduled = false; reconnectAttempts = 0 }
     }
 
-    fun connect(address: String, name: String?) = connectInternal(address, name, false)
+    fun connect(address: String, name: String?) {
+        // Re-requesting the device that is already connected is a no-op, so UI recreation can
+        // never drop a live link (and any settings session running on it). A stuck CONNECTING
+        // attempt may still be restarted by the user.
+        if (connected && gatt != null && address == connectedDeviceAddress) return
+        connectInternal(address, name, false)
+    }
 
     @SuppressLint("MissingPermission")
     private fun connectInternal(address: String?, name: String?, reconnect: Boolean) {
@@ -333,6 +339,10 @@ class BmsConnectionManager @Inject constructor(
 
     private fun startReading() {
         updateState { it.withConnectionState(ConnectionState.READY, true, getString(R.string.status_ready_reading)) }
+        // A previous link may have dropped mid settings session (or the app was killed), leaving
+        // the BMS in factory mode with uncommitted writes. Always discard (`01 <- 00 00`) first
+        // on every (re)connect, before any polling.
+        commandQueue.enqueue(CommandRequest(JbdCommands.CMD_CLOSE_FACTORY_MODE, CommandKind.CLOSE_FACTORY_MODE, JbdCommands.closeFactoryMode()))
         handler.removeCallbacks(pollRunnable); handler.postDelayed(pollRunnable, 500L)
     }
 

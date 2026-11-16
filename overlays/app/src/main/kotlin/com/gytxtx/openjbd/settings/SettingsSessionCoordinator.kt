@@ -93,6 +93,12 @@ data class FieldChangeResult(
 sealed interface WriteSessionOutcome {
     object Committed : WriteSessionOutcome
     object NotCommitted : WriteSessionOutcome
+
+    /**
+     * Every write verified and the commit (`28 28`) was sent, but the BMS did not acknowledge it.
+     * The values may or may not be persisted; only the post-commit confirmation read can tell.
+     */
+    data class CommitUnconfirmed(val error: RegisterAccessError) : WriteSessionOutcome
     data class ValidationFailed(
         val failures: List<FieldValidationFailure>
     ) : WriteSessionOutcome
@@ -409,13 +415,15 @@ class SettingsSessionCoordinator(
             if (exitError != null) addExitFailureWarnings(warnings, exitError)
             factoryEntered = false
 
-            val outcome = if (shouldCommit) {
-                WriteSessionOutcome.Committed
-            } else {
-                WriteSessionOutcome.NotCommitted
+            val outcome = when {
+                !shouldCommit -> WriteSessionOutcome.NotCommitted
+                // An explicit error status means the BMS refused the commit: nothing persisted.
+                exitError is RegisterAccessError.ErrorStatus -> WriteSessionOutcome.NotCommitted
+                exitError != null -> WriteSessionOutcome.CommitUnconfirmed(exitError)
+                else -> WriteSessionOutcome.Committed
             }
             var postCommitConfirmation: PostCommitConfirmation? = null
-            if (outcome is WriteSessionOutcome.Committed) {
+            if (shouldCommit) {
                 val confirmationAttempt = confirmCommittedChanges(results)
                 postCommitConfirmation = confirmationAttempt.confirmation
                 if (postCommitConfirmation == null) {

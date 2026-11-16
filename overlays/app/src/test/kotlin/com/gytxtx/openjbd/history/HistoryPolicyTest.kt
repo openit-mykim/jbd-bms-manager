@@ -26,6 +26,16 @@ class HistoryPolicyTest {
     }
 
     @Test
+    fun staleBasicInfoIsNotRecordedAgain() {
+        val now = 1_000_000L
+        assertTrue(HistoryPolicy.shouldRecord(true, now - 2_000L, now))
+        assertTrue(HistoryPolicy.shouldRecord(true, now - HistoryPolicy.MAX_SAMPLE_AGE_MILLIS, now))
+        assertEquals(false, HistoryPolicy.shouldRecord(true, now - HistoryPolicy.MAX_SAMPLE_AGE_MILLIS - 1, now))
+        assertEquals(false, HistoryPolicy.shouldRecord(true, null, now))
+        assertEquals(false, HistoryPolicy.shouldRecord(false, now, now))
+    }
+
+    @Test
     fun retentionCutoffIsExactlySevenDaysBeforeNow() {
         val now = 1_000_000_000L
 

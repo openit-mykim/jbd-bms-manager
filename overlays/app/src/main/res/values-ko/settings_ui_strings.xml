@@ -82,6 +82,7 @@
     <string name="settings_outcome_not_committed">커밋되지 않음</string>
     <string name="settings_outcome_validation_failed">검증 실패</string>
     <string name="settings_outcome_entry_failed">쓰기 세션을 시작하지 못함</string>
+    <string name="settings_outcome_commit_unconfirmed">커밋 응답 없음 — 값을 다시 조회해 확인하세요</string>
     <string name="settings_detail_verified">적용·검증됨</string>
     <string name="settings_detail_read_back_mismatch">재읽기 불일치</string>
     <string name="settings_detail_no_response">응답 없음</string>

@@ -558,12 +558,39 @@ class SettingsSessionCoordinatorTest {
             listOf(FieldChange(SettingField.COVP, 4_100))
         )
 
-        assertTrue(result.outcome is WriteSessionOutcome.Committed)
+        // No acknowledgement of `28 28`: persistence is unknown, never reported as Committed.
+        val outcome = result.outcome
+        assertTrue(outcome is WriteSessionOutcome.CommitUnconfirmed)
+        assertEquals(RegisterAccessError.NoResponse, (outcome as WriteSessionOutcome.CommitUnconfirmed).error)
         assertTrue(SettingsSessionWarning.EXIT_UNCONFIRMED in result.warnings)
         assertTrue(SettingsSessionWarning.DEVICE_MAY_REMAIN_IN_FACTORY_MODE in result.warnings)
         assertEquals(1, gateway.frameCount(JbdConfigCommands.exitFactoryModeWithCommit()))
         assertEquals(2, gateway.frameCount(JbdCommands.closeFactoryMode()))
         assertEquals(2, gateway.frameCount(JbdCommands.openFactoryMode()))
+    }
+
+    @Test
+    fun commitRejectedWithErrorStatusIsNotCommitted() = runTest {
+        val gateway = FakeGateway(
+            ack(0x00),
+            register(0x24, 4_200),
+            ack(0x24),
+            register(0x24, 4_100),
+            counterResponse(IntArray(11)),
+            error(0x01),
+            ack(0x01),
+            ack(0x00),
+            register(0x24, 4_200),
+            ack(0x01),
+            ack(0x01)
+        )
+
+        val result = SettingsSessionCoordinator(gateway).applyChanges(
+            listOf(FieldChange(SettingField.COVP, 4_100))
+        )
+
+        assertTrue(result.outcome is WriteSessionOutcome.NotCommitted)
+        assertEquals(1, gateway.frameCount(JbdConfigCommands.exitFactoryModeWithCommit()))
     }
 
     @Test

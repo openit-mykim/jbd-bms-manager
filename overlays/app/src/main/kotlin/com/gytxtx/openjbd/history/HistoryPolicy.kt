@@ -15,8 +15,19 @@ object HistoryPolicy {
 
     private const val MILLIS_PER_DAY = 86_400_000L
 
+    /**
+     * Longest age of the last basic-info frame that still counts as live. Polling runs every
+     * 1-10 s; while it is paused (settings session) or stalled, the cached frame must not be
+     * re-recorded under new timestamps.
+     */
+    const val MAX_SAMPLE_AGE_MILLIS = 25_000L
+
     fun shouldRecord(connected: Boolean, hasBasicInfo: Boolean): Boolean =
         connected && hasBasicInfo
+
+    fun shouldRecord(connected: Boolean, basicInfoAtMillis: Long?, nowMillis: Long): Boolean =
+        connected && basicInfoAtMillis != null &&
+            nowMillis - basicInfoAtMillis in 0..MAX_SAMPLE_AGE_MILLIS
 
     fun retentionCutoffMillis(nowMillis: Long): Long =
         nowMillis - RETENTION_DAYS * MILLIS_PER_DAY

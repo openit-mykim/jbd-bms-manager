@@ -53,7 +53,9 @@ data class BmsUiState(
     // depends on it to re-emit even when nothing else changed). Never remove it without replacing
     // that mechanism.
     val updatedAtMillis: Long,
-    val cellVoltageAnalysis: CellVoltageAnalysis? = null
+    val cellVoltageAnalysis: CellVoltageAnalysis? = null,
+    /** Wall-clock time the current [basicInfo] frame arrived; null when none was received. */
+    val basicInfoAtMillis: Long? = null
 ) {
     fun withConnectionState(
         connectionState: ConnectionState,
@@ -70,7 +72,8 @@ data class BmsUiState(
         connectionState = ConnectionState.READING,
         basicInfo = info,
         status = status,
-        updatedAtMillis = System.currentTimeMillis()
+        updatedAtMillis = System.currentTimeMillis(),
+        basicInfoAtMillis = if (info != null) System.currentTimeMillis() else null
     )
 
     fun withCellVoltages(voltages: JbdCellVoltages?, status: String?): BmsUiState = copy(
