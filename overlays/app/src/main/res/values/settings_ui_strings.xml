@@ -76,6 +76,14 @@
     <string name="settings_validation_puvp_relation">Pack under-voltage release must be higher than pack under-voltage protection.</string>
     <string name="settings_validation_charge_current_positive">Charge over-current must be positive.</string>
     <string name="settings_validation_discharge_current_negative">Discharge over-current must be negative.</string>
+    <string name="settings_validation_cell_order">Cell under-voltage protection must be lower than cell over-voltage protection.</string>
+    <string name="settings_validation_pack_order">Pack under-voltage protection must be lower than pack over-voltage protection.</string>
+    <string name="settings_validation_chg_ot_relation">Charge over-temperature release must be lower than charge over-temperature protection.</string>
+    <string name="settings_validation_chg_ut_relation">Charge under-temperature release must be higher than charge under-temperature protection.</string>
+    <string name="settings_validation_chg_temp_order">Charge under-temperature protection must be lower than charge over-temperature protection.</string>
+    <string name="settings_validation_dsg_ot_relation">Discharge over-temperature release must be lower than discharge over-temperature protection.</string>
+    <string name="settings_validation_dsg_ut_relation">Discharge under-temperature release must be higher than discharge under-temperature protection.</string>
+    <string name="settings_validation_dsg_temp_order">Discharge under-temperature protection must be lower than discharge over-temperature protection.</string>
     <string name="settings_validation_fallback">Invalid setting: %1$s</string>
 
     <string name="settings_outcome_committed">Committed</string>

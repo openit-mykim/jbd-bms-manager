@@ -290,6 +290,14 @@ object SettingsDisplay {
             "cuvpRelease must be higher than cuvp" -> R.string.settings_validation_cuvp_relation
             "povpRelease must be lower than povp" -> R.string.settings_validation_povp_relation
             "puvpRelease must be higher than puvp" -> R.string.settings_validation_puvp_relation
+            "cuvp must be lower than covp" -> R.string.settings_validation_cell_order
+            "puvp must be lower than povp" -> R.string.settings_validation_pack_order
+            "chgOverTempRelease must be lower than chgOverTemp" -> R.string.settings_validation_chg_ot_relation
+            "chgUnderTempRelease must be higher than chgUnderTemp" -> R.string.settings_validation_chg_ut_relation
+            "chgUnderTemp must be lower than chgOverTemp" -> R.string.settings_validation_chg_temp_order
+            "dsgOverTempRelease must be lower than dsgOverTemp" -> R.string.settings_validation_dsg_ot_relation
+            "dsgUnderTempRelease must be higher than dsgUnderTemp" -> R.string.settings_validation_dsg_ut_relation
+            "dsgUnderTemp must be lower than dsgOverTemp" -> R.string.settings_validation_dsg_temp_order
             "chgOvercurrent must be positive" -> R.string.settings_validation_charge_current_positive
             "dsgOvercurrent must be negative" -> R.string.settings_validation_discharge_current_negative
             BALANCE_WINDOW_STEP_REASON -> R.string.settings_validation_balance_window_step

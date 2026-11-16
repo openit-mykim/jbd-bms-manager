@@ -22,6 +22,28 @@ class SettingsValidationTest {
     }
 
     @Test
+    fun temperatureReleasesAndOrderingAreEnforced() {
+        // 0.1 K raw: 3231 = 50.0 C, 3181 = 45.0 C, 2731 = 0.0 C, 2781 = 5.0 C.
+        assertValid(SettingField.CHG_OVER_TEMP_RELEASE, 3_181, mapOf(SettingField.CHG_OVER_TEMP to 3_231))
+        assertInvalid(SettingField.CHG_OVER_TEMP_RELEASE, 3_231, mapOf(SettingField.CHG_OVER_TEMP to 3_231))
+        assertValid(SettingField.CHG_UNDER_TEMP_RELEASE, 2_781, mapOf(SettingField.CHG_UNDER_TEMP to 2_731))
+        assertInvalid(SettingField.CHG_UNDER_TEMP_RELEASE, 2_700, mapOf(SettingField.CHG_UNDER_TEMP to 2_731))
+        // A "charge under-temperature" of 100 C would block charging entirely.
+        assertInvalid(SettingField.CHG_UNDER_TEMP, 3_731, mapOf(SettingField.CHG_OVER_TEMP to 3_231))
+        assertInvalid(SettingField.DSG_OVER_TEMP_RELEASE, 3_400, mapOf(SettingField.DSG_OVER_TEMP to 3_331))
+        assertInvalid(SettingField.DSG_UNDER_TEMP, 3_400, mapOf(SettingField.DSG_OVER_TEMP to 3_331))
+        assertInvalid(SettingField.CUVP, 4_200, mapOf(SettingField.COVP to 4_200))
+    }
+
+    @Test
+    fun relationCounterpartsAreSymmetric() {
+        assertTrue(SettingField.COVP in relationCounterparts(SettingField.COVP_RELEASE))
+        assertTrue(SettingField.COVP_RELEASE in relationCounterparts(SettingField.COVP))
+        assertTrue(SettingField.CHG_OVER_TEMP in relationCounterparts(SettingField.CHG_UNDER_TEMP))
+        assertTrue(relationCounterparts(SettingField.DESIGN_CAPACITY).isEmpty())
+    }
+
+    @Test
     fun covpReleaseBoundaryRequiresStrictlyLowerValue() {
         val current = mapOf(SettingField.COVP to 4_200)
         assertValid(SettingField.COVP_RELEASE, 4_199, current)

@@ -570,6 +570,32 @@ class SettingsSessionCoordinatorTest {
     }
 
     @Test
+    fun relationIsRevalidatedAgainstValuesReadInsideTheSession() = runTest {
+        // The UI validated covpRelease 4100 against a stale covp of 4200, but the device now
+        // holds covp 4000: the session must refuse before writing anything.
+        val gateway = FakeGateway(
+            ack(0x00),
+            register(0x24, 4_000),
+            ack(0x01)
+        )
+
+        val result = SettingsSessionCoordinator(gateway).applyChanges(
+            listOf(
+                FieldChange(
+                    SettingField.COVP_RELEASE,
+                    4_100,
+                    relatedValues = mapOf(SettingField.COVP to 4_200)
+                )
+            )
+        )
+
+        assertTrue(result.outcome is WriteSessionOutcome.ValidationFailed)
+        assertEquals(0, gateway.frames.count { it.size > 2 && it[1] == 0x5A.toByte() && it[2] == 0x25.toByte() })
+        assertEquals(0, gateway.frameCount(JbdConfigCommands.exitFactoryModeWithCommit()))
+        assertEquals(1, gateway.frameCount(JbdCommands.closeFactoryMode()))
+    }
+
+    @Test
     fun commitRejectedWithErrorStatusIsNotCommitted() = runTest {
         val gateway = FakeGateway(
             ack(0x00),

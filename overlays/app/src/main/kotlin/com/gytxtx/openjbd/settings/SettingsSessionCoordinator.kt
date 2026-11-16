@@ -274,6 +274,37 @@ class SettingsSessionCoordinator(
             )
         }
 
+        // The UI validated relations against values it read earlier. Re-read those counterparts
+        // inside this session and validate again, so a device changed in the meantime (restore,
+        // another tool) cannot receive an invalid pair. Nothing has been written yet.
+        val stagedFields = changes.mapTo(hashSetOf()) { it.field }
+        val counterparts = changes
+            .flatMap { change ->
+                relationCounterparts(change.field).filter { it in change.relatedValues }
+            }
+            .filterNot { it in stagedFields }
+            .distinct()
+        if (counterparts.isNotEmpty()) {
+            val sessionValues = mutableMapOf<SettingField, Int>()
+            for (counterpart in counterparts) {
+                val read = readRaw(counterpart.register.address)
+                if (read is RawRead.Success) {
+                    sessionValues[counterpart] = counterpart.register.codec.decode(read.data).raw
+                }
+            }
+            val sessionFailures = validateChanges(
+                changes.map { it.copy(relatedValues = it.relatedValues + sessionValues) }
+            )
+            if (sessionFailures.isNotEmpty()) {
+                val exitError = exitFactory(commit = false)
+                if (exitError != null) addExitFailureWarnings(warnings, exitError)
+                return WriteSessionResult(
+                    outcome = WriteSessionOutcome.ValidationFailed(sessionFailures),
+                    warnings = warnings
+                )
+            }
+        }
+
         val results = mutableListOf<FieldChangeResult>()
         var factoryEntered = true
         var exitAttempted = false

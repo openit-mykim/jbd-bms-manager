@@ -33,34 +33,63 @@ fun validateField(
         ?: ValidationResult.Valid
 }
 
+/** `lower` must be strictly below `upper` (raw units; temperatures are 0.1 K, so order holds). */
+private data class OrderRelation(val lower: SettingField, val upper: SettingField, val reason: String)
+
+private val ORDER_RELATIONS = listOf(
+    OrderRelation(SettingField.COVP_RELEASE, SettingField.COVP, "covpRelease must be lower than covp"),
+    OrderRelation(SettingField.CUVP, SettingField.CUVP_RELEASE, "cuvpRelease must be higher than cuvp"),
+    OrderRelation(SettingField.CUVP, SettingField.COVP, "cuvp must be lower than covp"),
+    OrderRelation(SettingField.POVP_RELEASE, SettingField.POVP, "povpRelease must be lower than povp"),
+    OrderRelation(SettingField.PUVP, SettingField.PUVP_RELEASE, "puvpRelease must be higher than puvp"),
+    OrderRelation(SettingField.PUVP, SettingField.POVP, "puvp must be lower than povp"),
+    OrderRelation(
+        SettingField.CHG_OVER_TEMP_RELEASE, SettingField.CHG_OVER_TEMP,
+        "chgOverTempRelease must be lower than chgOverTemp"
+    ),
+    OrderRelation(
+        SettingField.CHG_UNDER_TEMP, SettingField.CHG_UNDER_TEMP_RELEASE,
+        "chgUnderTempRelease must be higher than chgUnderTemp"
+    ),
+    OrderRelation(
+        SettingField.CHG_UNDER_TEMP, SettingField.CHG_OVER_TEMP,
+        "chgUnderTemp must be lower than chgOverTemp"
+    ),
+    OrderRelation(
+        SettingField.DSG_OVER_TEMP_RELEASE, SettingField.DSG_OVER_TEMP,
+        "dsgOverTempRelease must be lower than dsgOverTemp"
+    ),
+    OrderRelation(
+        SettingField.DSG_UNDER_TEMP, SettingField.DSG_UNDER_TEMP_RELEASE,
+        "dsgUnderTempRelease must be higher than dsgUnderTemp"
+    ),
+    OrderRelation(
+        SettingField.DSG_UNDER_TEMP, SettingField.DSG_OVER_TEMP,
+        "dsgUnderTemp must be lower than dsgOverTemp"
+    )
+)
+
+/** Fields whose current device value is needed to validate a change to [field]. */
+fun relationCounterparts(field: SettingField): Set<SettingField> =
+    ORDER_RELATIONS.mapNotNullTo(linkedSetOf()) { relation ->
+        when (field) {
+            relation.lower -> relation.upper
+            relation.upper -> relation.lower
+            else -> null
+        }
+    }
+
 private fun firstRelationalFailure(
     field: SettingField,
     values: Map<SettingField, Int>
 ): String? {
-    fun requireLess(lower: SettingField, upper: SettingField, reason: String): String? {
-        if (field != lower && field != upper) return null
-        val lowerValue = values[lower] ?: return null
-        val upperValue = values[upper] ?: return null
-        return if (lowerValue < upperValue) null else reason
+    ORDER_RELATIONS.forEach { relation ->
+        if (field != relation.lower && field != relation.upper) return@forEach
+        val lowerValue = values[relation.lower] ?: return@forEach
+        val upperValue = values[relation.upper] ?: return@forEach
+        if (lowerValue >= upperValue) return relation.reason
     }
-
-    return requireLess(
-        SettingField.COVP_RELEASE,
-        SettingField.COVP,
-        "covpRelease must be lower than covp"
-    ) ?: requireLess(
-        SettingField.CUVP,
-        SettingField.CUVP_RELEASE,
-        "cuvpRelease must be higher than cuvp"
-    ) ?: requireLess(
-        SettingField.POVP_RELEASE,
-        SettingField.POVP,
-        "povpRelease must be lower than povp"
-    ) ?: requireLess(
-        SettingField.PUVP,
-        SettingField.PUVP_RELEASE,
-        "puvpRelease must be higher than puvp"
-    ) ?: when (field) {
+    return when (field) {
         SettingField.CHG_OVERCURRENT ->
             if (values.getValue(field) > 0) null else "chgOvercurrent must be positive"
         SettingField.DSG_OVERCURRENT ->
