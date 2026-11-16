@@ -26,4 +26,14 @@
     <string name="control_diagnostics_empty">Connect a BMS to read diagnostic information.</string>
     <string name="control_diagnostics_footer">Additional register- and protocol-level diagnostics will be added in later steps.</string>
     <string name="control_calibration_available">Read · calibrate</string>
+    <string name="control_write_permission_title">Write permission</string>
+    <string name="control_write_permission_no_identity">Read-only until the BMS address and firmware version have been read.</string>
+    <string name="control_write_permission_verified">Verified model: writes are permitted while Maintenance Mode is unlocked.</string>
+    <string name="control_write_permission_read_only">Unverified BMS (model %1$s, firmware %2$s): read-only by default. Writes are blocked until you allow experimental writes for this device.</string>
+    <string name="control_write_permission_experimental">Experimental writes allowed for this device (model %1$s, firmware %2$s). Every write is recorded in the local audit log.</string>
+    <string name="control_write_permission_grant">Allow experimental writes…</string>
+    <string name="control_write_permission_revoke">Revoke experimental writes</string>
+    <string name="control_write_consent_title">Allow experimental writes?</string>
+    <string name="control_write_consent_message">This BMS has not been verified with this app.\n\nAddress: %1$s\nModel: %2$s\nFirmware: %3$s\n\nWrong protection, calibration or MOS values can make the battery unsafe. Continue only if you are a technician, have a configuration backup and can measure the pack independently.\n\nThe permission applies only to this exact device and firmware, stays until you revoke it, and every write is recorded in a local audit log.</string>
+    <string name="control_write_consent_confirm">I understand, allow for this device</string>
 </resources>

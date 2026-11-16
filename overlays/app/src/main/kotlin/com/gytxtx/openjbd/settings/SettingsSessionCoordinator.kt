@@ -110,6 +110,11 @@ sealed interface WriteSessionOutcome {
      * commit. The effect is confirmed by the next basic-info poll, not by a register read.
      */
     object Applied : WriteSessionOutcome
+
+    /** Refused before any BMS frame was sent (locked, unknown identity, or no consent; D005). */
+    data class NotPermitted(
+        val reason: com.gytxtx.openjbd.maintenance.WriteDecision.DenyReason
+    ) : WriteSessionOutcome
     data class ValidationFailed(
         val failures: List<FieldValidationFailure>
     ) : WriteSessionOutcome

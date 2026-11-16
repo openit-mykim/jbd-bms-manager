@@ -13,7 +13,9 @@ import androidx.lifecycle.repeatOnLifecycle
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.gytxtx.openjbd.data.BmsRepository
 import com.gytxtx.openjbd.data.BmsUiState
-import com.gytxtx.openjbd.maintenance.MaintenanceGate
+import com.gytxtx.openjbd.maintenance.DeviceIdentity
+import com.gytxtx.openjbd.maintenance.WriteAuthorization
+import com.google.android.material.button.MaterialButton
 import com.gytxtx.openjbd.settings.BackupRestoreDialogFragment
 import com.gytxtx.openjbd.settings.CalibrationDialogFragment
 import com.gytxtx.openjbd.settings.SettingsGroup
@@ -28,8 +30,10 @@ import javax.inject.Inject
 @AndroidEntryPoint
 class ControlFragment : Fragment() {
     @Inject lateinit var repository: BmsRepository
+    @Inject lateinit var writeAuthorization: WriteAuthorization
 
-    private val maintenanceGate = MaintenanceGate()
+    private lateinit var writePermissionStatus: TextView
+    private lateinit var writePermissionButton: MaterialButton
     private lateinit var lockedContent: View
     private lateinit var unlockedContent: View
     private lateinit var targetName: TextView
@@ -51,6 +55,8 @@ class ControlFragment : Fragment() {
         unlockedContent = view.findViewById(R.id.control_unlocked_content)
         targetName = view.findViewById(R.id.control_target_name)
         targetAddress = view.findViewById(R.id.control_target_address)
+        writePermissionStatus = view.findViewById(R.id.control_write_permission_status)
+        writePermissionButton = view.findViewById(R.id.control_write_permission_button)
         diagnosticsPanel = view.findViewById(R.id.control_diagnostics_panel)
         diagnosticsEmpty = view.findViewById(R.id.control_diagnostics_empty)
         diagnosticsSectionContainers = mapOf(
@@ -78,7 +84,7 @@ class ControlFragment : Fragment() {
             showUnlockConfirmation()
         }
         view.findViewById<View>(R.id.control_relock_button).setOnClickListener {
-            maintenanceGate.relock()
+            writeAuthorization.relock()
             renderGateState()
         }
         view.findViewById<View>(R.id.control_diagnostics_row).setOnClickListener {
@@ -114,34 +120,99 @@ class ControlFragment : Fragment() {
                 repository.uiState.collect { renderState(it) }
             }
         }
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewLifecycleOwner.repeatOnLifecycle(androidx.lifecycle.Lifecycle.State.STARTED) {
+                writeAuthorization.version.collect {
+                    renderGateState()
+                    renderWritePermission()
+                }
+            }
+        }
     }
 
     private fun showUnlockConfirmation() {
         MaterialAlertDialogBuilder(requireContext())
             .setTitle(R.string.control_unlock_dialog_title)
             .setMessage(R.string.control_unlock_dialog_message)
-            .setNegativeButton(R.string.control_cancel) { _, _ ->
-                maintenanceGate.requestUnlock(confirmed = false)
-            }
+            .setNegativeButton(R.string.control_cancel, null)
             .setPositiveButton(R.string.control_unlock_confirm) { _, _ ->
-                maintenanceGate.requestUnlock(confirmed = true)
+                // The unlock is bound to the device connected right now.
+                writeAuthorization.unlock(repository.getSnapshot().deviceAddress)
                 renderGateState()
             }
             .show()
     }
 
+    private fun isUnlocked(): Boolean =
+        writeAuthorization.isUnlockedFor(repository.getSnapshot().deviceAddress)
+
     private fun renderGateState() {
-        if (!maintenanceGate.isUnlocked) {
+        val unlocked = isUnlocked()
+        if (!unlocked) {
             diagnosticsExpanded = false
             diagnosticsPanel.visibility = View.GONE
         }
-        lockedContent.visibility = if (maintenanceGate.isUnlocked) View.GONE else View.VISIBLE
-        unlockedContent.visibility = if (maintenanceGate.isUnlocked) View.VISIBLE else View.GONE
+        lockedContent.visibility = if (unlocked) View.GONE else View.VISIBLE
+        unlockedContent.visibility = if (unlocked) View.VISIBLE else View.GONE
     }
 
     private fun renderState(snapshot: BmsUiState) {
+        renderGateState()
         renderTarget(snapshot)
+        renderWritePermission()
         renderDiagnostics(snapshot)
+    }
+
+    private fun renderWritePermission() {
+        if (!::writePermissionStatus.isInitialized) return
+        val identity = writeAuthorization.currentIdentity()
+        when {
+            identity == null -> {
+                writePermissionStatus.setTextIfChanged(getString(R.string.control_write_permission_no_identity))
+                writePermissionButton.visibility = View.GONE
+            }
+            writeAuthorization.isVerifiedProfile(identity) -> {
+                writePermissionStatus.setTextIfChanged(getString(R.string.control_write_permission_verified))
+                writePermissionButton.visibility = View.GONE
+            }
+            writeAuthorization.hasConsent(identity) -> {
+                writePermissionStatus.setTextIfChanged(
+                    getString(R.string.control_write_permission_experimental, identity.bmsModel, identity.firmwareVersion)
+                )
+                writePermissionButton.setText(R.string.control_write_permission_revoke)
+                writePermissionButton.visibility = View.VISIBLE
+                writePermissionButton.setOnClickListener { writeAuthorization.revokeConsent(identity) }
+            }
+            else -> {
+                writePermissionStatus.setTextIfChanged(
+                    getString(R.string.control_write_permission_read_only, identity.bmsModel, identity.firmwareVersion)
+                )
+                writePermissionButton.setText(R.string.control_write_permission_grant)
+                writePermissionButton.visibility = View.VISIBLE
+                writePermissionButton.setOnClickListener { showConsentConfirmation(identity) }
+            }
+        }
+    }
+
+    private fun showConsentConfirmation(identity: DeviceIdentity) {
+        MaterialAlertDialogBuilder(requireContext())
+            .setTitle(R.string.control_write_consent_title)
+            .setMessage(
+                getString(
+                    R.string.control_write_consent_message,
+                    identity.address,
+                    identity.bmsModel,
+                    identity.firmwareVersion
+                )
+            )
+            .setNegativeButton(R.string.control_cancel, null)
+            .setPositiveButton(R.string.control_write_consent_confirm) { _, _ ->
+                // Re-check: the connected device must still be the one shown in the dialog.
+                if (writeAuthorization.currentIdentity() == identity) {
+                    writeAuthorization.grantConsent(identity)
+                }
+            }
+            .show()
     }
 
     private fun renderTarget(snapshot: BmsUiState) {
