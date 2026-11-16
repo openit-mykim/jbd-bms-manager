@@ -29,7 +29,7 @@ The overlay is applied as a single step. Do not add per-release `apply-alphaN.py
    `python3 scripts/apply-product-overlay.py <upstream-src>` then `./gradlew testDebugUnitTest`.
 4. Open the release PR and wait for the `build` check to pass.
 5. Merge with a merge commit to match repository history.
-6. The push to `main` runs `Android Release Build`. It tests, builds the debug APK, writes the SHA-256 file and publishes an official GitHub release (not a prerelease) targeting the merge commit.
+6. The push to `main` runs `Android Release Build`. It tests, builds the debug APK, writes the SHA-256 file and publishes an official GitHub release (not a prerelease) targeting the merge commit. If a release for `RELEASE_TAG` already exists, the workflow skips publishing with a warning and never replaces published assets — bump the version to release.
 7. Verify with `gh release view <tag> --json tagName,isPrerelease,isLatest,assets`.
 8. Download the APK and SHA-256 asset, then compare:
    `sha256sum -c <apk>.sha256` and compare against the workflow artifact.

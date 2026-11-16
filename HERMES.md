@@ -38,19 +38,19 @@ Hermes should:
 - keep architecture/status documentation synchronized;
 - prefer small, reviewable pull requests over large mixed changes.
 
-## Current first objective
+## Current objective
 
-The repository currently contains the project-control, architecture and orchestration material. The OpenJBD application source itself is the next import step.
+The app is released as `v0.1.1` (all five tabs and every Control maintenance
+section implemented, 311 unit tests). `PROJECT_STATUS.md` → "Immediate next
+action" is authoritative; at the time of writing it is physical BMS validation
+of the released build per `docs/device-validation.md`.
 
-Primary tracking issue: `#1 Phase 0: Import OpenJBD baseline with provenance`.
-
-Upstream reference:
+Upstream reference (the build materializes this pinned baseline plus the
+`overlays/` tree; full source-history import remains open as Phase 0, issue #1):
 
 - repository: `gytxtx/OpenJBD`
 - baseline commit: `7e3e225a128f6e0d69425b98a2670d8d69594885`
 - license: MIT
-
-Use `scripts/bootstrap-upstream.sh` in a dedicated Git worktree/branch, review the staged merge, run verification, then update `PROJECT_STATUS.md`.
 
 ## Work completion rule
 

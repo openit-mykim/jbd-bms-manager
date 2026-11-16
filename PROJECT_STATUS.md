@@ -1,6 +1,6 @@
 # Project Status
 
-Last updated: 2026-10-21
+Last updated: 2026-11-16
 
 ## Current phase
 
@@ -39,6 +39,10 @@ See `docs/navigation-design.md`, `docs/maintenance-mode.md` and `docs/protocol-d
 ## Android 16 status
 
 The shared inset layer covers the main toolbar plus the device-list, about and licenses toolbars. The fix is included in the current builds; physical verification on the Android 16 device is still pending.
+
+## Device smoke test log
+
+- 2026-11-16 — `v0.1.1` release APK (SHA-256 matches the published asset) installed on Galaxy Note20 Ultra (SM-N986N, Android 13, gesture navigation). Launch, five-tab rendering, Detail history empty state, Balance/Control/Settings disconnected states, Control locked shell and system-bar insets confirmed; no crash. No JBD BMS was in BLE range (scan: 0 devices), so every BMS-dependent item below remains `NOT HARDWARE VERIFIED`. Android 16 verification still needs an Android 16 device.
 
 ## Immediate next action
 
