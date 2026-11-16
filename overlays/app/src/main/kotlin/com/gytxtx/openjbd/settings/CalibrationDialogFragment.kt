@@ -721,9 +721,7 @@ class CalibrationDialogFragment : DialogFragment() {
         }.format(value)
 
     private fun formatTimestamp(millis: Long): String =
-        SimpleDateFormat(DATE_TIME_PATTERN, Locale.getDefault()).apply {
-            timeZone = TimeZone.getTimeZone(KST_TIME_ZONE)
-        }.format(Date(millis))
+        com.gytxtx.openjbd.DisplayFormats.dateTime(millis)
 
     companion object {
         private val CURRENT_KINDS = setOf(
@@ -731,8 +729,6 @@ class CalibrationDialogFragment : DialogFragment() {
             CalibrationKind.CHARGE_CURRENT,
             CalibrationKind.DISCHARGE_CURRENT
         )
-        private const val DATE_TIME_PATTERN = "yyyy-MM-dd HH:mm:ss"
-        private const val KST_TIME_ZONE = "Asia/Seoul"
 
         fun newInstance() = CalibrationDialogFragment()
     }

@@ -6,4 +6,7 @@ interface HistoryStore {
     suspend fun pruneBefore(cutoffMillis: Long): Int
     suspend fun count(): Long
     suspend fun latestTimestamp(): Long?
+
+    /** Deletes every stored sample (user-initiated withdrawal of the local history). */
+    suspend fun clear()
 }

@@ -3,6 +3,8 @@ package com.gytxtx.openjbd.history
 import android.content.ContentValues
 import android.content.Context
 import android.database.sqlite.SQLiteDatabase
+import android.database.sqlite.SQLiteException
+import android.util.Log
 import android.database.sqlite.SQLiteOpenHelper
 import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
@@ -14,7 +16,33 @@ import kotlinx.coroutines.withContext
 class SqliteHistoryStore @Inject constructor(
     @ApplicationContext context: Context
 ) : HistoryStore {
-    private val helper = HistoryDatabaseHelper(context.applicationContext)
+    private val appContext = context.applicationContext
+    @Volatile private var helper = HistoryDatabaseHelper(appContext)
+
+    /**
+     * History is a disposable local cache (7-day retention). Mobile dev standard 5.4: a read
+     * failure discards the cache instead of crashing; the next sample recreates it.
+     */
+    private inline fun <T> recovering(fallback: T, block: () -> T): T = try {
+        block()
+    } catch (error: SQLiteException) {
+        Log.w(TAG, "History database unreadable; discarding it", error)
+        resetDatabase()
+        fallback
+    }
+
+    @Synchronized
+    private fun resetDatabase() {
+        runCatching { helper.close() }
+        appContext.deleteDatabase(DATABASE_NAME)
+        helper = HistoryDatabaseHelper(appContext)
+    }
+
+    override suspend fun clear() {
+        withContext(Dispatchers.IO) {
+            recovering(Unit) { helper.writableDatabase.delete(TABLE_SAMPLES, null, null) }
+        }
+    }
 
     override suspend fun append(sample: HistorySample) {
         withContext(Dispatchers.IO) {
@@ -41,7 +69,9 @@ class SqliteHistoryStore @Inject constructor(
     }
 
     override suspend fun query(fromMillis: Long, toMillis: Long): List<HistorySample> =
-        withContext(Dispatchers.IO) {
+        withContext(Dispatchers.IO) { recovering(emptyList()) { queryUnsafe(fromMillis, toMillis) } }
+
+    private fun queryUnsafe(fromMillis: Long, toMillis: Long): List<HistorySample> {
             val samples = mutableListOf<HistorySample>()
             helper.readableDatabase.query(
                 TABLE_SAMPLES,
@@ -71,7 +101,7 @@ class SqliteHistoryStore @Inject constructor(
                     )
                 }
             }
-            samples
+            return samples
         }
 
     override suspend fun pruneBefore(cutoffMillis: Long): Int = withContext(Dispatchers.IO) {
@@ -101,17 +131,20 @@ class SqliteHistoryStore @Inject constructor(
     }
 
     override suspend fun count(): Long = withContext(Dispatchers.IO) {
-        count(helper.readableDatabase)
+        recovering(0L) { count(helper.readableDatabase) }
     }
 
     override suspend fun latestTimestamp(): Long? = withContext(Dispatchers.IO) {
+        recovering(null) { latestTimestampUnsafe() }
+    }
+
+    private fun latestTimestampUnsafe(): Long? =
         helper.readableDatabase.rawQuery(
             "SELECT MAX($COLUMN_TIMESTAMP) FROM $TABLE_SAMPLES",
             null
         ).use { cursor ->
             if (cursor.moveToFirst() && !cursor.isNull(0)) cursor.getLong(0) else null
         }
-    }
 
     private fun count(database: SQLiteDatabase): Long = database.rawQuery(
         "SELECT COUNT(*) FROM $TABLE_SAMPLES",
@@ -136,10 +169,23 @@ class SqliteHistoryStore @Inject constructor(
             )
         }
 
-        override fun onUpgrade(database: SQLiteDatabase, oldVersion: Int, newVersion: Int) = Unit
+        // The schema version is DATABASE_VERSION. History is disposable, so any version change
+        // (including installing an older APK over a newer one) recreates the table instead of
+        // leaving a mismatched schema or throwing from onDowngrade.
+        override fun onUpgrade(database: SQLiteDatabase, oldVersion: Int, newVersion: Int) =
+            recreate(database)
+
+        override fun onDowngrade(database: SQLiteDatabase, oldVersion: Int, newVersion: Int) =
+            recreate(database)
+
+        private fun recreate(database: SQLiteDatabase) {
+            database.execSQL("DROP TABLE IF EXISTS $TABLE_SAMPLES")
+            onCreate(database)
+        }
     }
 
     private companion object {
+        const val TAG = "SqliteHistoryStore"
         const val DATABASE_NAME = "history.db"
         const val DATABASE_VERSION = 1
         const val TABLE_SAMPLES = "samples"

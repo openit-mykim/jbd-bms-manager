@@ -556,7 +556,7 @@ class BackupRestoreDialogFragment : DialogFragment() {
         }.format(Date(millis))
 
     private fun localTimestamp(millis: Long): String =
-        SimpleDateFormat(LOCAL_PATTERN, Locale.getDefault()).format(Date(millis))
+        com.gytxtx.openjbd.DisplayFormats.dateTime(millis)
 
     @Suppress("DEPRECATION")
     private fun appVersion(): String = runCatching {
@@ -569,6 +569,5 @@ class BackupRestoreDialogFragment : DialogFragment() {
     private companion object {
         const val BACKUP_FILENAME_PATTERN = "yyyyMMdd-HHmm"
         const val UTC_PATTERN = "yyyy-MM-dd'T'HH:mm:ss'Z'"
-        const val LOCAL_PATTERN = "yyyy-MM-dd HH:mm:ss"
     }
 }

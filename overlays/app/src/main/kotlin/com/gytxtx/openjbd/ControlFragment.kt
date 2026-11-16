@@ -276,7 +276,7 @@ class ControlFragment : Fragment() {
                     }
             },
             updatedAt = {
-                SimpleDateFormat(DATE_TIME_PATTERN, Locale.getDefault()).format(Date(it))
+                DisplayFormats.dateTime(it)
             }
         )
 
@@ -321,7 +321,4 @@ class ControlFragment : Fragment() {
         else -> R.drawable.ic_info_24
     }
 
-    private companion object {
-        const val DATE_TIME_PATTERN = "yyyy-MM-dd HH:mm:ss"
-    }
 }
