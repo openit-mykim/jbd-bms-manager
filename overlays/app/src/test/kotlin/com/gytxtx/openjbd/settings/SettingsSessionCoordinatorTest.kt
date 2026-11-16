@@ -570,6 +570,65 @@ class SettingsSessionCoordinatorTest {
     }
 
     @Test
+    fun mosCommandIsBuiltFromLiveStateAndNeverCommitted() = runTest {
+        val gateway = FakeGateway(
+            ack(0x00),
+            ack(0xE1),
+            ack(0x01)
+        )
+
+        val result = SettingsSessionCoordinator(gateway).applyChanges(
+            listOf(
+                FieldChange(
+                    SettingField.MOS_CHARGE_DISABLE,
+                    1,
+                    mosLiveState = MosLiveState(fetState = 0b11, protectionActive = false)
+                )
+            )
+        )
+
+        assertTrue(result.outcome is WriteSessionOutcome.Applied)
+        assertFrames(
+            gateway,
+            JbdCommands.openFactoryMode(),
+            JbdConfigCommands.writeRegister(0xE1, byteArrayOf(0x00, 0x01)),
+            JbdCommands.closeFactoryMode()
+        )
+    }
+
+    @Test
+    fun mosCommandWithoutLiveStateIsRejectedBeforeAnyFrame() = runTest {
+        val gateway = FakeGateway()
+
+        val result = SettingsSessionCoordinator(gateway).applyChanges(
+            listOf(FieldChange(SettingField.MOS_DISCHARGE_DISABLE, 1))
+        )
+
+        assertTrue(result.outcome is WriteSessionOutcome.ValidationFailed)
+        assertEquals(0, gateway.frames.size)
+    }
+
+    @Test
+    fun calibrationCommandIsSentEvenWhenEqualAndNeedsNoReadBack() = runTest {
+        // Idle-current zeroing writes raw 0 to 0xAD without reading it first.
+        val gateway = FakeGateway(
+            ack(0x00),
+            ack(0xAD),
+            counterResponse(IntArray(11)),
+            ack(0x01)
+        )
+
+        val result = SettingsSessionCoordinator(gateway).applyChanges(
+            listOf(FieldChange(SettingField.CAL_IDLE_CURRENT, 0))
+        )
+
+        assertTrue(result.outcome is WriteSessionOutcome.Committed)
+        assertTrue(result.changes.single().detail is ChangeDetail.Acknowledged)
+        assertEquals(1, gateway.frameCount(JbdConfigCommands.exitFactoryModeWithCommit()))
+        assertEquals(0, gateway.frames.count { it.size > 2 && it[1] == 0xA5.toByte() && it[2] == 0xAD.toByte() })
+    }
+
+    @Test
     fun relationIsRevalidatedAgainstValuesReadInsideTheSession() = runTest {
         // The UI validated covpRelease 4100 against a stale covp of 4200, but the device now
         // holds covp 4000: the session must refuse before writing anything.

@@ -267,4 +267,13 @@ enum class SettingField(
     init {
         require(bitIndex == null || bitIndex in 0..15) { "Bit index must be in 0..15" }
     }
+
+    /**
+     * 0xAD-0xD7 are calibration *commands* (JiabaidaBMS names them CommandCalibrate*; jbdtool never
+     * reads them): no pre-read requirement, no "unchanged" skip, and no byte-for-byte read-back.
+     */
+    val isCalibrationCommand: Boolean get() = group == SettingsGroup.CALIBRATION
+
+    /** 0xE1 is a live MOSFET command, not a stored setting: never committed to EEPROM. */
+    val isMosCommand: Boolean get() = group == SettingsGroup.MOS
 }

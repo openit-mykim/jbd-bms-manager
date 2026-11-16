@@ -84,6 +84,11 @@
     <string name="settings_validation_dsg_ot_relation">Discharge over-temperature release must be lower than discharge over-temperature protection.</string>
     <string name="settings_validation_dsg_ut_relation">Discharge under-temperature release must be higher than discharge under-temperature protection.</string>
     <string name="settings_validation_dsg_temp_order">Discharge under-temperature protection must be lower than discharge over-temperature protection.</string>
+    <string name="settings_outcome_applied">Command applied — confirm with the live state</string>
+    <string name="settings_detail_acknowledged">Acknowledged by the BMS</string>
+    <string name="mos_validation_live_unavailable">Live MOSFET state is not available yet. Wait for a basic-info update and try again.</string>
+    <string name="mos_validation_other_protected">The other MOSFET is off while a protection is active. Changing it now could keep it off after the protection clears, so the change was refused.</string>
+    <string name="mos_validation_mixed_session">MOS control must be applied on its own, separately from other settings.</string>
     <string name="settings_validation_fallback">Invalid setting: %1$s</string>
 
     <string name="settings_outcome_committed">Committed</string>

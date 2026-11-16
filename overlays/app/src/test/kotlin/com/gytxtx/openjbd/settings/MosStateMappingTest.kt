@@ -60,4 +60,26 @@ class MosStateMappingTest {
     fun invalidDisableRawIsRejected() {
         MosStateMapping.isDisabled(2)
     }
+
+    @Test
+    fun commandKeepsUnstagedFetFromLiveState() {
+        // Both conducting; disable charge only -> 0b01.
+        assertEquals(MosCommand.Write(0b01), MosStateMapping.commandRaw(mapOf(0 to 1), MosLiveState(0b11, false)))
+        // Discharge already off (user disabled), no protection: re-enable charge keeps it off -> 0b10.
+        assertEquals(MosCommand.Write(0b10), MosStateMapping.commandRaw(mapOf(0 to 0), MosLiveState(0b01, false)))
+        // Allow both.
+        assertEquals(MosCommand.Write(0), MosStateMapping.commandRaw(mapOf(0 to 0, 1 to 0), MosLiveState(0, true)))
+    }
+
+    @Test
+    fun commandRefusesWhenOtherFetMayBeOffByProtection() {
+        assertEquals(
+            MosCommand.Rejected(MosStateMapping.REASON_OTHER_FET_PROTECTED),
+            MosStateMapping.commandRaw(mapOf(0 to 1), MosLiveState(0b01, protectionActive = true))
+        )
+        assertEquals(
+            MosCommand.Rejected(MosStateMapping.REASON_LIVE_STATE_UNAVAILABLE),
+            MosStateMapping.commandRaw(mapOf(0 to 1), null)
+        )
+    }
 }

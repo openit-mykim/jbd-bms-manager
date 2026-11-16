@@ -53,7 +53,9 @@ data class FieldChange(
     val field: SettingField,
     val rawValue: Int,
     /** Current values used to validate relations whose counterpart is not staged. */
-    val relatedValues: Map<SettingField, Int> = emptyMap()
+    val relatedValues: Map<SettingField, Int> = emptyMap(),
+    /** Live basic-info FET/protection state; required for MOS (0xE1) commands. */
+    val mosLiveState: MosLiveState? = null
 )
 
 data class FieldValidationFailure(
@@ -83,6 +85,9 @@ sealed interface ChangeDetail {
     data class TransportFailure(val phase: ChangePhase, val message: String) : ChangeDetail
     data class MalformedResponse(val phase: ChangePhase, val reason: String) : ChangeDetail
     object SkippedNoChange : ChangeDetail
+
+    /** A command register (calibration, MOS) acknowledged the write with status 0. */
+    data class Acknowledged(val writtenRegisterRaw: Int) : ChangeDetail
 }
 
 data class FieldChangeResult(
@@ -99,6 +104,12 @@ sealed interface WriteSessionOutcome {
      * The values may or may not be persisted; only the post-commit confirmation read can tell.
      */
     data class CommitUnconfirmed(val error: RegisterAccessError) : WriteSessionOutcome
+
+    /**
+     * A live command (MOS 0xE1) was acknowledged and the session closed without an EEPROM
+     * commit. The effect is confirmed by the next basic-info poll, not by a register read.
+     */
+    object Applied : WriteSessionOutcome
     data class ValidationFailed(
         val failures: List<FieldValidationFailure>
     ) : WriteSessionOutcome
@@ -255,6 +266,7 @@ class SettingsSessionCoordinator(
         if (changes.isEmpty()) {
             return WriteSessionResult(outcome = WriteSessionOutcome.NotCommitted)
         }
+        if (changes.any { it.field.isMosCommand }) return applyMosCommand(changes)
 
         val warnings = linkedSetOf<SettingsSessionWarning>()
         confirmPendingFactoryExit()?.let { recoveryError ->
@@ -317,6 +329,37 @@ class SettingsSessionCoordinator(
             for (change in changes) {
                 val field = change.field
                 val address = field.register.address
+                if (field.isCalibrationCommand) {
+                    // Command register: write and require an acknowledgement. No pre-read, no
+                    // "unchanged" skip and no byte comparison (a read-back has no defined meaning).
+                    val calibrationError = commandError(
+                        executeWithNoResponseRetries(
+                            JbdConfigCommands.writeRegister(
+                                address,
+                                field.register.codec.encodeRaw(change.rawValue)
+                            ),
+                            address,
+                            writeRetries
+                        ),
+                        address
+                    )
+                    if (calibrationError != null) {
+                        results += FieldChangeResult(
+                            change,
+                            calibrationError.toChangeDetail(ChangePhase.WRITE)
+                        )
+                        allOperationsSuccessful = false
+                        if (calibrationError is RegisterAccessError.TransportFailure) {
+                            addReconnectWarning(warnings, calibrationError)
+                            fatalTransportFailure = true
+                            break
+                        }
+                        continue
+                    }
+                    writtenCount += 1
+                    results += FieldChangeResult(change, ChangeDetail.Acknowledged(change.rawValue))
+                    continue
+                }
                 val currentRaw = when (val read = readRaw(address)) {
                     is RawRead.Success -> read.data
                     is RawRead.Failure -> {
@@ -482,6 +525,85 @@ class SettingsSessionCoordinator(
             if (factoryEntered && !exitAttempted) {
                 bestEffortNoCommitExit()
             }
+        }
+    }
+
+    /**
+     * MOS control (0xE1) is a live command, as in every reference implementation (esphome
+     * jbd_bms, SmartBMSUtility, jbdtool): the full value is built from the live basic-info FET
+     * state, never by read-modify-write of 0xE1, and the factory session is closed *without*
+     * the EEPROM commit (`01 <- 00 00`), so error counters are untouched.
+     */
+    private suspend fun applyMosCommand(changes: List<FieldChange>): WriteSessionResult {
+        val live = changes.firstNotNullOfOrNull { it.mosLiveState }
+        val command = if (changes.any { !it.field.isMosCommand }) {
+            MosCommand.Rejected(MosStateMapping.REASON_MIXED_SESSION)
+        } else {
+            MosStateMapping.commandRaw(
+                changes.associate { checkNotNull(it.field.bitIndex) to it.rawValue },
+                live
+            )
+        }
+        val commandRaw = when (command) {
+            is MosCommand.Rejected -> return WriteSessionResult(
+                outcome = WriteSessionOutcome.ValidationFailed(
+                    changes.map { FieldValidationFailure(it, command.reason) }
+                )
+            )
+            is MosCommand.Write -> command.raw
+        }
+
+        val warnings = linkedSetOf<SettingsSessionWarning>()
+        confirmPendingFactoryExit()?.let { recoveryError ->
+            addExitFailureWarnings(warnings, recoveryError)
+            return WriteSessionResult(
+                outcome = WriteSessionOutcome.EntryFailed(recoveryError),
+                warnings = warnings
+            )
+        }
+        enterFactory()?.let { entryError ->
+            addReconnectWarning(warnings, entryError)
+            return WriteSessionResult(
+                outcome = WriteSessionOutcome.EntryFailed(entryError),
+                warnings = warnings
+            )
+        }
+
+        var exitAttempted = false
+        try {
+            val address = SettingField.MOS_CHARGE_DISABLE.register.address
+            val writeError = commandError(
+                executeWithNoResponseRetries(
+                    JbdConfigCommands.writeRegister(address, U16_CODEC.encodeRaw(commandRaw)),
+                    address,
+                    writeRetries
+                ),
+                address
+            )
+            if (writeError is RegisterAccessError.TransportFailure) {
+                addReconnectWarning(warnings, writeError)
+            }
+            val exitError = exitFactory(commit = false)
+            exitAttempted = true
+            if (exitError != null) addExitFailureWarnings(warnings, exitError)
+            val results = changes.map { change ->
+                FieldChangeResult(
+                    change,
+                    writeError?.toChangeDetail(ChangePhase.WRITE)
+                        ?: ChangeDetail.Acknowledged(commandRaw)
+                )
+            }
+            return WriteSessionResult(
+                outcome = if (writeError == null) {
+                    WriteSessionOutcome.Applied
+                } else {
+                    WriteSessionOutcome.NotCommitted
+                },
+                changes = results,
+                warnings = warnings
+            )
+        } finally {
+            if (!exitAttempted) bestEffortNoCommitExit()
         }
     }
 

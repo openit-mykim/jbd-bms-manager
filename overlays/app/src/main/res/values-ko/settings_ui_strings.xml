@@ -84,6 +84,11 @@
     <string name="settings_validation_dsg_ot_relation">방전 고온 해제 온도는 방전 고온 보호 온도보다 낮아야 합니다.</string>
     <string name="settings_validation_dsg_ut_relation">방전 저온 해제 온도는 방전 저온 보호 온도보다 높아야 합니다.</string>
     <string name="settings_validation_dsg_temp_order">방전 저온 보호 온도는 방전 고온 보호 온도보다 낮아야 합니다.</string>
+    <string name="settings_outcome_applied">명령 적용됨 — 실시간 상태로 확인하세요</string>
+    <string name="settings_detail_acknowledged">BMS 응답 확인됨</string>
+    <string name="mos_validation_live_unavailable">실시간 MOSFET 상태를 아직 받지 못했습니다. 기본 정보가 갱신된 뒤 다시 시도하세요.</string>
+    <string name="mos_validation_other_protected">보호 동작 중이라 다른 쪽 MOSFET이 꺼져 있습니다. 지금 바꾸면 보호가 풀린 뒤에도 꺼진 채로 남을 수 있어 변경을 거부했습니다.</string>
+    <string name="mos_validation_mixed_session">MOS 제어는 다른 설정과 함께 적용할 수 없습니다.</string>
     <string name="settings_validation_fallback">설정 값이 올바르지 않습니다: %1$s</string>
 
     <string name="settings_outcome_committed">커밋 완료</string>

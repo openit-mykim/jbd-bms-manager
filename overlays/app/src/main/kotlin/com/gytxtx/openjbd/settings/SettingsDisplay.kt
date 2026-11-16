@@ -255,9 +255,11 @@ object SettingsDisplay {
         accessMode: SettingsAccessMode,
         values: Map<SettingField, FieldValue>,
         registerErrors: Map<Int, RegisterAccessError>
-    ): Boolean = accessMode == SettingsAccessMode.FACTORY &&
-        values.containsKey(field) &&
-        !registerErrors.containsKey(field.register.address)
+    ): Boolean = accessMode == SettingsAccessMode.FACTORY && (
+        // Calibration registers are commands: they need not be readable to be written.
+        field.isCalibrationCommand ||
+            (values.containsKey(field) && !registerErrors.containsKey(field.register.address))
+        )
 
     fun readOnlyNotice(
         notConnected: Boolean,
@@ -301,6 +303,9 @@ object SettingsDisplay {
             "chgOvercurrent must be positive" -> R.string.settings_validation_charge_current_positive
             "dsgOvercurrent must be negative" -> R.string.settings_validation_discharge_current_negative
             BALANCE_WINDOW_STEP_REASON -> R.string.settings_validation_balance_window_step
+            MosStateMapping.REASON_LIVE_STATE_UNAVAILABLE -> R.string.mos_validation_live_unavailable
+            MosStateMapping.REASON_OTHER_FET_PROTECTED -> R.string.mos_validation_other_protected
+            MosStateMapping.REASON_MIXED_SESSION -> R.string.mos_validation_mixed_session
             else -> null
         }
         if (relationString != null) return SettingsUiMessage(relationString)
@@ -323,6 +328,7 @@ object SettingsDisplay {
         WriteSessionOutcome.Committed -> R.string.settings_outcome_committed
         WriteSessionOutcome.NotCommitted -> R.string.settings_outcome_not_committed
         is WriteSessionOutcome.CommitUnconfirmed -> R.string.settings_outcome_commit_unconfirmed
+        WriteSessionOutcome.Applied -> R.string.settings_outcome_applied
         is WriteSessionOutcome.ValidationFailed -> R.string.settings_outcome_validation_failed
         is WriteSessionOutcome.EntryFailed -> R.string.settings_outcome_entry_failed
     }
@@ -335,6 +341,7 @@ object SettingsDisplay {
         is ChangeDetail.TransportFailure -> R.string.settings_detail_transport_failure
         is ChangeDetail.MalformedResponse -> R.string.settings_detail_malformed_response
         ChangeDetail.SkippedNoChange -> R.string.settings_detail_skipped_no_change
+        is ChangeDetail.Acknowledged -> R.string.settings_detail_acknowledged
     }
 
     fun warningLabelResId(warning: SettingsSessionWarning): Int = when (warning) {

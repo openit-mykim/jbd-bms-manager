@@ -203,7 +203,7 @@ class SettingsRepository internal constructor(
     )
 
     private fun writeErrorSummary(result: WriteSessionResult): String? = when (result.outcome) {
-        WriteSessionOutcome.Committed -> null
+        WriteSessionOutcome.Committed, WriteSessionOutcome.Applied -> null
         WriteSessionOutcome.NotCommitted -> WRITE_NOT_COMMITTED_MESSAGE
         is WriteSessionOutcome.CommitUnconfirmed -> WRITE_COMMIT_UNCONFIRMED_MESSAGE
         is WriteSessionOutcome.ValidationFailed -> WRITE_VALIDATION_ERROR_MESSAGE
