@@ -96,7 +96,7 @@ Do not add automated dependency PRs that flood the repository before the Android
 
 ## Issues and project phases
 
-Top-level roadmap work is represented as numbered issues. The active source of truth remains `PROJECT_STATUS.md` + `docs/development-plan.md`.
+Open issues are limited to remaining work (`[남은 작업]`) and test tracking (`[테스트]`); each one is listed in `PROJECT_STATUS.md`, which is the canonical status. Close an issue as soon as its work ships and move it to the feature section.
 
 Issues are useful for:
 

@@ -22,7 +22,7 @@ Read in this order before editing:
 12. `docs/github-setup.md`
 13. `docs/decision-log.md`
 
-`AGENTS.md` is authoritative. `PROJECT_STATUS.md` tells you the active phase and immediate next action.
+`AGENTS.md` is authoritative. `PROJECT_STATUS.md` lists the shipped features, remaining work and test items.
 
 ## Agent role
 
@@ -41,9 +41,10 @@ Hermes should:
 ## Current objective
 
 The app is released as `v0.1.1` (all five tabs and every Control maintenance
-section implemented, 311 unit tests). `PROJECT_STATUS.md` → "Immediate next
-action" is authoritative; at the time of writing it is physical BMS validation
-of the released build per `docs/device-validation.md`.
+section implemented, 311 unit tests). `PROJECT_STATUS.md` is the canonical
+list of features, remaining work (open issues) and test items; at the time of
+writing the next step is physical BMS validation (#23) per
+`docs/device-validation.md`.
 
 Upstream reference (the build materializes this pinned baseline plus the
 `overlays/` tree; full source-history import remains open as Phase 0, issue #1):

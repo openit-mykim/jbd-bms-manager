@@ -7,7 +7,7 @@ The authoritative repository instructions are in `AGENTS.md`.
 Before making changes:
 
 1. Read `AGENTS.md` completely.
-2. Read `PROJECT_STATUS.md` to identify the current phase and next task.
+2. Read `PROJECT_STATUS.md` (features, remaining work, test items) to pick the next task.
 3. Read the relevant documents under `docs/`.
 4. Use an isolated Git worktree for non-trivial changes.
 5. Run focused verification and report evidence.

@@ -1,141 +1,71 @@
-# Project Status
+# 프로젝트 상태 (정본)
 
-Last updated: 2026-11-16
+최종 갱신: 2026-11-16 · 현재 릴리스: `v0.1.1` (versionCode 16, debug 서명, 단위 테스트 311건)
 
-## Current phase
+이 파일은 **주요 기능 · 남은 수정사항 · 테스트 사항** 세 가지만 관리하는 정본이다.
+작업 단위는 GitHub 이슈로 추적하고, 이 파일과 열린 이슈는 항상 일치시킨다.
+설계 근거는 `docs/`(특히 `navigation-design.md`, `maintenance-mode.md`, `protocol-design.md`, `decision-log.md`)를 따른다.
 
-**Maintenance sections complete — settings, calibration, MOS control and backup/restore are implemented with verified-write flows under Control**
+## 1. 주요 기능 (v0.1.1 구현 완료)
 
-Current release: `v0.1.1`.
+하단 탭 5개: **개요 / 상세 / 밸런스 / 제어 / 설정**. 경계 원칙은 `밸런스 = 상태 확인·진단`, `제어 = 유지보수 작업`이다.
 
-The repository has a reproducible GitHub Actions build that checks out the pinned OpenJBD baseline, applies the JBD BMS Manager overlay, runs unit tests (311 test cases in the materialized tree), builds the APK and publishes a GitHub release.
+| 영역 | 기능 |
+|---|---|
+| 개요 | SOC 게이지(3단계 색 밴드, 데이터 없을 때 중립 표시), 전압·전류·전력·온도, 셀 최소/최대/평균/편차, 보호·MOS 상태 요약 |
+| 상세 | 용량·사이클·펌웨어·기기 식별 정보, 마지막 갱신 시각. 이력 추세 차트(24시간/7일 × SOC·팩 전압·셀 편차, 10초 샘플, 기기 내 7일 보관, 미연결 상태에서도 표시) |
+| 밸런스 | 모든 셀 전압(V·mV), 최소/최대/평균/편차, 안전 밴드(측정한 보호값 기준, 없으면 "기본 참고값" 표시), 최고·최저·밸런싱 텍스트 배지, 밸런싱 셀 수·밸런스 전류. 미연결 셀(14S 제품에 10S~13S 연결)과 감지선 단락 팩 크기를 인식 |
+| 제어 | 기본 잠금 → 명시적 잠금 해제(세션 한정). 대상 BMS 식별, 읽기 전용 진단 패널. 설정(밸런스·보호·온도·용량), 캘리브레이션(전류 제로·충전·방전, 셀 전압, NTC), MOS 충·방전 차단(0xE1), 백업 JSON 내보내기·단계별 복원 |
+| 설정 | 앱 환경설정만 제공(언어·테마·온도 단위·갱신 주기·자동 연결·앱 정보) |
+| 공통 | BLE 로컬 전용(계정·클라우드 불필요), 한국어·영어, Android 16 시스템 바 inset 대응, GATT 쓰기 직렬화와 제한적 재시도 |
 
-## Current product decisions
+안전 원칙(변경 금지):
 
-Primary bottom navigation is fixed as:
+- 모든 쓰기는 **조회 → 수정 → 검증 → 확인 → 적용 → 다시 읽어 확인** 순서를 따른다. 모든 변경이 검증된 경우에만 커밋(`28 28`)하고, 커밋 뒤에 별도 확인 읽기를 한다.
+- 알 수 없는 BMS 변종은 읽기 전용이다. 호환 표는 비어 있는 상태로 배포하고, 실기기 증거로만 항목을 올린다.
+- 캘리브레이션은 BMS 읽기값 / 외부 기준 측정값 / 적용될 작업을 항상 따로 보여준다. 원터치 자동 보정은 없다.
+- 밸런스 편차는 5 mV 배수만 받는다. 입력값을 몰래 반올림하지 않는다.
+- 안전 밴드·SOC 밴드는 앱의 참고 표시일 뿐이며 BMS 보호 동작을 보장하지 않는다.
 
-```text
-개요 / 상세 / 밸런스 / 제어 / 설정
-Overview / Detail / Balance / Control / Settings
-```
+알려진 제한: 이력은 앱이 실행 중일 때만 기록된다. 저장되는 기기는 마지막 연결 기기 1대뿐이다(#24). debug 서명 빌드다(#9). JBD 공식 앱이 아니다.
 
-Responsibilities:
+## 2. 남은 수정사항
 
-- Overview: compact battery-state summary. The full per-cell list was moved to Balance; the min/max/delta/average stats grid is retained for quick judgment.
-- Detail: user-oriented read-only detail page (capacities, cycles, device identity, detailed status, last-refresh timestamp). Raw/technician fields stay out of Detail. A local history trend chart (24 h / 7 days, SOC / pack voltage / cell delta) reads the on-device sample store, so it renders even while disconnected.
-- Balance: read-oriented cell diagnostic surface — every cell-group voltage (V + mV), min/max/average/delta, absolute-threshold safety bands (normal / caution / danger, sourced from the measured protection limits or an NMC default with an explicit "default reference" label), highest/lowest/balancing shown as text badges, active-balancing count, balance current (supported devices) and a band legend.
-- Control: locked-by-default Maintenance Mode shell — explicit unlock acknowledgement, target-BMS identity block, a read-only diagnostics panel, and all maintenance sections interactive: configuration sections (밸런스 설정 / 보호 설정 / 온도 설정 / 용량 관리) with 조회 → 수정 → 확인 → 적용 → Read-back verify; 캘리브레이션 (전류·셀 전압·NTC 보정, three-concept contract: BMS reading / external reference / resulting operation); MOS 제어 (충·방전 FET 차단/허용 with live conducting state); 백업 및 복원 (JSON export + staged, verified restore). Sessions keep the write path capability-gated: unknown variants default to read-only, and a session commits only when every approved change verifies.
-- Settings: application preferences only (verified — no maintenance entry points).
+| 이슈 | 내용 |
+|---|---|
+| #24 | 다중 BMS 등록(별칭·선택 유지), 도달 여부·RSSI 표시, 이력·백업·보정 기록의 기기별 분리와 쓰기 전 기기 식별 검증 (`docs/multi-bms-design.md` Phase B~D) |
+| #9 | 정식 서명 키 정책, lint/정적 분석, 5탭·핵심 흐름 UI 회귀 테스트 |
+| #1 | OpenJBD 원본 소스·커밋 이력 병합으로 출처 보존 (`docs/upstream-sync.md`). 현재 upstream/main = 고정 기준 커밋 `7e3e225`라 새 upstream 변경은 없음 |
 
-The key boundary is:
+## 3. 테스트 사항 (#23)
 
-```text
-밸런스 = 상태 확인과 진단
-제어 = 유지보수 작업
-```
+절차와 기록 형식은 `docs/device-validation.md`를 따른다. 실기기 확인 전 항목은 `NOT HARDWARE VERIFIED`로 표기한다.
 
-See `docs/navigation-design.md`, `docs/maintenance-mode.md` and `docs/protocol-design.md`.
+완료:
 
-## Android 16 status
+- [x] 2026-11-16 Galaxy Note20 Ultra(SM-N986N, Android 13, 제스처 내비게이션), BMS 미연결: 릴리스 APK 해시 일치, 설치·실행, 5탭 표시, 미연결·빈 상태 화면, 제어 잠금, 시스템 바 inset, 크래시 없음
 
-The shared inset layer covers the main toolbar plus the device-list, about and licenses toolbars. The fix is included in the current builds; physical verification on the Android 16 device is still pending.
+JBD BMS 연결이 필요한 항목:
 
-## Device smoke test log
+- [ ] BLE 연결·재연결
+- [ ] 개요 SOC 게이지 색·문구가 실제 SOC와 일치하는지, 미연결 시 중립 표시
+- [ ] 상세 화면 내용과 이력 차트(몇 분 뒤 3개 지표 표본, 24시간/7일 전환, 미연결 상태 표시, 빈 상태)
+- [ ] 밸런스 셀 V·mV 표시, 보호값 기준 밴드 색(또는 "기본 참고값" 표시), 텍스트 배지, 밸런스 전류
+- [ ] 제어 잠금 해제 → 다시 잠금, 진단 패널
+- [ ] 설정 4개 섹션: 조회 성공 → 작은 안전 수정 → 이전/새 값 확인 → 적용 → 변경별 검증·커밋·커밋 후 확인. 재연결 뒤 값 유지 시 `PERSISTENCE_VERIFIED` 기록
+- [ ] 밸런스 편차 5/15/20 mV 프리셋 적용, BMS가 실제로 하는 반올림 기록
+- [ ] 캘리브레이션: 무부하 제로 보정, 이어서 기준 계측기로 충전/방전·셀 전압·NTC 중 하나. 3개 값 표시와 다시 읽은 결과 확인, 실제 전류 분해능 기록(10 mA 가정)
+- [ ] MOS 제어: 실시간 도통 상태 확인, 안전할 때만 FET 하나 전환, 다시 읽은 값과 실제 동작 확인
+- [ ] 백업 내보내기 → 값 하나 변경 → 파일로 복원, 차이 목록 확인, 단계별 검증·유지
+- [ ] 시각 검증: 밝은/어두운 테마 대비, 차트 가독성, 스크린 리더
+- [ ] 프로토콜 증거 수집(읽기 증거 먼저, 그다음 쓰기 테스트 템플릿)으로 호환 표 항목 올리기
 
-- 2026-11-16 — `v0.1.1` release APK (SHA-256 matches the published asset) installed on Galaxy Note20 Ultra (SM-N986N, Android 13, gesture navigation). Launch, five-tab rendering, Detail history empty state, Balance/Control/Settings disconnected states, Control locked shell and system-bar insets confirmed; no crash. No JBD BMS was in BLE range (scan: 0 devices), so every BMS-dependent item below remains `NOT HARDWARE VERIFIED`. Android 16 verification still needs an Android 16 device.
+Android 16 기기가 필요한 항목:
 
-## Immediate next action
+- [ ] 모든 화면(장치 목록·앱 정보·라이선스 포함)의 시스템 바 inset, 세로·가로
 
-1. Install `v0.1.1` on the physical Android 16 phone and verify:
-   - five-tab navigation renders correctly (개요/상세/밸런스/제어/설정),
-   - Balance screen: cell diagnostics plus balance current / active-balancing count / legend — confirm each cell shows both V and mV, that band colors match the connected protection limits (or show the "default reference" label when limits were not read), and that highest/lowest/balancing appear as text badges rather than colors,
-   - Balance delta: apply 5 / 15 / 20 mV from the presets and confirm the value is accepted and stored (record the rounding the BMS actually applies),
-   - Overview SOC gauge: confirm the band colour and text match the reported SOC, and that a disconnected / no-data state shows the neutral text rather than a charge warning,
-   - Detail history chart: after the app has been open for a few minutes, confirm samples appear for all three metrics; switching 24h / 7d and the metric buttons updates the chart without blocking the UI; confirm the chart still renders with the BMS disconnected and that the empty state appears before any samples exist,
-   - Detail page content and empty states,
-   - Control lock → unlock → re-lock flow and the read-only diagnostics panel (진단),
-   - Control settings sections (밸런스/보호/온도/용량): 조회 succeeds (공장 모드 or 직접 읽기 per device), a small safe edit stages and reviews old → new, apply shows per-change verification + commit state + post-commit confirmation,
-   - Calibration section: 무부하 제로 보정 (zero current only), then one 충전/방전·셀 전압·NTC target with a reference instrument — confirm the three-concept display (BMS 읽기값 / 기준 측정값 / 적용될 작업) and the read-back result; note the current-scale precision actually observed (10 mA assumption),
-   - MOS 제어: confirm the live conducting state, then toggle one FET only when interrupting charge/discharge is safe; verify read-back and device behavior,
-   - 백업 및 복원: export a backup, change one value, restore from the file and review the diff list before applying; confirm staged verification and persistence,
-   - values persist after reconnecting (record `PERSISTENCE_VERIFIED` per `docs/device-validation.md`),
-   - system-bar insets on all screens including Device List / About / Licenses,
-   - BLE connect/reconnect behavior.
-2. Capture protocol evidence on supported hardware using `docs/device-validation.md` (read-only evidence capture first, then the write test template) to raise compatibility-table entries.
+## 갱신 규칙
 
-## Phase checklist
-
-- [x] Repository created: `openit-mykim/jbd-bms-manager`
-- [x] MIT license selected
-- [x] Agent execution contract added
-- [x] Hermes + Paseo operating model documented → migrated to Hermes + Claude Code 2026-11-16
-- [x] Upstream OpenJBD baseline pinned
-- [x] Reproducible unit-test/debug-APK CI established
-- [x] Korean localization added
-- [x] Initial Android 16 system-bar handling implemented
-- [x] Follow-up inset design expanded to standalone Activity toolbars
-- [x] Five-tab information architecture decided and documented
-- [ ] Follow-up Android 16 fix physically verified
-- [x] Five-tab bottom navigation implemented (all five destinations carry product content)
-- [x] Overview content migrated/simplified
-- [x] Detail screen implemented from useful Parameters content
-- [x] Balance screen implemented as first-class cell diagnostic surface
-- [x] Balance readout completion (balance current, active count, legend)
-- [x] Control/Maintenance shell implemented (locked; write sections capability-gated)
-- [x] Maintenance write-transaction framework implemented with tests (Phase 3)
-- [x] Read-only diagnostics panel added under Control
-- [x] Settings protocol layer + BLE session integration implemented with tests (read/write frames, factory sessions, retries, post-commit confirmation)
-- [x] Settings read/write flow implemented in Control for balance/protection/temperature/capacity sections
-- [x] Calibration section implemented with tests (전류·셀 전압·NTC, three-concept contract; physical validation pending)
-- [x] MOS control implemented with tests (충·방전 FET 차단 via register 0xE1, live conducting state)
-- [x] Backup / restore implemented with tests (JSON export + staged verified restore; physical validation pending)
-- [x] Balance delta 5 mV step controls implemented with tests (presets, step clamp, step-multiple validation)
-- [x] Cell safety band display implemented with tests (measured/default thresholds, badge separation of highest/lowest/balancing)
-- [x] Overview SOC gauge implemented with tests (3-level band, neutral no-data state)
-- [x] History data layer implemented with tests (10 s sampling, 7-day retention, no extra BLE reads)
-- [x] History trend chart implemented with tests (2 ranges x 3 metrics, Canvas view, 120-bucket downsample)
-- [x] Settings limited to application preferences
-- [ ] Physical BMS monitor validation completed
-- [ ] Physical settings write validation completed (records `PERSISTENCE_VERIFIED` where applicable)
-- [ ] Physical balance delta write validation completed (observed rounding recorded)
-- [ ] Physical visualization validation completed (band colors, contrast in both themes, chart readability, screen-reader pass)
-- [ ] Physical calibration validation completed (reference instruments; current-scale precision)
-- [ ] Production signing / release policy finalized
-- [ ] Full OpenJBD source/history imported into this repository
-
-## Phase mapping
-
-- Phase 0 — provenance/full upstream source-history import
-- Phase 1 — Android 16 compatibility and physical verification
-- Phase 2 — five-tab monitoring productization (content complete; awaiting physical verification)
-- Phase 3 — Control / Maintenance Mode (implemented: shell, capability model, staged edits, transaction coordinator, audit, BLE settings sessions with retries + post-commit confirmation, all maintenance sections in UI: settings, calibration, MOS control, backup/restore; physical write validation pending)
-- Phase 4 — calibration (implemented in UI under the three-concept contract: current 제로/충전/방전, cell voltage, NTC; physical validation/reference measurement pending)
-- Phase 5 — protection / balance configuration / MOS control (implemented in UI; physical validation pending)
-- Phase 6 — backup / restore / diagnostics (export + staged restore implemented; diagnostics remains read-only; physical validation pending)
-- Phase 7 — CI / release / long-term maintenance
-
-## Product decisions already made
-
-- Repository: `jbd-bms-manager`
-- App name: `JBD BMS Manager`
-- Primary transport: BLE
-- Core operation: local-first; no account or cloud required
-- Top-level navigation: Overview / Detail / Balance / Control / Settings
-- Monitoring surfaces are read-oriented
-- Control is the home of Maintenance Mode; unlocked state is session-scoped and not persisted
-- Settings is application-only
-- Balance is observation/diagnosis; balance configuration is under Control
-- Maintenance Mode uses explicit unlock + staged changes
-- Maintenance writes are capability-gated; the compatibility table ships empty and only exact local evidence can raise it
-- Calibration follows the three-concept contract — BMS reading / external reference measurement / resulting operation are always shown separately; there is no one-tap auto calibration
-- MOS control writes are limited to the FET disable bits (0xE1) with live conducting-state display and explicit warnings
-- Balance delta accepts only 5 mV multiples (5 mV minimum); the UI never silently rounds an entered value
-- Cell safety bands are display-only guidance derived from the measured protection limits, or from an explicit NMC default labelled as such — they never claim to guarantee BMS protection behavior
-- Settings sessions commit (`28 28`) only when every approved change verifies, and a committed session is followed by an independent post-commit confirmation read
-- Unknown BMS variants default to conservative/read-only behavior
-- Initial languages: Korean and English; retain upstream languages where practical
-- OpenJBD is the upstream foundation, not a branding dependency
-
-## Update rule
-
-Every phase-completing PR or distributable milestone should update this file. Keep detailed design in `docs/`.
+- 기능을 추가하거나 릴리스할 때 1절과 상단 버전을 갱신한다.
+- 남은 수정사항이 생기면 이슈를 먼저 만들고 2절 표에 추가한다. 끝나면 이슈를 닫고 표에서 지운다(1절로 옮김).
+- 테스트를 수행하면 3절과 #23에 결과(날짜·기기·펌웨어·결과)를 함께 기록한다.
