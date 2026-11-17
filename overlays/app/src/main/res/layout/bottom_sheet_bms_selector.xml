@@ -49,7 +49,7 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:text="@string/bms_scan_idle"
-            android:textAppearance="?attr/textAppearanceCaption" />
+            android:textAppearance="@style/TextAppearance.OpenJbd.Caption" />
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/bms_scan_button"
