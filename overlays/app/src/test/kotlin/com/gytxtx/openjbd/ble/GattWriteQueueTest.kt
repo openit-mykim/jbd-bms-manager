@@ -124,4 +124,66 @@ class GattWriteQueueTest {
         assertEquals("only", queue.completeActive())
         assertTrue(queue.isEmpty)
     }
+
+    private class Request(val name: String) {
+        var cancelled = false
+    }
+
+    @Test
+    fun cancelledPendingRequestIsRemovedAndNeverStarted() {
+        val queue = GattWriteQueue<Request>()
+        val first = Request("first")
+        val cancelled = Request("cancelled")
+        val third = Request("third")
+        listOf(first, cancelled, third).forEach(queue::enqueue)
+
+        assertEquals(first, queue.beginNext())
+        assertTrue(queue.cancelPending(cancelled))
+        queue.completeActive()
+
+        assertEquals(third, queue.beginNext())
+        queue.completeActive()
+        assertNull(queue.beginNext())
+        assertTrue(queue.isEmpty)
+    }
+
+    @Test
+    fun activeRequestIsNotCancelledByCancelPending() {
+        val queue = GattWriteQueue<Request>()
+        val active = Request("active")
+        queue.enqueue(active)
+
+        assertEquals(active, queue.beginNext())
+        queue.onWriteStarted()
+
+        assertFalse(queue.cancelPending(active))
+        assertEquals(active, queue.activeItem)
+    }
+
+    @Test
+    fun beginNextSkipsRequestsFlaggedCancelledBeforeStart() {
+        val queue = GattWriteQueue<Request>()
+        val cancelled = Request("cancelled").apply { this.cancelled = true }
+        val next = Request("next")
+        queue.enqueue(cancelled)
+        queue.enqueue(next)
+
+        assertEquals(next, queue.beginNext { it.cancelled })
+        queue.completeActive()
+        assertNull(queue.beginNext { it.cancelled })
+    }
+
+    @Test
+    fun startRefusedRequestCancelledBeforeRetryIsNotRetried() {
+        val queue = GattWriteQueue<Request>()
+        val request = Request("refused")
+        queue.enqueue(request)
+
+        assertEquals(request, queue.beginNext { it.cancelled })
+        assertTrue(queue.retryStartFailure())
+        request.cancelled = true
+
+        assertNull(queue.beginNext { it.cancelled })
+        assertTrue(queue.isEmpty)
+    }
 }

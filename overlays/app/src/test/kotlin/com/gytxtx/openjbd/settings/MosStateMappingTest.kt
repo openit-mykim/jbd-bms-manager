@@ -82,4 +82,35 @@ class MosStateMappingTest {
             MosStateMapping.commandRaw(mapOf(0 to 1), null)
         )
     }
+
+    // Issue #30: the MOS screen edits against live FET state without reading 0xE1.
+    @Test
+    fun liveValuesComeFromFetStateAlone() {
+        val values = MosStateMapping.liveValues(MosStateMapping.liveState(true, false, 0))
+
+        assertEquals(0, values.getValue(SettingField.MOS_CHARGE_DISABLE).raw)
+        assertEquals(1, values.getValue(SettingField.MOS_DISCHARGE_DISABLE).raw)
+    }
+
+    @Test
+    fun noLiveStateMeansNoEditableValues() {
+        assertTrue(MosStateMapping.liveValues(null).isEmpty())
+    }
+
+    @Test
+    fun liveStateMapsBasicInfoFlags() {
+        assertEquals(MosLiveState(0b11, false), MosStateMapping.liveState(true, true, 0))
+        assertEquals(MosLiveState(0b00, true), MosStateMapping.liveState(false, false, 0x0100))
+    }
+
+    @Test
+    fun liveValuesAndCommandAgreeWhenNothingIsStaged() {
+        // Staging the value already shown must produce the same live command (no surprise toggle).
+        for (fet in 0..3) {
+            val live = MosLiveState(fet, protectionActive = false)
+            val values = MosStateMapping.liveValues(live)
+            val staged = mapOf(0 to values.getValue(SettingField.MOS_CHARGE_DISABLE).raw)
+            assertEquals(MosCommand.Write(fet.inv() and 0b11), MosStateMapping.commandRaw(staged, live))
+        }
+    }
 }

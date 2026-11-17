@@ -34,12 +34,34 @@ internal class GattWriteQueue<T>(private val maxStartRetries: Int = DEFAULT_MAX_
         queue.addLast(Entry(item))
     }
 
-    /** Returns the next item to write, or null while a write or its callback is outstanding. */
-    fun beginNext(): T? {
+    /**
+     * Returns the next item to write, or null while a write or its callback is outstanding.
+     * Items for which [isCancelled] is true are dropped without being returned, so a request
+     * cancelled before its write started is never transmitted (issue #30).
+     */
+    fun beginNext(isCancelled: (T) -> Boolean = { false }): T? {
         if (writeStarted || active != null) return null
-        val entry = queue.removeFirstOrNull() ?: return null
-        active = entry
-        return entry.item
+        while (true) {
+            val entry = queue.removeFirstOrNull() ?: return null
+            if (isCancelled(entry.item)) continue
+            active = entry
+            return entry.item
+        }
+    }
+
+    /**
+     * Removes [item] if it is still waiting to be written and returns true. The active request is
+     * never removed here: its write may already be on the air and must run to completion.
+     */
+    fun cancelPending(item: T): Boolean {
+        val iterator = queue.iterator()
+        while (iterator.hasNext()) {
+            if (iterator.next().item === item) {
+                iterator.remove()
+                return true
+            }
+        }
+        return false
     }
 
     fun onWriteStarted() {

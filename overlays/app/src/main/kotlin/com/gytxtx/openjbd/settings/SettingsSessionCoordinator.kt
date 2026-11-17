@@ -838,6 +838,16 @@ class SettingsSessionCoordinator(
         }
     }
 
+    /**
+     * Checks the response to a write-type frame (factory enter/exit, register write, calibration
+     * and MOS commands). Responses are matched by address only, so a late *read* response of the
+     * same register could otherwise be taken as this write's acknowledgement (issue #30).
+     *
+     * Assumption (documented in docs/protocol-design.md, NOT HARDWARE VERIFIED, #23): a
+     * successful write is acknowledged with an empty payload (`DD <reg> 00 00 00 00 77`). Any
+     * other shape fails safe as [RegisterAccessError.Malformed]: never success, never retried,
+     * and therefore never followed by a commit.
+     */
     private fun commandError(
         outcome: GatewayOutcome,
         expectedAddress: Int
@@ -848,6 +858,10 @@ class SettingsSessionCoordinator(
                     "received 0x${outcome.frame.command.toString(16)}"
             )
             outcome.frame.status != 0 -> RegisterAccessError.ErrorStatus(outcome.frame.status)
+            outcome.frame.payload.isNotEmpty() -> RegisterAccessError.Malformed(
+                "Unexpected ${outcome.frame.payload.size}-byte payload in write acknowledgement " +
+                    "for 0x${expectedAddress.toString(16)}"
+            )
             else -> null
         }
         GatewayOutcome.NoResponse -> RegisterAccessError.NoResponse

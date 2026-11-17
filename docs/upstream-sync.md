@@ -16,7 +16,7 @@ This repository does not contain the OpenJBD source tree or its Git history. It 
 - The upstream commit is pinned as `UPSTREAM_COMMIT` (`.github/workflows/android-release.yml` and `scripts/apply-product-overlay.py`).
 - CI (and `scripts/verify.sh` locally) checks out OpenJBD at that commit, then `scripts/apply-product-overlay.py` copies `overlays/` on top and applies a few targeted text replacements.
 - New product files (Detail/Balance/Control screens, `settings/`, `maintenance/`, `history/`, `protocol/` etc.) are added by the overlay.
-- Several upstream files are **replaced wholesale** by overlay copies, for example `BmsConnectionManager.kt`, `MainActivity.kt`, `OverviewFragment.kt`, `data/BmsRepository.kt`, `SystemBars.kt`, `Ext.kt` and `OpenJbdApplication.kt` (all under `app/src/main/kotlin/com/gytxtx/openjbd/`), plus some resources. Upstream changes to these files are **not** picked up automatically when the pin moves.
+- Several upstream files are **replaced wholesale** by overlay copies, for example `BmsConnectionManager.kt`, `MainActivity.kt`, `OverviewFragment.kt`, `data/BmsRepository.kt`, `SystemBars.kt`, `Ext.kt`, `OpenJbdApplication.kt` and `protocol/JbdFrameAssembler.kt` (byte-by-byte resynchronization, #30) (all under `app/src/main/kotlin/com/gytxtx/openjbd/`), plus some resources. Upstream changes to these files are **not** picked up automatically when the pin moves.
 
 To list which overlay paths replace an upstream file, compare `overlays/` against the upstream tree at the pinned commit, e.g. `git ls-tree -r --name-only <UPSTREAM_COMMIT>` in an OpenJBD clone.
 

@@ -2,6 +2,7 @@ package com.gytxtx.openjbd.settings
 
 import com.gytxtx.openjbd.BmsConnectionManager
 import java.util.concurrent.atomic.AtomicBoolean
+import java.util.concurrent.atomic.AtomicReference
 import javax.inject.Inject
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
@@ -33,12 +34,21 @@ class BleSettingsGateway internal constructor(
 
         suspendCancellableCoroutine<GatewayOutcome> { continuation ->
             val completed = AtomicBoolean(false)
-            continuation.invokeOnCancellation { completed.set(true) }
-            host.enqueueSettingsCommand(frame, responseAddress, timeoutMs) { outcome ->
+            val cancelled = AtomicBoolean(false)
+            val handle = AtomicReference<SettingsCommandHandle?>(null)
+            continuation.invokeOnCancellation {
+                completed.set(true)
+                cancelled.set(true)
+                // Cancel-before-start: a command still waiting in the BLE queue is never sent.
+                handle.getAndSet(null)?.cancel()
+            }
+            val queued = host.enqueueSettingsCommand(frame, responseAddress, timeoutMs) { outcome ->
                 if (completed.compareAndSet(false, true)) {
                     continuation.resume(outcome) { _, _, _ -> }
                 }
             }
+            handle.set(queued)
+            if (cancelled.get()) handle.getAndSet(null)?.cancel()
         }
     }
 

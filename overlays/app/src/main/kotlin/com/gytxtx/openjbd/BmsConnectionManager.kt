@@ -16,18 +16,20 @@ import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Handler
 import android.os.Looper
+import android.os.SystemClock
 import com.gytxtx.openjbd.ble.BleConstants
 import com.gytxtx.openjbd.ble.GattWriteQueue
+import com.gytxtx.openjbd.ble.ResponseFrameIntake
 import com.gytxtx.openjbd.data.BmsRepository
 import com.gytxtx.openjbd.data.BmsUiState
 import com.gytxtx.openjbd.data.ConnectionState
 import com.gytxtx.openjbd.protocol.JbdCommands
 import com.gytxtx.openjbd.protocol.JbdDeviceInfo
 import com.gytxtx.openjbd.protocol.JbdFrame
-import com.gytxtx.openjbd.protocol.JbdFrameAssembler
 import com.gytxtx.openjbd.protocol.JbdParseException
 import com.gytxtx.openjbd.protocol.JbdParser
 import com.gytxtx.openjbd.settings.GatewayOutcome
+import com.gytxtx.openjbd.settings.SettingsCommandHandle
 import com.gytxtx.openjbd.settings.SettingsCommandHost
 import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
@@ -39,10 +41,13 @@ class BmsConnectionManager @Inject constructor(
     private val repository: BmsRepository
 ) : SettingsCommandHost {
     private val handler = Handler(Looper.getMainLooper())
-    private val frameAssembler = JbdFrameAssembler()
+    /** Assembles notifications and discards frames of an earlier connection or a timed-out command (#30). */
+    private val frameIntake = ResponseFrameIntake(SystemClock::uptimeMillis)
     private val commandQueue = GattWriteQueue<CommandRequest>(GATT_WRITE_MAX_START_RETRIES)
 
     private var adapter: BluetoothAdapter? = null
+    /** Volatile: read on the binder thread to drop notifications from a closed GATT (#30). */
+    @Volatile
     private var gatt: BluetoothGatt? = null
     private var writeCharacteristic: BluetoothGattCharacteristic? = null
     @Volatile
@@ -75,12 +80,17 @@ class BmsConnectionManager @Inject constructor(
 
     private val commandTimeoutRunnable = Runnable {
         val command = currentCommand ?: return@Runnable
+        // A response that arrives after this point is stale: never let it answer the retry or
+        // the next command. Draining resumes once the quarantine window has passed.
+        frameIntake.quarantine(STALE_RESPONSE_QUARANTINE_MS)
         completeCurrentCommand(
             if (command.settingsCallback != null) GatewayOutcome.NoResponse else null
         )
     }
 
     private val writeStartRetryRunnable = Runnable { drainCommandQueue() }
+
+    private val quarantineDrainRunnable = Runnable { drainCommandQueue() }
 
     private val writeCallbackWatchdogRunnable = Runnable {
         if (!commandQueue.writeCallbackPending) return@Runnable
@@ -118,7 +128,7 @@ class BmsConnectionManager @Inject constructor(
                     connected = false
                     failPendingSettingsCommands("disconnected")
                     writeCharacteristic = null
-                    handler.removeCallbacks(pollRunnable); handler.removeCallbacks(commandTimeoutRunnable); frameAssembler.reset(); gatt = null
+                    handler.removeCallbacks(pollRunnable); handler.removeCallbacks(commandTimeoutRunnable); gatt = null; frameIntake.reset()
                     closeGattIfPermitted(bluetoothGatt)
                     if (!intentionalDisconnect && shouldAutoReconnect()) {
                         scheduleReconnect(getString(R.string.status_connection_lost))
@@ -153,9 +163,9 @@ class BmsConnectionManager @Inject constructor(
             }
         }
 
-        override fun onCharacteristicChanged(bluetoothGatt: BluetoothGatt, characteristic: BluetoothGattCharacteristic) = handleIncoming(characteristic.value)
+        override fun onCharacteristicChanged(bluetoothGatt: BluetoothGatt, characteristic: BluetoothGattCharacteristic) = handleIncoming(bluetoothGatt, characteristic.value)
 
-        override fun onCharacteristicChanged(bluetoothGatt: BluetoothGatt, characteristic: BluetoothGattCharacteristic, value: ByteArray) = handleIncoming(value)
+        override fun onCharacteristicChanged(bluetoothGatt: BluetoothGatt, characteristic: BluetoothGattCharacteristic, value: ByteArray) = handleIncoming(bluetoothGatt, value)
 
         override fun onCharacteristicWrite(bluetoothGatt: BluetoothGatt, characteristic: BluetoothGattCharacteristic, status: Int) {
             handler.post {
@@ -239,14 +249,14 @@ class BmsConnectionManager @Inject constructor(
         responseAddress: Int,
         timeoutMs: Long,
         callback: (GatewayOutcome) -> Unit
-    ) {
+    ): SettingsCommandHandle {
         require(responseAddress in 0x00..0xFF) { "Response address must fit in one byte" }
         require(timeoutMs > 0) { "Settings command timeout must be positive" }
         if (!connected) {
             callback(
                 GatewayOutcome.TransportFailure("not connected", reconnectRequired = true)
             )
-            return
+            return SettingsCommandHandle.NONE
         }
 
         val request = CommandRequest.settings(
@@ -256,6 +266,7 @@ class BmsConnectionManager @Inject constructor(
             callback
         )
         handler.post {
+            if (request.cancelled) return@post
             if (!connected) {
                 callback(
                     GatewayOutcome.TransportFailure("not connected", reconnectRequired = true)
@@ -264,6 +275,13 @@ class BmsConnectionManager @Inject constructor(
                 commandQueue.enqueue(request)
                 drainCommandQueue()
             }
+        }
+        // Cancel-before-start (#30): a cancelled request that has not been handed to GATT yet is
+        // removed and never transmitted. One whose write already started cannot be recalled; its
+        // response is then ignored by the cancelled caller.
+        return SettingsCommandHandle {
+            request.cancelled = true
+            handler.post { commandQueue.cancelPending(request) }
         }
     }
 
@@ -317,8 +335,13 @@ class BmsConnectionManager @Inject constructor(
         connected = false
         failPendingSettingsCommands("disconnected")
         writeCharacteristic = null
-        handler.removeCallbacks(commandTimeoutRunnable); frameAssembler.reset()
-        if (gatt != null) { if (hasConnectPermission()) { gatt!!.disconnect(); gatt!!.close() }; gatt = null }
+        handler.removeCallbacks(commandTimeoutRunnable)
+        val closing = gatt
+        gatt = null
+        // After gatt is cleared: frames of the closing link fail the binder-side gatt check or
+        // carry the previous generation, so they can never complete a command of the next link.
+        frameIntake.reset()
+        if (closing != null && hasConnectPermission()) { closing.disconnect(); closing.close() }
         if (publishState) publishDisconnected(ConnectionState.DISCONNECTED, getString(R.string.status_select_bms))
     }
 
@@ -366,7 +389,18 @@ class BmsConnectionManager @Inject constructor(
     private fun drainCommandQueue() {
         if (!connected) return
         if (commandQueue.writeCallbackPending || currentCommand != null) return
-        val request = commandQueue.beginNext()
+        if (commandQueue.isEmpty) {
+            handler.removeCallbacks(pollRunnable)
+            handler.postDelayed(pollRunnable, refreshIntervalMs)
+            return
+        }
+        val quarantineMs = frameIntake.quarantineRemainingMs()
+        if (quarantineMs > 0) {
+            handler.removeCallbacks(quarantineDrainRunnable)
+            handler.postDelayed(quarantineDrainRunnable, quarantineMs)
+            return
+        }
+        val request = commandQueue.beginNext { it.cancelled }
         if (request == null) {
             handler.removeCallbacks(pollRunnable)
             handler.postDelayed(pollRunnable, refreshIntervalMs)
@@ -422,11 +456,13 @@ class BmsConnectionManager @Inject constructor(
         return gatt.writeCharacteristic(characteristic)
     }
 
-    private fun handleIncoming(value: ByteArray) {
-        val frames = frameAssembler.append(value)
-        if (frames.isEmpty()) return
+    private fun handleIncoming(bluetoothGatt: BluetoothGatt, value: ByteArray) {
+        val batch = frameIntake.append(value) { bluetoothGatt === gatt }
+        if (batch.frames.isEmpty()) return
         handler.post {
-            for (frame in frames) {
+            // Dropped when a reset (new connection) or a command timeout happened after assembly.
+            if (!frameIntake.isCurrent(batch)) return@post
+            for (frame in batch.frames) {
                 try {
                     val settingsCommand = currentCommand?.takeIf {
                         it.settingsCallback != null &&
@@ -506,6 +542,7 @@ class BmsConnectionManager @Inject constructor(
         val callbacks = commandQueue.clear().mapNotNull { it.settingsCallback }
         handler.removeCallbacks(commandTimeoutRunnable)
         handler.removeCallbacks(writeStartRetryRunnable)
+        handler.removeCallbacks(quarantineDrainRunnable)
         handler.removeCallbacks(writeCallbackWatchdogRunnable)
         callbacks.forEach { callback ->
             runCatching {
@@ -594,6 +631,10 @@ class BmsConnectionManager @Inject constructor(
         val timeoutMs: Long = COMMAND_TIMEOUT_MS,
         val settingsCallback: ((GatewayOutcome) -> Unit)? = null
     ) {
+        /** Set from any thread by [SettingsCommandHandle.cancel]; checked before the write starts. */
+        @Volatile
+        var cancelled = false
+
         companion object {
             fun read(command: Byte, kind: CommandKind) =
                 CommandRequest(command, kind, JbdCommands.readCommand(command))
@@ -621,6 +662,8 @@ class BmsConnectionManager @Inject constructor(
         private const val GATT_WRITE_START_RETRY_DELAY_MS = 60L
         private const val GATT_WRITE_CALLBACK_TIMEOUT_MS = 3000L
         private const val COMMAND_TIMEOUT_MS = 2200L
+        /** After a command timeout, notifications are discarded and no command starts for this long. */
+        private const val STALE_RESPONSE_QUARANTINE_MS = 300L
         private const val EXT_RATINGS_START = 117
         private const val EXT_BMS_ADDRESS_START = 170
         private const val EXT_BMS_MODEL_START = 176
