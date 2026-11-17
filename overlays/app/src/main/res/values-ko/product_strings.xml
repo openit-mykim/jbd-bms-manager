@@ -6,4 +6,6 @@
     <string name="bms_sheet_add_device">+ 새 BMS 검색</string>
     <string name="bms_sheet_status_connected">연결됨</string>
     <string name="bms_sheet_status_saved">등록됨</string>
+    <string name="about_item_upstream_source">원본 프로젝트: OpenJBD</string>
+    <string name="about_item_upstream_source_subtitle">MIT 라이선스 · © 2026 KFACBT</string>
 </resources>

@@ -24,6 +24,7 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.switchmaterial.SwitchMaterial
 import com.google.android.material.textfield.TextInputEditText
 import com.google.android.material.textfield.TextInputLayout
+import com.google.android.material.textview.MaterialTextView
 import com.gytxtx.openjbd.R
 import com.gytxtx.openjbd.data.BmsRepository
 import com.gytxtx.openjbd.data.BmsUiState
@@ -450,7 +451,7 @@ class SettingsGroupDialogFragment : DialogFragment() {
                 gravity = android.view.Gravity.CENTER_VERTICAL
                 setPadding(0, 0, 0, resources.getDimensionPixelSize(R.dimen.space_4))
             }
-            row.addView(TextView(requireContext()).apply {
+            row.addView(MaterialTextView(requireContext()).apply {
                 text = SettingsDisplay.buildChangeSummary(
                     field,
                     oldRaw,
@@ -614,7 +615,7 @@ class SettingsGroupDialogFragment : DialogFragment() {
     }
 
     private fun addIssueHeading(container: LinearLayout, textResId: Int) {
-        container.addView(TextView(requireContext()).apply {
+        container.addView(MaterialTextView(requireContext()).apply {
             setText(textResId)
             setTextAppearance(R.style.TextAppearance_OpenJbd_ListItemTitle)
             setPadding(0, resources.getDimensionPixelSize(R.dimen.space_8), 0, 0)
@@ -626,7 +627,7 @@ class SettingsGroupDialogFragment : DialogFragment() {
         textValue: String,
         isError: Boolean = false
     ) {
-        container.addView(TextView(requireContext()).apply {
+        container.addView(MaterialTextView(requireContext()).apply {
             text = textValue
             setTextAppearance(R.style.TextAppearance_OpenJbd_ListItemSubtitle)
             if (isError) setTextColor(requireContext().getColor(R.color.error))

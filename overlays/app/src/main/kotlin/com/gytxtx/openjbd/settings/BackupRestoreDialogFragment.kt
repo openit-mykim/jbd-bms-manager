@@ -20,6 +20,7 @@ import androidx.lifecycle.repeatOnLifecycle
 import com.google.android.material.appbar.MaterialToolbar
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import com.google.android.material.textview.MaterialTextView
 import com.gytxtx.openjbd.R
 import com.gytxtx.openjbd.data.BmsRepository
 import com.gytxtx.openjbd.data.BmsUiState
@@ -526,7 +527,7 @@ class BackupRestoreDialogFragment : DialogFragment() {
     }
 
     private fun addIssueLine(container: LinearLayout, value: String, isError: Boolean = false) {
-        container.addView(TextView(requireContext()).apply {
+        container.addView(MaterialTextView(requireContext()).apply {
             text = value
             setTextAppearance(R.style.TextAppearance_OpenJbd_ListItemSubtitle)
             if (isError) setTextColor(requireContext().getColor(R.color.error))
