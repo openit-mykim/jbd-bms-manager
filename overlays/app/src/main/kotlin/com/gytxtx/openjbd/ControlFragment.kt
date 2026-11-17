@@ -231,7 +231,7 @@ class ControlFragment : Fragment() {
     /**
      * Target card: the explicitly selected registered BMS (alias + address). When a BMS is
      * connected but is not that device, or its identity differs from the registered one, the
-     * card says so: writes and restores are refused at the repository layer (D021).
+     * card says so: writes and restores are refused at the repository layer (D022).
      */
     private fun renderTarget(snapshot: BmsUiState) {
         if (!::targetStatus.isInitialized) return

@@ -242,11 +242,12 @@ class SettingsRepositoryTest {
             responseAddress: Int,
             timeoutMs: Long,
             callback: (GatewayOutcome) -> Unit
-        ) {
+        ): SettingsCommandHandle {
             frames += frame.copyOf()
             check(timeoutMs > 0)
             check(outcomes.isNotEmpty()) { "No outcome for address $responseAddress" }
             callback(outcomes.removeFirst())
+            return SettingsCommandHandle.NONE
         }
     }
 

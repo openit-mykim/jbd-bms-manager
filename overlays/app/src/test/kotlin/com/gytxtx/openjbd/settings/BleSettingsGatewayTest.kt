@@ -158,11 +158,37 @@ class BleSettingsGatewayTest {
         assertEquals(GatewayOutcome.TransportFailure("later failure"), next.await())
     }
 
+    @Test
+    fun cancellingExecuteCancelsTheQueuedCommandBeforeItIsSent() = runTest {
+        val host = FakeSettingsCommandHost()
+        val gateway = BleSettingsGateway(host)
+        val job = launch { gateway.execute(byteArrayOf(8), 0x2B, 1_000) }
+        runCurrent()
+        assertTrue(host.cancelledRequests.isEmpty())
+
+        job.cancelAndJoin()
+
+        assertEquals(listOf(0), host.cancelledRequests)
+    }
+
+    @Test
+    fun completedExecuteDoesNotCancelItsCommand() = runTest {
+        val host = FakeSettingsCommandHost()
+        val result = async { BleSettingsGateway(host).execute(byteArrayOf(9), 0x2C, 1_000) }
+        runCurrent()
+
+        host.completeNext(GatewayOutcome.NoResponse)
+
+        assertSame(GatewayOutcome.NoResponse, result.await())
+        assertTrue(host.cancelledRequests.isEmpty())
+    }
+
     private class FakeSettingsCommandHost(
         private var connected: Boolean = true
     ) : SettingsCommandHost {
         val requests = mutableListOf<Request>()
         val events = mutableListOf<String>()
+        val cancelledRequests = mutableListOf<Int>()
         private val callbacks = ArrayDeque<(GatewayOutcome) -> Unit>()
 
         override fun isConnected(): Boolean = connected
@@ -180,9 +206,11 @@ class BleSettingsGatewayTest {
             responseAddress: Int,
             timeoutMs: Long,
             callback: (GatewayOutcome) -> Unit
-        ) {
+        ): SettingsCommandHandle {
+            val index = requests.size
             requests += Request(frame.copyOf(), responseAddress, timeoutMs)
             callbacks.addLast(callback)
+            return SettingsCommandHandle { cancelledRequests += index }
         }
 
         fun completeNext(outcome: GatewayOutcome) {

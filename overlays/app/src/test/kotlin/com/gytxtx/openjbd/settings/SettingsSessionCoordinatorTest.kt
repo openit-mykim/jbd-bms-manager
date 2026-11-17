@@ -839,6 +839,111 @@ class SettingsSessionCoordinatorTest {
         )
     }
 
+    // Issue #30: responses are matched by address only, so a late read response of the same
+    // register can be delivered as a write acknowledgement. It must fail safe, never commit.
+    @Test
+    fun staleReadResponseTakenAsWriteAckFailsSafeWithoutCommit() = runTest {
+        val gateway = FakeGateway(
+            ack(0x00),
+            register(0x24, 4_200),
+            register(0x24, 4_200), // late read response consumed as the write's "ack"
+            counterResponse(IntArray(11)),
+            ack(0x01)
+        )
+
+        val result = SettingsSessionCoordinator(gateway).applyChanges(
+            listOf(FieldChange(SettingField.COVP, 4_100))
+        )
+
+        assertTrue(result.outcome is WriteSessionOutcome.NotCommitted)
+        val detail = result.changes.single().detail
+        assertTrue(detail is ChangeDetail.MalformedResponse)
+        assertEquals(ChangePhase.WRITE, (detail as ChangeDetail.MalformedResponse).phase)
+        assertEquals(0, gateway.frameCount(JbdConfigCommands.exitFactoryModeWithCommit()))
+        // Malformed is definitive: the write is not retried.
+        assertEquals(1, gateway.frameCount(JbdConfigCommands.writeRegister(0x24, u16(4_100))))
+        assertArrayEquals(JbdCommands.closeFactoryMode(), gateway.frames.last())
+    }
+
+    @Test
+    fun factoryEntryAckWithPayloadIsNotTreatedAsEntered() = runTest {
+        val gateway = FakeGateway(register(0x00, 0x5678))
+
+        val result = SettingsSessionCoordinator(gateway).applyChanges(
+            listOf(FieldChange(SettingField.COVP, 4_100))
+        )
+
+        val outcome = result.outcome
+        assertTrue(outcome is WriteSessionOutcome.EntryFailed)
+        assertTrue((outcome as WriteSessionOutcome.EntryFailed).error is RegisterAccessError.Malformed)
+        assertFrames(gateway, JbdCommands.openFactoryMode())
+    }
+
+    @Test
+    fun commitAckWithPayloadIsReportedUnconfirmedNotCommitted() = runTest {
+        val gateway = FakeGateway(
+            ack(0x00),
+            register(0x24, 4_200),
+            ack(0x24),
+            register(0x24, 4_100),
+            counterResponse(IntArray(11)),
+            register(0x01, 0x2828), // not an acknowledgement shape
+            ack(0x01),
+            ack(0x00),
+            register(0x24, 4_100),
+            ack(0x01)
+        )
+
+        val result = SettingsSessionCoordinator(gateway).applyChanges(
+            listOf(FieldChange(SettingField.COVP, 4_100))
+        )
+
+        val outcome = result.outcome
+        assertTrue(outcome is WriteSessionOutcome.CommitUnconfirmed)
+        assertTrue((outcome as WriteSessionOutcome.CommitUnconfirmed).error is RegisterAccessError.Malformed)
+        assertEquals(1, gateway.frameCount(JbdConfigCommands.exitFactoryModeWithCommit()))
+    }
+
+    @Test
+    fun mosAckWithPayloadIsNotReportedApplied() = runTest {
+        val gateway = FakeGateway(
+            ack(0x00),
+            register(0xE1, 0), // stale 0xE1 read response, not a write acknowledgement
+            ack(0x01)
+        )
+
+        val result = SettingsSessionCoordinator(gateway).applyChanges(
+            listOf(
+                FieldChange(
+                    SettingField.MOS_CHARGE_DISABLE,
+                    1,
+                    mosLiveState = MosLiveState(fetState = 0b11, protectionActive = false)
+                )
+            )
+        )
+
+        assertTrue(result.outcome is WriteSessionOutcome.NotCommitted)
+        assertTrue(result.changes.single().detail is ChangeDetail.MalformedResponse)
+    }
+
+    @Test
+    fun calibrationAckWithPayloadIsNotAcknowledged() = runTest {
+        val gateway = FakeGateway(
+            ack(0x00),
+            register(0xAD, 0),
+            counterResponse(IntArray(11)),
+            ack(0x01)
+        )
+
+        val result = SettingsSessionCoordinator(gateway).applyChanges(
+            listOf(FieldChange(SettingField.CAL_IDLE_CURRENT, 0))
+        )
+
+        assertTrue(result.outcome is WriteSessionOutcome.NotCommitted)
+        assertTrue(result.changes.single().detail is ChangeDetail.MalformedResponse)
+        assertEquals(0, gateway.frameCount(JbdConfigCommands.exitFactoryModeWithCommit()))
+    }
+
     private class FakeGateway(vararg outcomes: Any) : SettingsGateway {
         private val queued = ArrayDeque<Any>(outcomes.toList())
         val frames = mutableListOf<ByteArray>()

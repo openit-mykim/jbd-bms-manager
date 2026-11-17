@@ -31,7 +31,7 @@ object DeviceKeys {
  *
  * [address] is the registry key. [bmsModel] / [firmwareVersion] are learned from the device on
  * the first connection where they could be read and form the identity that writes and restores
- * are checked against (D021): the address alone could be reused by a replaced board.
+ * are checked against (D022): the address alone could be reused by a replaced board.
  */
 data class RegisteredBms(
     val address: String,

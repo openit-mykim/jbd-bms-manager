@@ -138,7 +138,7 @@ Future backups, service history and calibration records are keyed to the registe
 
 ## Current implementation (Phase A–D, issue #24)
 
-Status: implemented in code (D021); hardware validation pending (`PROJECT_STATUS.md` §3, NOT HARDWARE VERIFIED).
+Status: implemented in code (D022); hardware validation pending (`PROJECT_STATUS.md` §3, NOT HARDWARE VERIFIED).
 
 - left app-bar button: no registered device → BLE discovery; otherwise the registered-device sheet
 - sheet rows: signal dot, alias, address, `선택됨` marker, state text and RSSI; `편집` → rename / remove

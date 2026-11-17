@@ -16,7 +16,7 @@ import kotlinx.coroutines.launch
 /**
  * App-wide persistent registry of BMS devices (Phase B) plus the latest short-scan results
  * (Phase C). The selected device is the only one eligible for auto-connect, and the identity
- * that writes, restores, backups and history are scoped to (Phase D, D021).
+ * that writes, restores, backups and history are scoped to (Phase D, D022).
  */
 @Singleton
 class BmsDeviceRegistry @Inject constructor(

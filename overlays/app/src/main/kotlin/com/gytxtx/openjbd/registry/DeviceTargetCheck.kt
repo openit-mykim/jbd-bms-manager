@@ -3,7 +3,7 @@ package com.gytxtx.openjbd.registry
 import com.gytxtx.openjbd.maintenance.DeviceIdentity
 
 /**
- * D021: before any write or restore, the connected BMS must be the BMS the user explicitly
+ * D022: before any write or restore, the connected BMS must be the BMS the user explicitly
  * selected. Every result except [Result.MATCH] is fail-closed: no frame is sent.
  */
 object DeviceTargetCheck {

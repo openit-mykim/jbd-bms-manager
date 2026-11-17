@@ -25,7 +25,7 @@
     <string name="bms_remove_title">Remove %1$s?</string>
     <string name="bms_remove_message">The BMS is disconnected and its trend history on this phone is deleted. Backups saved for it and the maintenance audit log are kept. The BMS itself is not changed.</string>
     <string name="bms_remove_confirm">Remove</string>
-    <!-- Device-scoped data and target identity (Phase D, D021) -->
+    <!-- Device-scoped data and target identity (Phase D, D022) -->
     <string name="history_clear_device_title">Delete this BMS history?</string>
     <string name="history_clear_device_message">The trend chart samples of %1$s stored on this phone will be deleted. This cannot be undone. The BMS itself is not changed.</string>
     <string name="settings_outcome_not_permitted_target">Not written: the connected BMS is not the selected BMS, or its identity changed</string>

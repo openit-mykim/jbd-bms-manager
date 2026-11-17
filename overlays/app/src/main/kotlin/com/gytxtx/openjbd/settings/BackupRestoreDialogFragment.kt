@@ -20,6 +20,7 @@ import androidx.lifecycle.repeatOnLifecycle
 import com.google.android.material.appbar.MaterialToolbar
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import com.google.android.material.textview.MaterialTextView
 import com.gytxtx.openjbd.R
 import com.gytxtx.openjbd.data.BmsRepository
 import com.gytxtx.openjbd.data.BmsUiState
@@ -222,7 +223,7 @@ class BackupRestoreDialogFragment : DialogFragment() {
         }
     }
 
-    /** D021: backups and restores belong to the selected BMS, which must be the connected one. */
+    /** D022: backups and restores belong to the selected BMS, which must be the connected one. */
     private fun targetMatches(): Boolean =
         writeAuthorization.targetCheck() == DeviceTargetCheck.Result.MATCH
 
@@ -493,7 +494,7 @@ class BackupRestoreDialogFragment : DialogFragment() {
     private fun applyRestore() {
         val diff = restoreDiff ?: return
         if (diff.changes.isEmpty() || !writeReady()) return
-        // Re-check right before writing; the repository gate (D020/D021) checks again.
+        // Re-check right before writing; the repository gate (D020/D022) checks again.
         if (!targetMatches() || backupCheck() != DeviceTargetCheck.BackupResult.MATCH) { render(); return }
         val current = currentRawValues()
         val changes = diff.changes.map { FieldChange(it.field, it.newRaw, current) }
@@ -606,7 +607,7 @@ class BackupRestoreDialogFragment : DialogFragment() {
     }
 
     private fun addIssueLine(container: LinearLayout, value: String, isError: Boolean = false) {
-        container.addView(TextView(requireContext()).apply {
+        container.addView(MaterialTextView(requireContext()).apply {
             text = value
             setTextAppearance(R.style.TextAppearance_OpenJbd_ListItemSubtitle)
             if (isError) setTextColor(requireContext().getColor(R.color.error))

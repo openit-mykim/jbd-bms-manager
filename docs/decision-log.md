@@ -202,7 +202,24 @@ Evidence/reason: 2026-11-16 code review (#29). Strict enforcement with the empty
 
 Migration impact: users of v0.1.1 must allow experimental writes once per device on the Control screen before writing. The compatibility table still ships empty; entries are added only from recorded hardware evidence.
 
-## D021 — Multi-BMS registry, device-scoped data and target identity check
+## D021 — BLE response matching fails safe; MOS edits from live FET state
+
+Old decision: settings responses were matched to the active command by register address only; a late frame after a timeout could answer the retry or the next command (for example a read response taken as a write acknowledgement). The frame assembler skipped a whole declared length on a parse failure, frames of a previous connection could complete a command of the next one, a cancelled settings command could still be transmitted, and the MOS screen required a 0xE1 read before editing.
+
+New decision (issue #30):
+
+- After any command timeout the transport quarantines responses for 300 ms (partial buffer and already-assembled frames dropped, notifications discarded, no command started).
+- Every write-type response (factory enter/exit, register write, calibration, MOS) must echo the address, carry status 0 **and an empty payload**. Any other shape is `MalformedResponse`: not retried, never success, never followed by a commit. The empty-payload acknowledgement is the documented community format and is **NOT HARDWARE VERIFIED** (#23); if hardware shows a different ack, writes fail safe until the check is adjusted with evidence.
+- Frames carry a connection generation; a connect/disconnect or timeout invalidates frames assembled earlier, and notifications from a closed GATT are dropped.
+- The assembler resynchronizes byte by byte on a parse failure.
+- A settings command cancelled before its GATT write starts is never transmitted; a started write cannot be recalled.
+- The MOS screen edits against the live basic-info FET state; 0xE1 is not read (the write is already built from live state and never committed).
+
+Evidence/reason: 2026-11-16 review findings; conservative choice because the ack payload format is not yet recorded on target hardware.
+
+Migration impact: none for users; settings safety rules (PROJECT_STATUS section 1) unchanged.
+
+## D022 — Multi-BMS registry, device-scoped data and target identity check
 
 Old decision: D015 defined the single device-management entry point, but the app persisted only the last connected device (OpenJBD `last_device_address/name`); history, backups and write permission were not tied to an explicitly selected BMS.
 

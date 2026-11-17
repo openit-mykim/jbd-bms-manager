@@ -87,7 +87,7 @@ class WriteAuthorization @Inject constructor(
         _version.value += 1
     }
 
-    /** D021: is the connected BMS the registered BMS the user explicitly selected? */
+    /** D022: is the connected BMS the registered BMS the user explicitly selected? */
     fun targetCheck(identity: DeviceIdentity? = currentIdentity()): DeviceTargetCheck.Result =
         DeviceTargetCheck.check(registry.selected, identity)
 

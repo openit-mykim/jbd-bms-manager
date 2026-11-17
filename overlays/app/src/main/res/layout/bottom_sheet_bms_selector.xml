@@ -16,7 +16,7 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="4dp"
         android:text="@string/bms_sheet_subtitle"
-        android:textAppearance="?attr/textAppearanceBody2" />
+        android:textAppearance="@style/TextAppearance.OpenJbd.Body2" />
 
     <androidx.core.widget.NestedScrollView
         android:layout_width="match_parent"

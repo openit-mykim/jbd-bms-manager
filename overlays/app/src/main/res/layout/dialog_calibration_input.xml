@@ -71,5 +71,5 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:paddingTop="@dimen/space_8"
-        android:textAppearance="@style/TextAppearance.MaterialComponents.Caption" />
+        android:textAppearance="@style/TextAppearance.OpenJbd.Caption" />
 </LinearLayout>

@@ -6,4 +6,6 @@
     <string name="bms_sheet_add_device">+ Search for new BMS</string>
     <string name="bms_sheet_status_connected">Connected</string>
     <string name="bms_sheet_status_saved">Registered</string>
+    <string name="about_item_upstream_source">Original project: OpenJBD</string>
+    <string name="about_item_upstream_source_subtitle">MIT License · © 2026 KFACBT</string>
 </resources>

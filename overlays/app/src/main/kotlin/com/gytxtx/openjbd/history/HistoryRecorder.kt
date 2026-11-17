@@ -65,7 +65,7 @@ class HistoryRecorder internal constructor(
             if (basicInfo == null ||
                 !HistoryPolicy.shouldRecord(snapshot.connected, snapshot.basicInfoAtMillis, now)
             ) return
-            // Each sample belongs to the physical BMS it was read from (Phase D, D021).
+            // Each sample belongs to the physical BMS it was read from (Phase D, D022).
             val deviceKey = DeviceKeys.normalize(snapshot.deviceAddress) ?: return
 
             store.append(
