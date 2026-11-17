@@ -236,6 +236,23 @@ Evidence/reason: safety principle of #24 — monitoring state, backups, calibrat
 
 Migration impact: on first start the legacy `last_device_address/name` becomes the first registered and selected BMS. `history.db` v1 → v2 assigns all existing samples to that device; without a legacy device, on any other version change, or if the migration fails, the history table is recreated (disposable cache, no crash). The legacy preference keys keep mirroring the selected device so an older APK installed over this one still reconnects. No BMS write behaviour changes for a single registered device.
 
+## D023 — Provenance by pinned baseline and license notice; no upstream history merge
+
+Old decision: Phase 0 / issue #1 planned to merge OpenJBD's Git history (`--allow-unrelated-histories`) and replace the overlay model with an imported source tree.
+
+New decision: keep the pinned-baseline + overlay model and do not merge upstream history. Provenance is preserved by:
+
+- the pinned upstream repository and commit in `version.properties` (`gytxtx/OpenJBD` @ `7e3e225`), used by every build;
+- the upstream MIT license and copyright (`Copyright (c) 2026 KFACBT`) in `THIRD_PARTY_LICENSES/OpenJBD-LICENSE` and `THIRD_PARTY_NOTICES.md`;
+- the in-app About entry linking to the original project;
+- the `upstream` remote and the sync record in `docs/upstream-sync.md`.
+
+`scripts/bootstrap-upstream.sh` (the unused history-merge helper, which also resolved conflicts with `-X theirs` and could silently replace project files) is removed; it remains in Git history.
+
+Evidence/reason (2026-11-17): MIT requires the copyright and license notice, not Git history. Upstream has had no commits since 2026-08-08 (upstream/main = the pinned commit), so a history merge would add only `git blame` attribution while requiring a rewrite of the build model (overlay script, CI, design/terminology checks, `verify.sh`, docs). Revisit only if upstream becomes active enough that regular merges are cheaper than porting changes into the overlay.
+
+Migration impact: none; builds and releases are unchanged.
+
 ## Change rule
 
 If a future PR changes one of these decisions materially, update this file in the same PR with:

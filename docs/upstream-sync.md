@@ -42,15 +42,9 @@ origin   -> openit-mykim/jbd-bms-manager
 upstream -> gytxtx/OpenJBD
 ```
 
-## Future option: history merge (#1)
+## History merge: not planned (D023)
 
-Not done yet. Issue #1 tracks replacing the overlay model with a provenance-preserving import. The preferred import is a provenance-preserving merge of upstream history rather than manually copying only files.
-
-Because the repositories began independently, the first merge may require unrelated-history handling. Perform the import in a dedicated worktree/branch, preserve this repository's project-control documents, resolve conflicts deliberately, build the result, then merge through a reviewed PR.
-
-Do not perform broad package or architecture refactors in the same PR as the upstream baseline import.
-
-Warning: `scripts/bootstrap-upstream.sh` merges with `-X theirs`, which auto-resolves overlapping content in favor of upstream. Files such as `README.md` and `LICENSE` can silently become upstream's versions without showing up as conflicts, so the script's `--ours` restore loop does not protect them. Review and fix the script (and inspect the staged result) before using it.
+Issue #1 (merging OpenJBD's Git history into this repository) was closed by decision D023 on 2026-11-17. Provenance is kept by the pinned baseline in `version.properties`, the upstream MIT license and copyright in `THIRD_PARTY_LICENSES/OpenJBD-LICENSE`, the in-app link to the original project and the sync record below. Revisit only if upstream becomes active enough that regular merges are cheaper than porting changes into the overlay.
 
 ## Files owned by this project
 
@@ -104,4 +98,5 @@ Maintain a short table here after each upstream sync:
 
 | Date | Upstream commit | Local PR/commit | Notes |
 |---|---|---|---|
-| Initial | `7e3e225a128f6e0d69425b98a2670d8d69594885` | overlay pin (CI) | Initial baseline; history merge pending (#1) |
+| Initial | `7e3e225a128f6e0d69425b98a2670d8d69594885` | overlay pin (CI) | Initial baseline; history merge not planned (D023) |
+| 2026-11-17 | `7e3e225a128f6e0d69425b98a2670d8d69594885` | — | Checked: upstream/main unchanged since 2026-08-08, nothing to sync |

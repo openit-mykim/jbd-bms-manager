@@ -47,7 +47,7 @@ writing the next step is physical BMS validation (#23) per
 `docs/device-validation.md`.
 
 Upstream reference (the build materializes this pinned baseline plus the
-`overlays/` tree; full source-history import remains open as Phase 0, issue #1):
+`overlays/` tree; upstream history is not merged by decision D023):
 
 - repository: `gytxtx/OpenJBD`
 - baseline commit: `7e3e225a128f6e0d69425b98a2670d8d69594885`

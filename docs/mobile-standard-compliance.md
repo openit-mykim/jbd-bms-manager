@@ -11,7 +11,7 @@
 
 | 표준 | 요건 | 상태 | 근거·실측 |
 |---|---|---|---|
-| 0.2·0.3 진실의 원천 | 같은 결정을 두 곳에 적지 않는다 | **준수** | 버전·upstream 고정 커밋을 `version.properties` 한 곳에 둔다. overlay 스크립트, `verify.sh`, `bootstrap-upstream.sh`, 릴리스 워크플로가 모두 이 파일을 읽는다. 릴리스 노트는 `release-notes/<tag>.md`. 간격 보정 규칙은 overlay 스크립트 한 곳에 있다 |
+| 0.2·0.3 진실의 원천 | 같은 결정을 두 곳에 적지 않는다 | **준수** | 버전·upstream 고정 커밋을 `version.properties` 한 곳에 둔다. overlay 스크립트, `verify.sh`, 릴리스 워크플로가 모두 이 파일을 읽는다. 릴리스 노트는 `release-notes/<tag>.md`. 간격 보정 규칙은 overlay 스크립트 한 곳에 있다 |
 | 1·3 Kotlin 네이티브 | Android 코틀린 네이티브 | **준수** | Kotlin + View 기반 |
 | 3.2·5.1 KMP | iOS 착수 시 core를 KMP로 전환 | 해당 없음(현재) | iOS 계획이 없다. 프로토콜·검증·세션 로직(`protocol/`, `settings/` 도메인, `maintenance/WritePolicy`)은 Android API 없이 작성되어 전환 비용이 낮다 |
 | 5.2 실측 검증 | 빌드 성공만으로 완료 처리하지 않는다 | **준수** | 쓰기는 다시 읽어 확인하고 감사 로그를 남긴다. BLE·권한 경로는 실기기 검증 항목(#23) |
