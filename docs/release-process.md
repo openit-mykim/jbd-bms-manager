@@ -4,8 +4,8 @@
 
 Releases use official semantic versions only. The current line is `0.1.x`.
 
-- Current release: `v0.1.3` (`versionCode = 18`), the first release signed with the fixed release key.
-- Next fix release: `v0.1.4` (`versionCode = 19`), and so on.
+- Current release: `v0.1.4` (`versionCode = 19`). `v0.1.3` was the first release signed with the fixed release key.
+- Next fix release: `v0.1.5` (`versionCode = 20`), and so on.
 - Do not reintroduce `alpha`, `beta` or numbered preview suffixes in version names, workflow tags, APK names or release notes.
 - `versionCode` must increase on every published release. Never reuse a tag or overwrite an existing official release.
 - If a release must be corrected after publication, publish the next patch version instead of moving the old tag.
