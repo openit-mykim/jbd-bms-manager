@@ -163,7 +163,7 @@ All standalone Activity toolbars must also receive status-bar insets. Both portr
 ## Localization
 
 - Korean and English: complete.
-- Simplified Chinese (from upstream OpenJBD): complete for the product screens since v0.1.2 (machine-assisted, native review pending in #31); `scripts/check-design-tokens.py` fails the build on any missing Korean or Chinese string.
+- Simplified Chinese (from upstream OpenJBD): complete for the product screens since v0.1.2 (terminology checked against upstream zh-rCN and JBD register names, `docs/terminology.md`); `scripts/check-design-tokens.py` fails the build on any missing Korean or Chinese string.
 
 ## Safety boundaries
 

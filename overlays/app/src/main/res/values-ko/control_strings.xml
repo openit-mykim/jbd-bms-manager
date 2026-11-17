@@ -9,7 +9,7 @@
     <string name="control_lock_again">다시 잠금</string>
     <string name="control_target_bms">대상 BMS</string>
     <string name="control_sections_title">유지보수 항목</string>
-    <string name="control_section_calibration">캘리브레이션</string>
+    <string name="control_section_calibration">보정</string>
     <string name="control_section_protection">보호 설정</string>
     <string name="control_section_balance">밸런스 설정</string>
     <string name="control_section_capacity">용량 관리</string>
@@ -17,7 +17,6 @@
     <string name="control_section_mos">MOS 제어</string>
     <string name="control_section_backup_restore">백업 및 복원</string>
     <string name="control_section_diagnostics">진단</string>
-    <string name="control_planned">준비 중</string>
     <string name="control_future_notice">쓰기·보정 기능은 이후 업데이트에서 단계적으로 제공됩니다.</string>
     <string name="control_diagnostics_title">진단 정보</string>
     <string name="control_diagnostics_connection_state">연결 상태</string>

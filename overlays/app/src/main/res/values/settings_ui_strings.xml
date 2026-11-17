@@ -1,6 +1,5 @@
 <resources>
     <string name="control_settings_available">Read · edit</string>
-    <string name="control_remaining_planned_notice">Calibration, MOS control, and backup/restore will be delivered incrementally in later updates.</string>
 
     <string name="settings_close">Close</string>
     <string name="settings_refresh">Refresh</string>
@@ -79,11 +78,11 @@
     <string name="settings_validation_cell_order">Cell under-voltage protection must be lower than cell over-voltage protection.</string>
     <string name="settings_validation_pack_order">Pack under-voltage protection must be lower than pack over-voltage protection.</string>
     <string name="settings_validation_chg_ot_relation">Charge over-temperature release must be lower than charge over-temperature protection.</string>
-    <string name="settings_validation_chg_ut_relation">Charge under-temperature release must be higher than charge under-temperature protection.</string>
-    <string name="settings_validation_chg_temp_order">Charge under-temperature protection must be lower than charge over-temperature protection.</string>
+    <string name="settings_validation_chg_ut_relation">Charge low-temperature release must be higher than charge low-temperature protection.</string>
+    <string name="settings_validation_chg_temp_order">Charge low-temperature protection must be lower than charge over-temperature protection.</string>
     <string name="settings_validation_dsg_ot_relation">Discharge over-temperature release must be lower than discharge over-temperature protection.</string>
-    <string name="settings_validation_dsg_ut_relation">Discharge under-temperature release must be higher than discharge under-temperature protection.</string>
-    <string name="settings_validation_dsg_temp_order">Discharge under-temperature protection must be lower than discharge over-temperature protection.</string>
+    <string name="settings_validation_dsg_ut_relation">Discharge low-temperature release must be higher than discharge low-temperature protection.</string>
+    <string name="settings_validation_dsg_temp_order">Discharge low-temperature protection must be lower than discharge over-temperature protection.</string>
     <string name="settings_outcome_applied">Command applied — confirm with the live state</string>
     <string name="settings_detail_acknowledged">Acknowledged by the BMS</string>
     <string name="mos_validation_live_unavailable">Live MOSFET state is not available yet. Wait for a basic-info update and try again.</string>
@@ -126,15 +125,15 @@
     <string name="settings_field_povp_release">Pack over-voltage release</string>
     <string name="settings_field_puvp">Pack under-voltage protection</string>
     <string name="settings_field_puvp_release">Pack under-voltage release</string>
-    <string name="settings_field_chg_overcurrent">Charge over-current</string>
-    <string name="settings_field_dsg_overcurrent">Discharge over-current</string>
-    <string name="settings_field_chg_over_temp">Charge over-temperature</string>
+    <string name="settings_field_chg_overcurrent">Charge over-current protection</string>
+    <string name="settings_field_dsg_overcurrent">Discharge over-current protection</string>
+    <string name="settings_field_chg_over_temp">Charge over-temperature protection</string>
     <string name="settings_field_chg_over_temp_release">Charge over-temperature release</string>
-    <string name="settings_field_chg_under_temp">Charge under-temperature</string>
-    <string name="settings_field_chg_under_temp_release">Charge under-temperature release</string>
-    <string name="settings_field_dsg_over_temp">Discharge over-temperature</string>
+    <string name="settings_field_chg_under_temp">Charge low-temperature protection</string>
+    <string name="settings_field_chg_under_temp_release">Charge low-temperature release</string>
+    <string name="settings_field_dsg_over_temp">Discharge over-temperature protection</string>
     <string name="settings_field_dsg_over_temp_release">Discharge over-temperature release</string>
-    <string name="settings_field_dsg_under_temp">Discharge under-temperature</string>
-    <string name="settings_field_dsg_under_temp_release">Discharge under-temperature release</string>
+    <string name="settings_field_dsg_under_temp">Discharge low-temperature protection</string>
+    <string name="settings_field_dsg_under_temp_release">Discharge low-temperature release</string>
     <string name="settings_field_design_capacity">Design capacity</string>
 </resources>

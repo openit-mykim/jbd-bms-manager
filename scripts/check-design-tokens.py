@@ -119,6 +119,49 @@ def check_typography(res: Path, dimen_values: dict[str, str], problems: list[str
                 problems.append(f"{path.relative_to(res.parent)}: text appearance {ref} has no typography step")
 
 
+# Product terminology (docs/terminology.md). Each locale must use one term per concept; the
+# canonical terms follow upstream OpenJBD's zh-rCN strings and JBD's protocol documentation.
+FORBIDDEN_TERMS = {
+    "values-zh-rCN": {
+        "电芯": "单体 (cell)",
+        "出厂模式": "工厂模式 (factory mode; 出厂模式 reads as factory reset)",
+        "总体过压": "总压过压 (pack over-voltage)",
+        "总体欠压": "总压欠压 (pack under-voltage)",
+        "平衡": "均衡 (balance)",
+        "标定": "校准 (calibration)",
+    },
+    "values-ko": {
+        "캘리브레이션": "보정 (calibration)",
+    },
+    "values": {
+        "under-temperature": "low-temperature",
+    },
+}
+PLACEHOLDER = re.compile(r"%(?:\d+\$)?[-#+ 0,(]*\d*(?:\.\d+)?[sdfxXc%]")
+
+
+def string_texts(folder: Path) -> dict[str, str]:
+    texts: dict[str, str] = {}
+    for path in folder.glob("*.xml"):
+        for name, text in re.findall(r'<string name="([^"]+)"[^>]*>(.*?)</string>', path.read_text("utf-8"), re.S):
+            texts[name] = text
+    return texts
+
+
+def check_terminology(res: Path, problems: list[str]) -> None:
+    for folder, terms in FORBIDDEN_TERMS.items():
+        for name, text in string_texts(res / folder).items():
+            for term, canonical in terms.items():
+                if term in text:
+                    problems.append(f"{folder}/{name}: uses '{term}', use {canonical}")
+    # Format arguments must match the English source, or the string crashes at runtime.
+    base = string_texts(res / "values")
+    for folder in TRANSLATIONS:
+        for name, text in string_texts(res / folder).items():
+            if name in base and sorted(PLACEHOLDER.findall(text)) != sorted(PLACEHOLDER.findall(base[name])):
+                problems.append(f"{folder}/{name}: format arguments differ from values/{name}")
+
+
 def strings(folder: Path) -> dict[str, bool]:
     found: dict[str, bool] = {}
     for path in folder.glob("*.xml"):
@@ -175,6 +218,8 @@ def main() -> int:
                    if translatable and not LOCALE_NEUTRAL.match(k) and k not in translated]
         if missing:
             problems.append(f"{folder}: {len(missing)} untranslated strings, e.g. {', '.join(missing[:5])}")
+
+    check_terminology(res, problems)
 
     for problem in problems:
         print(f"FAIL {problem}")

@@ -660,15 +660,6 @@
                     android:textAppearance="@style/TextAppearance.OpenJbd.EmptyBody" />
             </LinearLayout>
 
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="@dimen/space_16"
-                android:layout_marginTop="@dimen/space_16"
-                android:layout_marginEnd="@dimen/space_16"
-                android:padding="@dimen/space_12"
-                android:text="@string/control_remaining_planned_notice"
-                android:textAppearance="@style/TextAppearance.OpenJbd.EmptyBody" />
         </LinearLayout>
     </LinearLayout>
 </ScrollView>
