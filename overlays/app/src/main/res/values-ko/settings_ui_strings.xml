@@ -1,6 +1,5 @@
 <resources>
     <string name="control_settings_available">조회·수정</string>
-    <string name="control_remaining_planned_notice">캘리브레이션·MOS 제어·백업 및 복원은 이후 업데이트에서 단계적으로 제공됩니다.</string>
 
     <string name="settings_close">닫기</string>
     <string name="settings_refresh">새로고침</string>
@@ -126,15 +125,15 @@
     <string name="settings_field_povp_release">팩 과전압 해제</string>
     <string name="settings_field_puvp">팩 저전압 보호</string>
     <string name="settings_field_puvp_release">팩 저전압 해제</string>
-    <string name="settings_field_chg_overcurrent">충전 과전류</string>
-    <string name="settings_field_dsg_overcurrent">방전 과전류</string>
-    <string name="settings_field_chg_over_temp">충전 과온</string>
+    <string name="settings_field_chg_overcurrent">충전 과전류 보호</string>
+    <string name="settings_field_dsg_overcurrent">방전 과전류 보호</string>
+    <string name="settings_field_chg_over_temp">충전 과온 보호</string>
     <string name="settings_field_chg_over_temp_release">충전 과온 해제</string>
-    <string name="settings_field_chg_under_temp">충전 저온</string>
+    <string name="settings_field_chg_under_temp">충전 저온 보호</string>
     <string name="settings_field_chg_under_temp_release">충전 저온 해제</string>
-    <string name="settings_field_dsg_over_temp">방전 과온</string>
+    <string name="settings_field_dsg_over_temp">방전 과온 보호</string>
     <string name="settings_field_dsg_over_temp_release">방전 과온 해제</string>
-    <string name="settings_field_dsg_under_temp">방전 저온</string>
+    <string name="settings_field_dsg_under_temp">방전 저온 보호</string>
     <string name="settings_field_dsg_under_temp_release">방전 저온 해제</string>
     <string name="settings_field_design_capacity">설계 용량</string>
 </resources>
