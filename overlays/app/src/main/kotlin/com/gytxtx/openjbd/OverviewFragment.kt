@@ -105,19 +105,13 @@ class OverviewFragment : Fragment() {
         cellDeltaText = view.findViewById(R.id.txt_cell_delta)
         cellAverageText = view.findViewById(R.id.txt_cell_average)
         clearDeviceData()
-    }
-
-    override fun onStart() {
-        super.onStart()
-        lifecycleScope.launch {
-            repeatOnLifecycle(androidx.lifecycle.Lifecycle.State.STARTED) {
+        // One collector per view: launching repeatOnLifecycle from onStart stacked a new
+        // collector on every start (lint RepeatOnLifecycleWrongUsage).
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewLifecycleOwner.repeatOnLifecycle(androidx.lifecycle.Lifecycle.State.STARTED) {
                 repository.uiState.collect { renderState(it) }
             }
         }
-    }
-
-    override fun onStop() {
-        super.onStop()
     }
 
     private fun renderState(snapshot: BmsUiState) {

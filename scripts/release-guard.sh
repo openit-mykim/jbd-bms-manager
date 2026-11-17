@@ -2,7 +2,8 @@
 # Release guard (mobile dev standard 7): inspect the built APK before it is published.
 #   1. hard-coded credentials (tokens, cloud keys, private keys)  -> always blocking
 #   2. debug signing certificate                                -> blocking unless
-#      --allow-debug-signing is given (documented exception until issue #9 is decided)
+#      --allow-debug-signing is given (only for unpublished check builds that did not
+#      receive the release keystore secret; see docs/release-process.md "Signing")
 # Usage: bash scripts/release-guard.sh <apk> [--allow-debug-signing]
 # Prints a guard log on stdout; exit 1 blocks the release.
 set -euo pipefail
@@ -40,7 +41,7 @@ else
     echo "BLOCK APK signature does not verify"; status=1
   elif grep -q 'CN=Android Debug' <<<"$certs"; then
     if [[ "$allow_debug" == "--allow-debug-signing" ]]; then
-      echo "WARN  debug-signed APK (allowed exception until production signing is decided, issue #9)"
+      echo "WARN  debug-signed APK (allowed only for an unpublished check build)"
     else
       echo "BLOCK debug-signed APK"; status=1
     fi
