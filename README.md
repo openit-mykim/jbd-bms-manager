@@ -60,7 +60,7 @@ Core monitor capabilities include:
 
 Control is the top-level entry to the technician workspace and is locked by default.
 
-Implemented service functions (`v0.1.2`):
+Implemented service functions (`v0.1.3`):
 
 - Settings read / write: balance, protection, temperature and capacity sections (balance delta in 5 mV steps)
 - Current calibration: idle (zero), charge and discharge
@@ -109,7 +109,7 @@ See `docs/upstream-sync.md`, `scripts/bootstrap-upstream.sh`, `scripts/apply-pro
 
 ## Current project state
 
-The repository is in an early executable release state (`v0.1.2`). Current work focuses on:
+The repository is in an early executable release state (`v0.1.3`). Current work focuses on:
 
 1. OpenJBD monitoring baseline.
 2. Android 16 edge-to-edge / system-bar compatibility.

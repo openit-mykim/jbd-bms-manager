@@ -290,6 +290,12 @@ def main() -> None:
     manifest = root / "app" / "src" / "main" / "AndroidManifest.xml"
     replace_required(manifest, 'android:icon="@mipmap/ic_launcher"', 'android:icon="@drawable/jbd_app_icon"')
     replace_required(manifest, 'android:roundIcon="@mipmap/ic_launcher_round"', 'android:roundIcon="@drawable/jbd_app_icon"')
+    # The About header showed upstream's placeholder launcher mipmap instead of the product icon.
+    replace_required(
+        root / "app" / "src" / "main" / "res" / "layout" / "activity_about.xml",
+        'android:src="@mipmap/ic_launcher"',
+        'android:src="@drawable/jbd_app_icon"',
+    )
 
     drawable_dir = root / "app" / "src" / "main" / "res" / "drawable"
     drawable_dir.mkdir(parents=True, exist_ok=True)
