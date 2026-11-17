@@ -42,7 +42,13 @@ sealed interface WriteDecision {
         NO_DEVICE_IDENTITY,
 
         /** Unknown variant without consent: read-only by default (D005). */
-        NOT_CONSENTED
+        NOT_CONSENTED,
+
+        /**
+         * The connected BMS is not the registered BMS the user selected, or its identity differs
+         * from the registered one (D021). Fail closed: no frame is sent.
+         */
+        TARGET_MISMATCH
     }
 
     data class Allowed(val basis: Basis, val identity: DeviceIdentity) : WriteDecision
@@ -52,7 +58,8 @@ sealed interface WriteDecision {
 /**
  * D005 write policy: unknown devices are read-only unless (a) they match a verified local
  * compatibility profile or (b) a technician gave explicit, device-bound experimental consent.
- * Writes additionally require Maintenance Mode to be unlocked for that same device.
+ * Writes additionally require Maintenance Mode to be unlocked for that same device, and (D021)
+ * the connected device must be the explicitly selected registered BMS.
  */
 object WritePolicy {
     fun decide(
@@ -60,13 +67,17 @@ object WritePolicy {
         unlocked: Boolean,
         identity: DeviceIdentity?,
         verifiedProfile: Boolean,
-        consented: Boolean
+        consented: Boolean,
+        targetMatches: Boolean
     ): WriteDecision {
         if (identity == null) {
             return WriteDecision.Denied(
                 if (unlocked) WriteDecision.DenyReason.NO_DEVICE_IDENTITY
                 else WriteDecision.DenyReason.LOCKED
             )
+        }
+        if (!targetMatches) {
+            return WriteDecision.Denied(WriteDecision.DenyReason.TARGET_MISMATCH)
         }
         if (!unlocked || unlockedForAddress != identity.address) {
             return WriteDecision.Denied(WriteDecision.DenyReason.LOCKED)

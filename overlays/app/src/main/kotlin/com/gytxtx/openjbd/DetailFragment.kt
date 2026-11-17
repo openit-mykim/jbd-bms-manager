@@ -37,6 +37,7 @@ import kotlin.math.roundToInt
 class DetailFragment : Fragment() {
     @Inject lateinit var repository: BmsRepository
     @Inject lateinit var historyStore: HistoryStore
+    @Inject lateinit var deviceRegistry: com.gytxtx.openjbd.registry.BmsDeviceRegistry
 
     private lateinit var placeholder: LinearLayout
     private lateinit var content: LinearLayout
@@ -47,6 +48,7 @@ class DetailFragment : Fragment() {
     private var selectedHistoryRange = HistoryRange.LAST_24H
     private var selectedHistoryMetric = HistoryMetric.SOC_PERCENT
     private var historyQueryJob: Job? = null
+    private var historyDeviceKey: String? = null
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -68,7 +70,19 @@ class DetailFragment : Fragment() {
             DetailSectionType.REFRESH to view.findViewById(R.id.list_detail_refresh)
         )
         configureHistoryControls(view)
+        historyDeviceKey = deviceRegistry.selected?.address
         refreshHistory()
+        // History belongs to the selected BMS (Phase D): switching devices switches the chart.
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewLifecycleOwner.repeatOnLifecycle(androidx.lifecycle.Lifecycle.State.STARTED) {
+                deviceRegistry.state.collect { registry ->
+                    if (registry.selectedAddress != historyDeviceKey) {
+                        historyDeviceKey = registry.selectedAddress
+                        refreshHistory()
+                    }
+                }
+            }
+        }
         renderState(repository.getSnapshot())
         viewLifecycleOwner.lifecycleScope.launch {
             viewLifecycleOwner.repeatOnLifecycle(androidx.lifecycle.Lifecycle.State.STARTED) {
@@ -109,12 +123,18 @@ class DetailFragment : Fragment() {
         }
         view.findViewById<View>(R.id.history_clear_button).setOnClickListener {
             com.google.android.material.dialog.MaterialAlertDialogBuilder(requireContext())
-                .setTitle(R.string.history_clear_title)
-                .setMessage(R.string.history_clear_message)
+                .setTitle(R.string.history_clear_device_title)
+                .setMessage(
+                    getString(
+                        R.string.history_clear_device_message,
+                        deviceRegistry.selected?.displayName ?: getString(R.string.bms_selector_disconnected)
+                    )
+                )
                 .setNegativeButton(R.string.history_clear_cancel, null)
                 .setPositiveButton(R.string.history_clear_confirm) { _, _ ->
+                    val key = historyDeviceKey ?: return@setPositiveButton
                     viewLifecycleOwner.lifecycleScope.launch {
-                        historyStore.clear()
+                        historyStore.clearDevice(key)
                         refreshHistory()
                     }
                 }
@@ -126,10 +146,12 @@ class DetailFragment : Fragment() {
         historyQueryJob?.cancel()
         val range = selectedHistoryRange
         val metric = selectedHistoryMetric
+        val deviceKey = historyDeviceKey
         historyQueryJob = viewLifecycleOwner.lifecycleScope.launch {
             val nowMillis = System.currentTimeMillis()
             val result = withContext(Dispatchers.IO) {
-                val samples = historyStore.query(range.startMillis(nowMillis), nowMillis)
+                val samples = if (deviceKey == null) emptyList()
+                else historyStore.query(deviceKey, range.startMillis(nowMillis), nowMillis)
                 val buckets = HistoryPolicy.bucketize(
                     samples = samples,
                     valueOf = { sample -> valueOf(metric, sample) },

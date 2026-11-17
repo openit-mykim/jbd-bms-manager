@@ -115,6 +115,15 @@
                         android:layout_height="wrap_content"
                         android:paddingTop="@dimen/space_4"
                         android:textAppearance="@style/TextAppearance.OpenJbd.ListItemSubtitle" />
+
+                    <TextView
+                        android:id="@+id/control_target_status"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:paddingTop="@dimen/space_4"
+                        android:textAppearance="@style/TextAppearance.OpenJbd.ListItemSubtitle"
+                        android:textColor="@color/bms_signal_failed"
+                        android:visibility="gone" />
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 

@@ -24,6 +24,11 @@ import com.gytxtx.openjbd.R
 import com.gytxtx.openjbd.data.BmsRepository
 import com.gytxtx.openjbd.data.BmsUiState
 import com.gytxtx.openjbd.maintenance.ValidationResult
+import com.gytxtx.openjbd.maintenance.WriteAuthorization
+import com.gytxtx.openjbd.registry.BmsDeviceRegistry
+import com.gytxtx.openjbd.registry.DeviceBackupStore
+import com.gytxtx.openjbd.registry.DeviceTargetCheck
+import java.io.File
 import dagger.hilt.android.AndroidEntryPoint
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -36,6 +41,9 @@ import kotlinx.coroutines.launch
 class BackupRestoreDialogFragment : DialogFragment() {
     @Inject lateinit var repository: SettingsRepository
     @Inject lateinit var bmsRepository: BmsRepository
+    @Inject lateinit var deviceRegistry: BmsDeviceRegistry
+    @Inject lateinit var writeAuthorization: WriteAuthorization
+    private val backupStore by lazy { DeviceBackupStore(File(requireContext().filesDir, BACKUP_FOLDER)) }
 
     private val createDocument = registerForActivityResult(
         ActivityResultContracts.CreateDocument("application/json")
@@ -60,6 +68,9 @@ class BackupRestoreDialogFragment : DialogFragment() {
     private lateinit var resultOutcome: TextView
     private lateinit var resultDetails: LinearLayout
     private lateinit var applyButton: MaterialButton
+    private lateinit var targetText: TextView
+    private lateinit var openSavedButton: MaterialButton
+    private lateinit var savedSummary: TextView
 
     private var latestState = SettingsState()
     private var latestBmsState: BmsUiState? = null
@@ -105,6 +116,10 @@ class BackupRestoreDialogFragment : DialogFragment() {
         resultOutcome = view.findViewById(R.id.backup_result_outcome)
         resultDetails = view.findViewById(R.id.backup_result_details)
         applyButton = view.findViewById(R.id.backup_apply_button)
+        targetText = view.findViewById(R.id.backup_target)
+        openSavedButton = view.findViewById(R.id.backup_open_saved_button)
+        savedSummary = view.findViewById(R.id.backup_saved_summary)
+        openSavedButton.setOnClickListener { openLatestSavedBackup() }
 
         toolbar.setNavigationOnClickListener { dismiss() }
         refreshButton.setOnClickListener { readConfiguration(clearImported = true) }
@@ -127,7 +142,7 @@ class BackupRestoreDialogFragment : DialogFragment() {
         }
         viewLifecycleOwner.lifecycleScope.launch {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
-                bmsRepository.uiState.collect { latestBmsState = it }
+                bmsRepository.uiState.collect { latestBmsState = it; render() }
             }
         }
         readConfiguration(clearImported = false)
@@ -207,8 +222,38 @@ class BackupRestoreDialogFragment : DialogFragment() {
         }
     }
 
+    /** D021: backups and restores belong to the selected BMS, which must be the connected one. */
+    private fun targetMatches(): Boolean =
+        writeAuthorization.targetCheck() == DeviceTargetCheck.Result.MATCH
+
+    private fun backupCheck(): DeviceTargetCheck.BackupResult? {
+        val device = parsedBackup?.backup?.device ?: return null
+        return DeviceTargetCheck.checkBackup(deviceRegistry.selected, device.address, device.model)
+    }
+
+    private fun openLatestSavedBackup() {
+        val key = deviceRegistry.selected?.address ?: return
+        try {
+            val saved = backupStore.latest(key) ?: return
+            parsedBackup = BackupFormat.parse(saved.file.readText(Charsets.UTF_8))
+            lastResult = null
+            rebuildDiff()
+            render()
+        } catch (_: Exception) {
+            parsedBackup = null
+            restoreDiff = null
+            showOperationError(R.string.backup_import_failed)
+        }
+    }
+
     private fun launchExport() {
-        pendingExportJson = BackupFormat.serialize(buildBackup())
+        if (!targetMatches()) return
+        val json = BackupFormat.serialize(buildBackup())
+        // Phase D: every export is also kept on the phone under the selected BMS.
+        deviceRegistry.selected?.let { device ->
+            runCatching { backupStore.save(device.address, json, System.currentTimeMillis()) }
+        }
+        pendingExportJson = json
         val filename = SimpleDateFormat(BACKUP_FILENAME_PATTERN, Locale.US).format(Date())
         createDocument.launch("jbd-bms-backup-$filename.json")
     }
@@ -230,7 +275,7 @@ class BackupRestoreDialogFragment : DialogFragment() {
             exportedAtUtc = utcTimestamp(System.currentTimeMillis()),
             appVersion = appVersion(),
             device = BackupDeviceIdentity(
-                name = snapshot.deviceName.orEmpty(),
+                name = deviceRegistry.selected?.displayName ?: snapshot.deviceName.orEmpty(),
                 address = snapshot.deviceAddress.orEmpty(),
                 serial = deviceInfo?.serialNumber?.takeIf(String::isNotBlank),
                 model = deviceInfo?.bmsModel?.takeIf(String::isNotBlank)
@@ -291,7 +336,16 @@ class BackupRestoreDialogFragment : DialogFragment() {
             BackupFormat.configurationFields.size
         )
         readNotice.text = restoreAvailabilityNotice(fresh)
-        exportButton.isEnabled = fresh && !applying
+        val selected = deviceRegistry.selected
+        targetText.text = selected?.let { getString(R.string.backup_target, it.displayName, it.address) }
+            ?: getString(R.string.backup_target_none)
+        val targetOk = targetMatches()
+        exportButton.isEnabled = fresh && !applying && targetOk
+        val saved = selected?.let { device -> runCatching { backupStore.list(device.address) }.getOrDefault(emptyList()) }.orEmpty()
+        savedSummary.text = saved.firstOrNull()?.let {
+            getString(R.string.backup_saved_summary, saved.size, localTimestamp(it.savedAtMillis))
+        } ?: getString(R.string.backup_saved_none)
+        openSavedButton.isEnabled = saved.isNotEmpty() && !applying
         lastExported.text = lastExportedAt?.let {
             getString(R.string.backup_last_exported, localTimestamp(it))
         } ?: getString(R.string.backup_last_exported_never)
@@ -314,7 +368,8 @@ class BackupRestoreDialogFragment : DialogFragment() {
             it.kind == BackupIssueKind.UNSUPPORTED_FORMAT
         }
         applyButton.isEnabled = restoreDiff?.changes?.isNotEmpty() == true &&
-            backup != null && !unsupported && writeReady() && !applying
+            backup != null && !unsupported && writeReady() && !applying &&
+            targetOk && backupCheck() == DeviceTargetCheck.BackupResult.MATCH
     }
 
     private fun restoreAvailabilityNotice(fresh: Boolean): String = when {
@@ -341,12 +396,32 @@ class BackupRestoreDialogFragment : DialogFragment() {
                 isError = true
             )
         }
+        if (!latestState.notConnected) {
+            targetIssueRes()?.let { addIssueLine(issuesList, getString(it), isError = true) }
+        }
+        backupIssueRes()?.let { addIssueLine(issuesList, getString(it), isError = true) }
         parsedBackup?.let { parsed ->
             (restoreDiff?.issues ?: parsed.issues).forEach { issue ->
                 addIssueLine(issuesList, issueText(issue), isError = true)
             }
         }
         issuesList.visibility = if (issuesList.childCount == 0) View.GONE else View.VISIBLE
+    }
+
+    private fun targetIssueRes(): Int? = when (writeAuthorization.targetCheck()) {
+        DeviceTargetCheck.Result.MATCH, DeviceTargetCheck.Result.IDENTITY_UNREAD -> null
+        DeviceTargetCheck.Result.NO_SELECTION -> R.string.control_target_no_selection
+        DeviceTargetCheck.Result.ADDRESS_MISMATCH -> R.string.control_target_address_mismatch
+        DeviceTargetCheck.Result.MODEL_UNREAD -> R.string.control_target_model_unread
+        DeviceTargetCheck.Result.MODEL_MISMATCH -> R.string.control_target_model_mismatch
+    }
+
+    private fun backupIssueRes(): Int? = when (backupCheck()) {
+        null, DeviceTargetCheck.BackupResult.MATCH -> null
+        DeviceTargetCheck.BackupResult.NO_SELECTION -> R.string.control_target_no_selection
+        DeviceTargetCheck.BackupResult.NO_BACKUP_ADDRESS -> R.string.backup_issue_no_device_address
+        DeviceTargetCheck.BackupResult.ADDRESS_MISMATCH -> R.string.backup_issue_other_device
+        DeviceTargetCheck.BackupResult.MODEL_MISMATCH -> R.string.backup_issue_other_model
     }
 
     private fun issueText(issue: BackupIssue): String {
@@ -393,6 +468,8 @@ class BackupRestoreDialogFragment : DialogFragment() {
     private fun showRestoreConfirmation() {
         val changes = restoreDiff?.changes.orEmpty()
         if (changes.isEmpty() || !writeReady() || applying) return
+        if (!targetMatches() || backupCheck() != DeviceTargetCheck.BackupResult.MATCH) return
+        val selected = deviceRegistry.selected ?: return
         val summaries = changes.joinToString("\n") { change ->
             SettingsDisplay.buildChangeSummary(
                 change.field,
@@ -401,7 +478,8 @@ class BackupRestoreDialogFragment : DialogFragment() {
                 ::getString
             )
         }
-        val message = summaries + "\n\n" + getString(R.string.settings_confirm_warning) +
+        val message = getString(R.string.write_confirm_target, selected.displayName, selected.address) +
+            "\n\n" + summaries + "\n\n" + getString(R.string.settings_confirm_warning) +
             "\n\n" + getString(R.string.settings_confirm_rule) +
             "\n\n" + getString(R.string.backup_restore_bulk_warning)
         MaterialAlertDialogBuilder(requireContext())
@@ -415,6 +493,8 @@ class BackupRestoreDialogFragment : DialogFragment() {
     private fun applyRestore() {
         val diff = restoreDiff ?: return
         if (diff.changes.isEmpty() || !writeReady()) return
+        // Re-check right before writing; the repository gate (D020/D021) checks again.
+        if (!targetMatches() || backupCheck() != DeviceTargetCheck.BackupResult.MATCH) { render(); return }
         val current = currentRawValues()
         val changes = diff.changes.map { FieldChange(it.field, it.newRaw, current) }
         applying = true
@@ -569,5 +649,6 @@ class BackupRestoreDialogFragment : DialogFragment() {
     private companion object {
         const val BACKUP_FILENAME_PATTERN = "yyyyMMdd-HHmm"
         const val UTC_PATTERN = "yyyy-MM-dd'T'HH:mm:ss'Z'"
+        const val BACKUP_FOLDER = "backups"
     }
 }

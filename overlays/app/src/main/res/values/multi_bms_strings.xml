@@ -1,0 +1,46 @@
+<resources>
+    <!-- Registered-device sheet (docs/multi-bms-design.md Phase B/C) -->
+    <string name="bms_scan_idle">Signal not checked yet.</string>
+    <string name="bms_scan_action">Check signal</string>
+    <string name="bms_scan_running">Checking nearby BMS signals…</string>
+    <string name="bms_scan_failed">Signal check failed. Try again.</string>
+    <string name="bms_scan_done">Signal checked just now.</string>
+    <string name="bms_scan_permission_required">Bluetooth scan permission is needed. Grant it from + Search for new BMS.</string>
+    <string name="bms_row_edit">Edit</string>
+    <string name="bms_row_edit_description">Rename or remove %1$s</string>
+    <string name="bms_row_selected">Selected</string>
+    <string name="bms_signal_connected">Connected</string>
+    <string name="bms_signal_connecting">Connecting</string>
+    <string name="bms_signal_seen">In range</string>
+    <string name="bms_signal_not_seen">Not seen</string>
+    <string name="bms_signal_failed">Connection failed</string>
+    <string name="bms_signal_rssi">%1$d dBm</string>
+    <string name="bms_action_rename">Rename</string>
+    <string name="bms_action_remove">Remove</string>
+    <string name="bms_rename_title">BMS name</string>
+    <string name="bms_rename_message">Advertised name: %1$s. Leave empty to use it.</string>
+    <string name="bms_rename_confirm">Save</string>
+    <string name="bms_rename_rejected">The name is too long (32 characters at most).</string>
+    <string name="bms_alias_hint">e.g. Commuter 48V</string>
+    <string name="bms_remove_title">Remove %1$s?</string>
+    <string name="bms_remove_message">The BMS is disconnected and its trend history on this phone is deleted. Backups saved for it and the maintenance audit log are kept. The BMS itself is not changed.</string>
+    <string name="bms_remove_confirm">Remove</string>
+    <!-- Device-scoped data and target identity (Phase D, D021) -->
+    <string name="history_clear_device_title">Delete this BMS history?</string>
+    <string name="history_clear_device_message">The trend chart samples of %1$s stored on this phone will be deleted. This cannot be undone. The BMS itself is not changed.</string>
+    <string name="settings_outcome_not_permitted_target">Not written: the connected BMS is not the selected BMS, or its identity changed</string>
+    <string name="control_target_no_selection">No BMS is selected. Select a registered BMS before writing.</string>
+    <string name="control_target_address_mismatch">The connected BMS is not the selected BMS. Writes and restores are blocked.</string>
+    <string name="control_target_model_unread">Waiting for the BMS model to be read. Writes and restores are blocked until it matches the registered BMS.</string>
+    <string name="control_target_model_mismatch">This BMS reports a different model than the registered one (replaced board?). Writes and restores are blocked. Remove and register it again if this is intended.</string>
+    <string name="control_target_address_records">%1$s · %2$d service records</string>
+    <string name="write_confirm_target">Target BMS: %1$s (%2$s)</string>
+    <string name="backup_target">Target BMS: %1$s (%2$s)</string>
+    <string name="backup_target_none">No BMS is selected.</string>
+    <string name="backup_open_saved">Open latest backup saved for this BMS</string>
+    <string name="backup_saved_summary">%1$d backups saved for this BMS · latest %2$s</string>
+    <string name="backup_saved_none">No backup saved for this BMS yet.</string>
+    <string name="backup_issue_no_device_address">The backup does not name its BMS. It cannot be restored.</string>
+    <string name="backup_issue_other_device">This backup belongs to another BMS. It can only be restored onto the BMS it was exported from.</string>
+    <string name="backup_issue_other_model">The backup model differs from the registered model of this BMS. Restore is blocked.</string>
+</resources>

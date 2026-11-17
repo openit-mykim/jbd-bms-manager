@@ -2,6 +2,7 @@ package com.gytxtx.openjbd.history
 
 import android.util.Log
 import com.gytxtx.openjbd.data.BmsRepository
+import com.gytxtx.openjbd.registry.DeviceKeys
 import java.util.concurrent.atomic.AtomicBoolean
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -64,8 +65,11 @@ class HistoryRecorder internal constructor(
             if (basicInfo == null ||
                 !HistoryPolicy.shouldRecord(snapshot.connected, snapshot.basicInfoAtMillis, now)
             ) return
+            // Each sample belongs to the physical BMS it was read from (Phase D, D021).
+            val deviceKey = DeviceKeys.normalize(snapshot.deviceAddress) ?: return
 
             store.append(
+                deviceKey,
                 HistorySample(
                     timestampMillis = now,
                     socPercent = checkNotNull(basicInfo).soc,

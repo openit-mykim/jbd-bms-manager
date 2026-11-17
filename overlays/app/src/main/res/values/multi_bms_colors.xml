@@ -1,0 +1,6 @@
+<resources>
+    <!-- Device signal dot (docs/multi-bms-design.md "Signal semantics"); shares the band palette. -->
+    <color name="bms_signal_reachable">#2E7D32</color>
+    <color name="bms_signal_failed">#C62828</color>
+    <color name="bms_signal_unknown">#9E9E9E</color>
+</resources>

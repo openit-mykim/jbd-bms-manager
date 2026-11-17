@@ -4,8 +4,10 @@ import android.content.ContentValues
 import android.content.Context
 import android.database.sqlite.SQLiteDatabase
 import android.database.sqlite.SQLiteException
-import android.util.Log
 import android.database.sqlite.SQLiteOpenHelper
+import android.util.Log
+import com.gytxtx.openjbd.AppSettings
+import com.gytxtx.openjbd.registry.DeviceKeys
 import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -40,13 +42,22 @@ class SqliteHistoryStore @Inject constructor(
 
     override suspend fun clear() {
         withContext(Dispatchers.IO) {
-            recovering(Unit) { helper.writableDatabase.delete(TABLE_SAMPLES, null, null) }
+            recovering(Unit) { helper.writableDatabase.delete(HistorySchema.TABLE, null, null) }
         }
     }
 
-    override suspend fun append(sample: HistorySample) {
+    override suspend fun clearDevice(deviceKey: String) {
+        withContext(Dispatchers.IO) {
+            recovering(Unit) {
+                helper.writableDatabase.delete(HistorySchema.TABLE, "$COLUMN_DEVICE = ?", arrayOf(deviceKey))
+            }
+        }
+    }
+
+    override suspend fun append(deviceKey: String, sample: HistorySample) {
         withContext(Dispatchers.IO) {
             val values = ContentValues().apply {
+                put(COLUMN_DEVICE, deviceKey)
                 put(COLUMN_TIMESTAMP, sample.timestampMillis)
                 put(COLUMN_SOC, sample.socPercent)
                 put(COLUMN_PACK_MILLIVOLTS, sample.packMillivolts)
@@ -59,7 +70,7 @@ class SqliteHistoryStore @Inject constructor(
             }
             check(
                 helper.writableDatabase.insertWithOnConflict(
-                    TABLE_SAMPLES,
+                    HistorySchema.TABLE,
                     null,
                     values,
                     SQLiteDatabase.CONFLICT_REPLACE
@@ -68,118 +79,137 @@ class SqliteHistoryStore @Inject constructor(
         }
     }
 
-    override suspend fun query(fromMillis: Long, toMillis: Long): List<HistorySample> =
-        withContext(Dispatchers.IO) { recovering(emptyList()) { queryUnsafe(fromMillis, toMillis) } }
+    override suspend fun query(deviceKey: String, fromMillis: Long, toMillis: Long): List<HistorySample> =
+        withContext(Dispatchers.IO) { recovering(emptyList()) { queryUnsafe(deviceKey, fromMillis, toMillis) } }
 
-    private fun queryUnsafe(fromMillis: Long, toMillis: Long): List<HistorySample> {
-            val samples = mutableListOf<HistorySample>()
-            helper.readableDatabase.query(
-                TABLE_SAMPLES,
-                ALL_COLUMNS,
-                "$COLUMN_TIMESTAMP BETWEEN ? AND ?",
-                arrayOf(fromMillis.toString(), toMillis.toString()),
-                null,
-                null,
-                "$COLUMN_TIMESTAMP ASC"
-            ).use { cursor ->
-                val timestampIndex = cursor.getColumnIndexOrThrow(COLUMN_TIMESTAMP)
-                val socIndex = cursor.getColumnIndexOrThrow(COLUMN_SOC)
-                val packIndex = cursor.getColumnIndexOrThrow(COLUMN_PACK_MILLIVOLTS)
-                val currentIndex = cursor.getColumnIndexOrThrow(COLUMN_CURRENT_MILLIAMPS)
-                val deltaIndex = cursor.getColumnIndexOrThrow(COLUMN_DELTA_MILLIVOLTS)
-                while (cursor.moveToNext()) {
-                    samples += HistorySample(
-                        timestampMillis = cursor.getLong(timestampIndex),
-                        socPercent = cursor.getInt(socIndex),
-                        packMillivolts = cursor.getInt(packIndex),
-                        currentMilliamps = cursor.getInt(currentIndex),
-                        cellDeltaMillivolts = if (cursor.isNull(deltaIndex)) {
-                            null
-                        } else {
-                            cursor.getInt(deltaIndex)
-                        }
-                    )
-                }
+    private fun queryUnsafe(deviceKey: String, fromMillis: Long, toMillis: Long): List<HistorySample> {
+        val samples = mutableListOf<HistorySample>()
+        helper.readableDatabase.query(
+            HistorySchema.TABLE,
+            ALL_COLUMNS,
+            "$COLUMN_DEVICE = ? AND $COLUMN_TIMESTAMP BETWEEN ? AND ?",
+            arrayOf(deviceKey, fromMillis.toString(), toMillis.toString()),
+            null,
+            null,
+            "$COLUMN_TIMESTAMP ASC"
+        ).use { cursor ->
+            val timestampIndex = cursor.getColumnIndexOrThrow(COLUMN_TIMESTAMP)
+            val socIndex = cursor.getColumnIndexOrThrow(COLUMN_SOC)
+            val packIndex = cursor.getColumnIndexOrThrow(COLUMN_PACK_MILLIVOLTS)
+            val currentIndex = cursor.getColumnIndexOrThrow(COLUMN_CURRENT_MILLIAMPS)
+            val deltaIndex = cursor.getColumnIndexOrThrow(COLUMN_DELTA_MILLIVOLTS)
+            while (cursor.moveToNext()) {
+                samples += HistorySample(
+                    timestampMillis = cursor.getLong(timestampIndex),
+                    socPercent = cursor.getInt(socIndex),
+                    packMillivolts = cursor.getInt(packIndex),
+                    currentMilliamps = cursor.getInt(currentIndex),
+                    cellDeltaMillivolts = if (cursor.isNull(deltaIndex)) null else cursor.getInt(deltaIndex)
+                )
             }
-            return samples
         }
+        return samples
+    }
 
     override suspend fun pruneBefore(cutoffMillis: Long): Int = withContext(Dispatchers.IO) {
+        recovering(0) { pruneUnsafe(cutoffMillis) }
+    }
+
+    private fun pruneUnsafe(cutoffMillis: Long): Int {
         val database = helper.writableDatabase
         database.beginTransaction()
         try {
             var deleted = database.delete(
-                TABLE_SAMPLES,
+                HistorySchema.TABLE,
                 "$COLUMN_TIMESTAMP < ?",
                 arrayOf(cutoffMillis.toString())
             )
-            val excess = count(database) - HistoryPolicy.MAX_SAMPLES
-            if (excess > 0L) {
-                deleted += database.delete(
-                    TABLE_SAMPLES,
-                    "$COLUMN_TIMESTAMP IN (" +
-                        "SELECT $COLUMN_TIMESTAMP FROM $TABLE_SAMPLES " +
-                        "ORDER BY $COLUMN_TIMESTAMP ASC LIMIT ?)",
-                    arrayOf(excess.toString())
-                )
+            // The sample cap applies per BMS so one busy pack cannot evict another pack's history.
+            for (device in devices(database)) {
+                val excess = count(database, device) - HistoryPolicy.MAX_SAMPLES
+                if (excess > 0L) {
+                    deleted += database.delete(
+                        HistorySchema.TABLE,
+                        "$COLUMN_DEVICE = ? AND $COLUMN_TIMESTAMP IN (" +
+                            "SELECT $COLUMN_TIMESTAMP FROM ${HistorySchema.TABLE} WHERE $COLUMN_DEVICE = ? " +
+                            "ORDER BY $COLUMN_TIMESTAMP ASC LIMIT ?)",
+                        arrayOf(device, device, excess.toString())
+                    )
+                }
             }
             database.setTransactionSuccessful()
-            deleted
+            return deleted
         } finally {
             database.endTransaction()
         }
     }
 
     override suspend fun count(): Long = withContext(Dispatchers.IO) {
-        recovering(0L) { count(helper.readableDatabase) }
+        recovering(0L) {
+            helper.readableDatabase.rawQuery("SELECT COUNT(*) FROM ${HistorySchema.TABLE}", null).use { cursor ->
+                if (cursor.moveToFirst()) cursor.getLong(0) else 0L
+            }
+        }
     }
 
     override suspend fun latestTimestamp(): Long? = withContext(Dispatchers.IO) {
-        recovering(null) { latestTimestampUnsafe() }
+        recovering(null) {
+            helper.readableDatabase.rawQuery(
+                "SELECT MAX($COLUMN_TIMESTAMP) FROM ${HistorySchema.TABLE}",
+                null
+            ).use { cursor ->
+                if (cursor.moveToFirst() && !cursor.isNull(0)) cursor.getLong(0) else null
+            }
+        }
     }
 
-    private fun latestTimestampUnsafe(): Long? =
-        helper.readableDatabase.rawQuery(
-            "SELECT MAX($COLUMN_TIMESTAMP) FROM $TABLE_SAMPLES",
-            null
-        ).use { cursor ->
-            if (cursor.moveToFirst() && !cursor.isNull(0)) cursor.getLong(0) else null
+    private fun devices(database: SQLiteDatabase): List<String> =
+        database.rawQuery("SELECT DISTINCT $COLUMN_DEVICE FROM ${HistorySchema.TABLE}", null).use { cursor ->
+            buildList { while (cursor.moveToNext()) add(cursor.getString(0)) }
         }
 
-    private fun count(database: SQLiteDatabase): Long = database.rawQuery(
-        "SELECT COUNT(*) FROM $TABLE_SAMPLES",
-        null
+    private fun count(database: SQLiteDatabase, device: String): Long = database.rawQuery(
+        "SELECT COUNT(*) FROM ${HistorySchema.TABLE} WHERE $COLUMN_DEVICE = ?",
+        arrayOf(device)
     ).use { cursor ->
         if (cursor.moveToFirst()) cursor.getLong(0) else 0L
     }
 
-    private class HistoryDatabaseHelper(context: Context) :
-        SQLiteOpenHelper(context, DATABASE_NAME, null, DATABASE_VERSION) {
+    private class HistoryDatabaseHelper(private val context: Context) :
+        SQLiteOpenHelper(context, DATABASE_NAME, null, HistorySchema.VERSION) {
         override fun onCreate(database: SQLiteDatabase) {
-            database.execSQL(
-                "CREATE TABLE $TABLE_SAMPLES (" +
-                    "$COLUMN_TIMESTAMP INTEGER PRIMARY KEY, " +
-                    "$COLUMN_SOC INTEGER NOT NULL, " +
-                    "$COLUMN_PACK_MILLIVOLTS INTEGER NOT NULL, " +
-                    "$COLUMN_CURRENT_MILLIAMPS INTEGER NOT NULL, " +
-                    "$COLUMN_DELTA_MILLIVOLTS INTEGER)"
-            )
-            database.execSQL(
-                "CREATE INDEX $INDEX_TIMESTAMP ON $TABLE_SAMPLES($COLUMN_TIMESTAMP)"
-            )
+            HistorySchema.createStatements.forEach(database::execSQL)
         }
 
-        // The schema version is DATABASE_VERSION. History is disposable, so any version change
-        // (including installing an older APK over a newer one) recreates the table instead of
-        // leaving a mismatched schema or throwing from onDowngrade.
-        override fun onUpgrade(database: SQLiteDatabase, oldVersion: Int, newVersion: Int) =
-            recreate(database)
+        /**
+         * v1 (single device) → v2 (per device): the existing samples are assigned to the last
+         * connected device (OpenJBD `last_device_address`). Any other version change, a missing
+         * legacy device or a failure while migrating recreates the table (history is disposable;
+         * a schema mismatch must never crash the app).
+         */
+        override fun onUpgrade(database: SQLiteDatabase, oldVersion: Int, newVersion: Int) {
+            val legacyKey = DeviceKeys.normalize(
+                AppSettings.prefs(context).getString(AppSettings.PREF_LAST_DEVICE_ADDRESS, null)
+            )
+            when (val plan = HistorySchema.plan(oldVersion, newVersion, legacyKey)) {
+                is HistorySchema.Plan.MigrateV1 -> try {
+                    HistorySchema.migrateV1Statements().forEach { statement ->
+                        if (statement.contains('?')) database.execSQL(statement, arrayOf(plan.deviceKey))
+                        else database.execSQL(statement)
+                    }
+                } catch (error: SQLiteException) {
+                    Log.w(TAG, "History v1 migration failed; recreating", error)
+                    recreate(database)
+                }
+                HistorySchema.Plan.Recreate -> recreate(database)
+            }
+        }
 
         override fun onDowngrade(database: SQLiteDatabase, oldVersion: Int, newVersion: Int) =
             recreate(database)
 
         private fun recreate(database: SQLiteDatabase) {
-            database.execSQL("DROP TABLE IF EXISTS $TABLE_SAMPLES")
+            HistorySchema.dropStatements.forEach(database::execSQL)
             onCreate(database)
         }
     }
@@ -187,9 +217,7 @@ class SqliteHistoryStore @Inject constructor(
     private companion object {
         const val TAG = "SqliteHistoryStore"
         const val DATABASE_NAME = "history.db"
-        const val DATABASE_VERSION = 1
-        const val TABLE_SAMPLES = "samples"
-        const val INDEX_TIMESTAMP = "idx_samples_ts"
+        const val COLUMN_DEVICE = "device"
         const val COLUMN_TIMESTAMP = "ts"
         const val COLUMN_SOC = "soc"
         const val COLUMN_PACK_MILLIVOLTS = "pack_mv"

@@ -336,6 +336,8 @@ object SettingsDisplay {
                 R.string.settings_outcome_not_permitted_identity
             com.gytxtx.openjbd.maintenance.WriteDecision.DenyReason.NOT_CONSENTED ->
                 R.string.settings_outcome_not_permitted_consent
+            com.gytxtx.openjbd.maintenance.WriteDecision.DenyReason.TARGET_MISMATCH ->
+                R.string.settings_outcome_not_permitted_target
         }
         is WriteSessionOutcome.ValidationFailed -> R.string.settings_outcome_validation_failed
         is WriteSessionOutcome.EntryFailed -> R.string.settings_outcome_entry_failed

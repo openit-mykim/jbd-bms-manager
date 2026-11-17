@@ -12,11 +12,13 @@ import kotlinx.coroutines.cancel
 @HiltAndroidApp
 class OpenJbdApplication : Application() {
     @Inject lateinit var historyRecorder: HistoryRecorder
+    @Inject lateinit var deviceRegistry: com.gytxtx.openjbd.registry.BmsDeviceRegistry
 
     private val applicationScope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
 
     override fun onCreate() {
         super.onCreate()
+        deviceRegistry.start(applicationScope)
         historyRecorder.start(applicationScope)
     }
 

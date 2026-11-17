@@ -11,7 +11,7 @@ class WritePolicyTest {
     fun unknownDeviceIsReadOnlyWithoutConsent() {
         assertEquals(
             WriteDecision.Denied(WriteDecision.DenyReason.NOT_CONSENTED),
-            WritePolicy.decide("AA:BB", true, identity, verifiedProfile = false, consented = false)
+            WritePolicy.decide("AA:BB", true, identity, verifiedProfile = false, consented = false, targetMatches = true)
         )
     }
 
@@ -19,27 +19,35 @@ class WritePolicyTest {
     fun consentOrVerifiedProfileAllowsWhenUnlockedForSameDevice() {
         assertEquals(
             WriteDecision.Allowed(WriteDecision.Basis.EXPERIMENTAL_CONSENT, identity),
-            WritePolicy.decide("AA:BB", true, identity, verifiedProfile = false, consented = true)
+            WritePolicy.decide("AA:BB", true, identity, verifiedProfile = false, consented = true, targetMatches = true)
         )
         assertEquals(
             WriteDecision.Allowed(WriteDecision.Basis.VERIFIED_PROFILE, identity),
-            WritePolicy.decide("AA:BB", true, identity, verifiedProfile = true, consented = false)
+            WritePolicy.decide("AA:BB", true, identity, verifiedProfile = true, consented = false, targetMatches = true)
         )
     }
 
     @Test
     fun lockedOrUnlockedForAnotherDeviceIsDenied() {
         val locked = WriteDecision.Denied(WriteDecision.DenyReason.LOCKED)
-        assertEquals(locked, WritePolicy.decide(null, false, identity, true, true))
-        assertEquals(locked, WritePolicy.decide("CC:DD", true, identity, true, true))
-        assertEquals(locked, WritePolicy.decide(null, true, identity, true, true))
+        assertEquals(locked, WritePolicy.decide(null, false, identity, true, true, true))
+        assertEquals(locked, WritePolicy.decide("CC:DD", true, identity, true, true, true))
+        assertEquals(locked, WritePolicy.decide(null, true, identity, true, true, true))
+    }
+
+    @Test
+    fun targetMismatchIsDeniedEvenWhenUnlockedAndConsented() {
+        val mismatch = WriteDecision.Denied(WriteDecision.DenyReason.TARGET_MISMATCH)
+        assertEquals(mismatch, WritePolicy.decide("AA:BB", true, identity, true, true, targetMatches = false))
+        assertEquals(mismatch, WritePolicy.decide("AA:BB", true, identity, false, true, targetMatches = false))
+        assertEquals(mismatch, WritePolicy.decide(null, false, identity, true, true, targetMatches = false))
     }
 
     @Test
     fun missingIdentityIsDenied() {
         assertEquals(
             WriteDecision.Denied(WriteDecision.DenyReason.NO_DEVICE_IDENTITY),
-            WritePolicy.decide("AA:BB", true, null, false, true)
+            WritePolicy.decide("AA:BB", true, null, false, true, true)
         )
     }
 
