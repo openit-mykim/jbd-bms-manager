@@ -1,0 +1,2085 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<issues format="6" by="lint 9.0.1" type="baseline" client="gradle" dependencies="false" name="AGP (9.0.1)" variant="all" version="9.0.1">
+
+    <issue
+        id="OldTargetApi"
+        message="Not targeting the latest versions of Android; compatibility modes apply. Consider testing and updating this version. Consult the `android.os.Build.VERSION_CODES` javadoc for details."
+        errorLine1="        targetSdk = 36"
+        errorLine2="        ~~~~~~~~~~~~~~">
+        <location
+            file="build.gradle.kts"
+            line="16"
+            column="9"/>
+    </issue>
+
+    <issue
+        id="UnusedAttribute"
+        message="Attribute `usesPermissionFlags` is only used in API level 31 and higher (current min is 23)"
+        errorLine1="        android:usesPermissionFlags=&quot;neverForLocation&quot; />"
+        errorLine2="        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/AndroidManifest.xml"
+            line="8"
+            column="9"/>
+    </issue>
+
+    <issue
+        id="UnusedAttribute"
+        message="Attribute `localeConfig` is only used in API level 33 and higher (current min is 23)"
+        errorLine1="        android:localeConfig=&quot;@xml/locales_config&quot;"
+        errorLine2="        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/AndroidManifest.xml"
+            line="18"
+            column="9"/>
+    </issue>
+
+    <issue
+        id="AppBundleLocaleChanges"
+        message="Found dynamic locale changes, but did not find corresponding Play Core library calls for downloading languages and splitting by language is not disabled in the `bundle` configuration"
+        errorLine1="            configuration.setLocales(LocaleList(locale))"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/kotlin/com/gytxtx/openjbd/AppSettings.kt"
+            line="153"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="InflateParams"
+        message="Avoid passing `null` as the view root (needed to resolve layout parameters on the inflated layout&apos;s root element)"
+        errorLine1="        val view = layoutInflater.inflate(R.layout.bottom_sheet_bms_selector, null)"
+        errorLine2="                                                                              ~~~~">
+        <location
+            file="src/main/kotlin/com/gytxtx/openjbd/MainActivity.kt"
+            line="197"
+            column="79"/>
+    </issue>
+
+    <issue
+        id="InflateParams"
+        message="Avoid passing `null` as the view root (needed to resolve layout parameters on the inflated layout&apos;s root element)"
+        errorLine1="            val liveStatus = layoutInflater.inflate(R.layout.view_mos_live_status, null, false)"
+        errorLine2="                                                                                   ~~~~">
+        <location
+            file="src/main/kotlin/com/gytxtx/openjbd/settings/SettingsGroupDialogFragment.kt"
+            line="111"
+            column="84"/>
+    </issue>
+
+    <issue
+        id="AndroidGradlePluginVersion"
+        message="A newer version of Gradle than 9.1.0 is available: 9.9.1"
+        errorLine1="distributionUrl=https\://services.gradle.org/distributions/gradle-9.1.0-bin.zip"
+        errorLine2="                ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="$HOME/workspace/jbd-build/upstream-src/gradle/wrapper/gradle-wrapper.properties"
+            line="3"
+            column="17"/>
+    </issue>
+
+    <issue
+        id="AndroidGradlePluginVersion"
+        message="A newer version of com.android.application than 9.0.1 is available: 9.5.1"
+        errorLine1="agp = &quot;9.0.1&quot;"
+        errorLine2="      ~~~~~~~">
+        <location
+            file="$HOME/workspace/jbd-build/upstream-src/gradle/libs.versions.toml"
+            line="2"
+            column="7"/>
+    </issue>
+
+    <issue
+        id="GradleDependency"
+        message="A newer version of androidx.compose:compose-bom than 2026.06.00 is available: 2026.09.00"
+        errorLine1="composeBom = &quot;2026.06.00&quot;"
+        errorLine2="             ~~~~~~~~~~~~">
+        <location
+            file="$HOME/workspace/jbd-build/upstream-src/gradle/libs.versions.toml"
+            line="5"
+            column="14"/>
+    </issue>
+
+    <issue
+        id="GradleDependency"
+        message="A newer version of androidx.navigation:navigation-compose than 2.9.8 is available: 2.10.2"
+        errorLine1="navigationCompose = &quot;2.9.8&quot;"
+        errorLine2="                    ~~~~~~~">
+        <location
+            file="$HOME/workspace/jbd-build/upstream-src/gradle/libs.versions.toml"
+            line="7"
+            column="21"/>
+    </issue>
+
+    <issue
+        id="GradleDependency"
+        message="A newer version of androidx.lifecycle:lifecycle-runtime-compose than 2.10.0 is available: 2.11.0"
+        errorLine1="lifecycle = &quot;2.10.0&quot;"
+        errorLine2="            ~~~~~~~~">
+        <location
+            file="$HOME/workspace/jbd-build/upstream-src/gradle/libs.versions.toml"
+            line="8"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="GradleDependency"
+        message="A newer version of androidx.lifecycle:lifecycle-runtime-ktx than 2.10.0 is available: 2.11.0"
+        errorLine1="lifecycle = &quot;2.10.0&quot;"
+        errorLine2="            ~~~~~~~~">
+        <location
+            file="$HOME/workspace/jbd-build/upstream-src/gradle/libs.versions.toml"
+            line="8"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="GradleDependency"
+        message="A newer version of androidx.lifecycle:lifecycle-viewmodel-compose than 2.10.0 is available: 2.11.0"
+        errorLine1="lifecycle = &quot;2.10.0&quot;"
+        errorLine2="            ~~~~~~~~">
+        <location
+            file="$HOME/workspace/jbd-build/upstream-src/gradle/libs.versions.toml"
+            line="8"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="GradleDependency"
+        message="A newer version of androidx.hilt:hilt-navigation-compose than 1.2.0 is available: 1.4.0"
+        errorLine1="hiltNavigationCompose = &quot;1.2.0&quot;"
+        errorLine2="                        ~~~~~~~">
+        <location
+            file="$HOME/workspace/jbd-build/upstream-src/gradle/libs.versions.toml"
+            line="10"
+            column="25"/>
+    </issue>
+
+    <issue
+        id="GradleDependency"
+        message="A newer version of androidx.datastore:datastore-preferences than 1.1.7 is available: 1.3.0"
+        errorLine1="datastore = &quot;1.1.7&quot;"
+        errorLine2="            ~~~~~~~">
+        <location
+            file="$HOME/workspace/jbd-build/upstream-src/gradle/libs.versions.toml"
+            line="12"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="GradleDependency"
+        message="A newer version of androidx.core:core-ktx than 1.16.0 is available: 1.19.1"
+        errorLine1="coreKtx = &quot;1.16.0&quot;"
+        errorLine2="          ~~~~~~~~">
+        <location
+            file="$HOME/workspace/jbd-build/upstream-src/gradle/libs.versions.toml"
+            line="13"
+            column="11"/>
+    </issue>
+
+    <issue
+        id="GradleDependency"
+        message="A newer version of androidx.fragment:fragment than 1.6.2 is available: 1.9.1"
+        errorLine1="fragment = &quot;1.6.2&quot;"
+        errorLine2="           ~~~~~~~">
+        <location
+            file="$HOME/workspace/jbd-build/upstream-src/gradle/libs.versions.toml"
+            line="14"
+            column="12"/>
+    </issue>
+
+    <issue
+        id="GradleDependency"
+        message="A newer version of com.google.android.material:material than 1.10.0 is available: 1.14.0"
+        errorLine1="material = &quot;1.10.0&quot;"
+        errorLine2="           ~~~~~~~~">
+        <location
+            file="$HOME/workspace/jbd-build/upstream-src/gradle/libs.versions.toml"
+            line="15"
+            column="12"/>
+    </issue>
+
+    <issue
+        id="GradleDependency"
+        message="A newer version of androidx.swiperefreshlayout:swiperefreshlayout than 1.1.0 is available: 1.2.0"
+        errorLine1="swiperefreshlayout = &quot;1.1.0&quot;"
+        errorLine2="                     ~~~~~~~">
+        <location
+            file="$HOME/workspace/jbd-build/upstream-src/gradle/libs.versions.toml"
+            line="16"
+            column="22"/>
+    </issue>
+
+    <issue
+        id="NewerVersionAvailable"
+        message="A newer version of org.jetbrains.kotlin.plugin.compose than 2.3.21 is available: 2.4.21"
+        errorLine1="kotlin = &quot;2.3.21&quot;"
+        errorLine2="         ~~~~~~~~">
+        <location
+            file="$HOME/workspace/jbd-build/upstream-src/gradle/libs.versions.toml"
+            line="3"
+            column="10"/>
+    </issue>
+
+    <issue
+        id="NewerVersionAvailable"
+        message="A newer version of org.jetbrains.kotlin.plugin.serialization than 2.3.21 is available: 2.4.21"
+        errorLine1="kotlin = &quot;2.3.21&quot;"
+        errorLine2="         ~~~~~~~~">
+        <location
+            file="$HOME/workspace/jbd-build/upstream-src/gradle/libs.versions.toml"
+            line="3"
+            column="10"/>
+    </issue>
+
+    <issue
+        id="NewerVersionAvailable"
+        message="A newer version of org.jetbrains.kotlinx:kotlinx-serialization-json than 1.8.0 is available: 1.13.0"
+        errorLine1="kotlinxSerialization = &quot;1.8.0&quot;"
+        errorLine2="                       ~~~~~~~">
+        <location
+            file="$HOME/workspace/jbd-build/upstream-src/gradle/libs.versions.toml"
+            line="11"
+            column="24"/>
+    </issue>
+
+    <issue
+        id="NewerVersionAvailable"
+        message="A newer version of org.jetbrains.kotlinx:kotlinx-coroutines-test than 1.10.2 is available: 1.11.0"
+        errorLine1="kotlinx-coroutines-test = { group = &quot;org.jetbrains.kotlinx&quot;, name = &quot;kotlinx-coroutines-test&quot;, version = &quot;1.10.2&quot; }"
+        errorLine2="                                                                                                         ~~~~~~~~">
+        <location
+            file="$HOME/workspace/jbd-build/upstream-src/gradle/libs.versions.toml"
+            line="41"
+            column="106"/>
+    </issue>
+
+    <issue
+        id="DiscouragedApi"
+        message="Fixed screen orientations will be ignored in most cases, starting from Android 16. Android is moving toward a model where apps are expected to adapt to various orientations, display sizes, and aspect ratios."
+        errorLine1="            android:screenOrientation=&quot;landscape&quot;"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/AndroidManifest.xml"
+            line="25"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="MissingTranslation"
+        message="&quot;format_value_voltage_mv&quot; is not translated in &quot;zh&quot; (Chinese)"
+        errorLine1="    &lt;string name=&quot;format_value_voltage_mv&quot;>%1$d mV&lt;/string>"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/balance_strings.xml"
+            line="18"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="MissingTranslation"
+        message="&quot;balance_active_cell_count&quot; is not translated in &quot;zh&quot; (Chinese)"
+        errorLine1="    &lt;plurals name=&quot;balance_active_cell_count&quot;>"
+        errorLine2="             ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/balance_strings.xml"
+            line="24"
+            column="14"/>
+    </issue>
+
+    <issue
+        id="MissingTranslation"
+        message="&quot;format_value_percent&quot; is not translated in &quot;ko&quot; (Korean)"
+        errorLine1="    &lt;string name=&quot;format_value_percent&quot;>%1$d%%&lt;/string>"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/strings.xml"
+            line="105"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="MissingTranslation"
+        message="&quot;format_value_integer&quot; is not translated in &quot;ko&quot; (Korean)"
+        errorLine1="    &lt;string name=&quot;format_value_integer&quot;>%1$d&lt;/string>"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/strings.xml"
+            line="106"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="MissingTranslation"
+        message="&quot;format_value_voltage_2&quot; is not translated in &quot;ko&quot; (Korean)"
+        errorLine1="    &lt;string name=&quot;format_value_voltage_2&quot;>%1$.2f V&lt;/string>"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/strings.xml"
+            line="107"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="MissingTranslation"
+        message="&quot;format_value_voltage_3&quot; is not translated in &quot;ko&quot; (Korean)"
+        errorLine1="    &lt;string name=&quot;format_value_voltage_3&quot;>%1$.3f V&lt;/string>"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/strings.xml"
+            line="108"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="MissingTranslation"
+        message="&quot;format_value_current_2&quot; is not translated in &quot;ko&quot; (Korean)"
+        errorLine1="    &lt;string name=&quot;format_value_current_2&quot;>%1$.2f A&lt;/string>"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/strings.xml"
+            line="109"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="MissingTranslation"
+        message="&quot;format_value_power_1&quot; is not translated in &quot;ko&quot; (Korean)"
+        errorLine1="    &lt;string name=&quot;format_value_power_1&quot;>%1$.1f W&lt;/string>"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/strings.xml"
+            line="110"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="MissingTranslation"
+        message="&quot;format_value_capacity_2&quot; is not translated in &quot;ko&quot; (Korean)"
+        errorLine1="    &lt;string name=&quot;format_value_capacity_2&quot;>%1$.2f Ah&lt;/string>"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/strings.xml"
+            line="111"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="MissingTranslation"
+        message="&quot;format_value_capacity_pair&quot; is not translated in &quot;ko&quot; (Korean)"
+        errorLine1="    &lt;string name=&quot;format_value_capacity_pair&quot;>%1$.2f / %2$.2f Ah&lt;/string>"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/strings.xml"
+            line="112"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="MissingTranslation"
+        message="&quot;format_mos_state&quot; is not translated in &quot;ko&quot; (Korean)"
+        errorLine1="    &lt;string name=&quot;format_mos_state&quot;>%1$s %2$s  /  %3$s %4$s&lt;/string>"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/strings.xml"
+            line="113"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="MissingTranslation"
+        message="&quot;placeholder_percent&quot; is not translated in &quot;ko&quot; (Korean)"
+        errorLine1="    &lt;string name=&quot;placeholder_percent&quot; formatted=&quot;false&quot;>--%&lt;/string>"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/strings.xml"
+            line="114"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="MissingTranslation"
+        message="&quot;placeholder_voltage&quot; is not translated in &quot;ko&quot; (Korean)"
+        errorLine1="    &lt;string name=&quot;placeholder_voltage&quot;>-- V&lt;/string>"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/strings.xml"
+            line="115"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="MissingTranslation"
+        message="&quot;placeholder_current&quot; is not translated in &quot;ko&quot; (Korean)"
+        errorLine1="    &lt;string name=&quot;placeholder_current&quot;>-- A&lt;/string>"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/strings.xml"
+            line="116"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="MissingTranslation"
+        message="&quot;placeholder_power&quot; is not translated in &quot;ko&quot; (Korean)"
+        errorLine1="    &lt;string name=&quot;placeholder_power&quot;>-- W&lt;/string>"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/strings.xml"
+            line="117"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="MissingTranslation"
+        message="&quot;about_version&quot; is not translated in &quot;ko&quot; (Korean)"
+        errorLine1="    &lt;string name=&quot;about_version&quot;>Version 0.1.0&lt;/string>"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/strings.xml"
+            line="198"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="MissingTranslation"
+        message="&quot;license_item_openjbd&quot; is not translated in &quot;ko&quot; (Korean)"
+        errorLine1="    &lt;string name=&quot;license_item_openjbd&quot;>OpenJBD&lt;/string>"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/strings.xml"
+            line="208"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="MissingTranslation"
+        message="&quot;license_item_compose&quot; is not translated in &quot;ko&quot; (Korean)"
+        errorLine1="    &lt;string name=&quot;license_item_compose&quot;>Jetpack Compose&lt;/string>"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/strings.xml"
+            line="209"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="MissingTranslation"
+        message="&quot;license_item_material_components&quot; is not translated in &quot;ko&quot; (Korean)"
+        errorLine1="    &lt;string name=&quot;license_item_material_components&quot;>Material Components for Android&lt;/string>"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/strings.xml"
+            line="210"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="MissingTranslation"
+        message="&quot;license_item_navigation&quot; is not translated in &quot;ko&quot; (Korean)"
+        errorLine1="    &lt;string name=&quot;license_item_navigation&quot;>Jetpack Navigation Compose&lt;/string>"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/strings.xml"
+            line="211"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="MissingTranslation"
+        message="&quot;license_item_lifecycle&quot; is not translated in &quot;ko&quot; (Korean)"
+        errorLine1="    &lt;string name=&quot;license_item_lifecycle&quot;>AndroidX Lifecycle&lt;/string>"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/strings.xml"
+            line="212"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="MissingTranslation"
+        message="&quot;license_item_hilt&quot; is not translated in &quot;ko&quot; (Korean)"
+        errorLine1="    &lt;string name=&quot;license_item_hilt&quot;>Hilt (Dagger)&lt;/string>"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/strings.xml"
+            line="213"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="MissingTranslation"
+        message="&quot;license_item_core_ktx&quot; is not translated in &quot;ko&quot; (Korean)"
+        errorLine1="    &lt;string name=&quot;license_item_core_ktx&quot;>AndroidX Core KTX&lt;/string>"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/strings.xml"
+            line="214"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="MissingTranslation"
+        message="&quot;license_item_appcompat&quot; is not translated in &quot;ko&quot; (Korean)"
+        errorLine1="    &lt;string name=&quot;license_item_appcompat&quot;>AndroidX AppCompat&lt;/string>"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/strings.xml"
+            line="215"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="MissingTranslation"
+        message="&quot;license_item_datastore&quot; is not translated in &quot;ko&quot; (Korean)"
+        errorLine1="    &lt;string name=&quot;license_item_datastore&quot;>AndroidX DataStore&lt;/string>"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/strings.xml"
+            line="216"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="MissingTranslation"
+        message="&quot;license_item_kotlinx_serialization&quot; is not translated in &quot;ko&quot; (Korean)"
+        errorLine1="    &lt;string name=&quot;license_item_kotlinx_serialization&quot;>Kotlinx Serialization&lt;/string>"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/strings.xml"
+            line="217"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="MissingTranslation"
+        message="&quot;license_item_fragment&quot; is not translated in &quot;ko&quot; (Korean)"
+        errorLine1="    &lt;string name=&quot;license_item_fragment&quot;>AndroidX Fragment&lt;/string>"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/strings.xml"
+            line="218"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="MissingTranslation"
+        message="&quot;license_item_swiperefreshlayout&quot; is not translated in &quot;ko&quot; (Korean)"
+        errorLine1="    &lt;string name=&quot;license_item_swiperefreshlayout&quot;>AndroidX SwipeRefreshLayout&lt;/string>"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/strings.xml"
+            line="219"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="MissingTranslation"
+        message="&quot;license_detail_openjbd&quot; is not translated in &quot;ko&quot; (Korean)"
+        errorLine1="    &lt;string name=&quot;license_detail_openjbd&quot;>OpenJBD is licensed under the MIT License.\n\nCopyright © 2026 KFACBT\n\nPermission is granted, free of charge, to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the software, provided that the copyright notice and permission notice are included in copies or substantial portions of the software.\n\nThe software is provided \&quot;as is\&quot;, without warranty of any kind.&lt;/string>"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/strings.xml"
+            line="220"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="MissingTranslation"
+        message="&quot;license_detail_compose&quot; is not translated in &quot;ko&quot; (Korean)"
+        errorLine1="    &lt;string name=&quot;license_detail_compose&quot;>Jetpack Compose is part of AndroidX and is licensed under the Apache License 2.0.\n\nProject: https://developer.android.com/jetpack/compose\nLicense: https://www.apache.org/licenses/LICENSE-2.0&lt;/string>"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/strings.xml"
+            line="221"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="MissingTranslation"
+        message="&quot;license_detail_material_components&quot; is not translated in &quot;ko&quot; (Korean)"
+        errorLine1="    &lt;string name=&quot;license_detail_material_components&quot;>Material Components for Android is licensed under the Apache License 2.0.\n\nProject: https://github.com/material-components/material-components-android\nLicense: https://www.apache.org/licenses/LICENSE-2.0&lt;/string>"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/strings.xml"
+            line="222"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="MissingTranslation"
+        message="&quot;license_detail_navigation&quot; is not translated in &quot;ko&quot; (Korean)"
+        errorLine1="    &lt;string name=&quot;license_detail_navigation&quot;>Jetpack Navigation Compose is part of AndroidX and is licensed under the Apache License 2.0.\n\nProject: https://developer.android.com/jetpack/compose/navigation\nLicense: https://www.apache.org/licenses/LICENSE-2.0&lt;/string>"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/strings.xml"
+            line="223"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="MissingTranslation"
+        message="&quot;license_detail_lifecycle&quot; is not translated in &quot;ko&quot; (Korean)"
+        errorLine1="    &lt;string name=&quot;license_detail_lifecycle&quot;>AndroidX Lifecycle is part of AndroidX and is licensed under the Apache License 2.0.\n\nProject: https://developer.android.com/jetpack/androidx\nLicense: https://www.apache.org/licenses/LICENSE-2.0&lt;/string>"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/strings.xml"
+            line="224"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="MissingTranslation"
+        message="&quot;license_detail_hilt&quot; is not translated in &quot;ko&quot; (Korean)"
+        errorLine1="    &lt;string name=&quot;license_detail_hilt&quot;>Hilt (Dagger) is licensed under the Apache License 2.0.\n\nProject: https://dagger.dev/hilt\nLicense: https://www.apache.org/licenses/LICENSE-2.0&lt;/string>"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/strings.xml"
+            line="225"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="MissingTranslation"
+        message="&quot;license_detail_core_ktx&quot; is not translated in &quot;ko&quot; (Korean)"
+        errorLine1="    &lt;string name=&quot;license_detail_core_ktx&quot;>AndroidX Core KTX is part of AndroidX and is licensed under the Apache License 2.0.\n\nProject: https://developer.android.com/jetpack/androidx\nLicense: https://www.apache.org/licenses/LICENSE-2.0&lt;/string>"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/strings.xml"
+            line="226"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="MissingTranslation"
+        message="&quot;license_detail_appcompat&quot; is not translated in &quot;ko&quot; (Korean)"
+        errorLine1="    &lt;string name=&quot;license_detail_appcompat&quot;>AndroidX AppCompat is part of AndroidX and is licensed under the Apache License 2.0.\n\nProject: https://developer.android.com/jetpack/androidx\nLicense: https://www.apache.org/licenses/LICENSE-2.0&lt;/string>"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/strings.xml"
+            line="227"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="MissingTranslation"
+        message="&quot;license_detail_datastore&quot; is not translated in &quot;ko&quot; (Korean)"
+        errorLine1="    &lt;string name=&quot;license_detail_datastore&quot;>AndroidX DataStore is part of AndroidX and is licensed under the Apache License 2.0.\n\nProject: https://developer.android.com/jetpack/androidx\nLicense: https://www.apache.org/licenses/LICENSE-2.0&lt;/string>"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/strings.xml"
+            line="228"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="MissingTranslation"
+        message="&quot;license_detail_kotlinx_serialization&quot; is not translated in &quot;ko&quot; (Korean)"
+        errorLine1="    &lt;string name=&quot;license_detail_kotlinx_serialization&quot;>Kotlinx Serialization is licensed under the Apache License 2.0.\n\nProject: https://github.com/Kotlin/kotlinx.serialization\nLicense: https://www.apache.org/licenses/LICENSE-2.0&lt;/string>"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/strings.xml"
+            line="229"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="MissingTranslation"
+        message="&quot;license_detail_fragment&quot; is not translated in &quot;ko&quot; (Korean)"
+        errorLine1="    &lt;string name=&quot;license_detail_fragment&quot;>AndroidX Fragment is part of AndroidX and is licensed under the Apache License 2.0.\n\nProject: https://developer.android.com/jetpack/androidx\nLicense: https://www.apache.org/licenses/LICENSE-2.0&lt;/string>"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/strings.xml"
+            line="230"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="MissingTranslation"
+        message="&quot;license_detail_swiperefreshlayout&quot; is not translated in &quot;ko&quot; (Korean)"
+        errorLine1="    &lt;string name=&quot;license_detail_swiperefreshlayout&quot;>AndroidX SwipeRefreshLayout is part of AndroidX and is licensed under the Apache License 2.0.\n\nProject: https://developer.android.com/jetpack/androidx\nLicense: https://www.apache.org/licenses/LICENSE-2.0&lt;/string>"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/strings.xml"
+            line="231"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="MissingTranslation"
+        message="&quot;unit_celsius&quot; is not translated in &quot;ko&quot; (Korean)"
+        errorLine1="    &lt;string name=&quot;unit_celsius&quot;>°C&lt;/string>"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/strings.xml"
+            line="232"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="MissingTranslation"
+        message="&quot;unit_fahrenheit&quot; is not translated in &quot;ko&quot; (Korean)"
+        errorLine1="    &lt;string name=&quot;unit_fahrenheit&quot;>°F&lt;/string>"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/strings.xml"
+            line="233"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="PluralsCandidate"
+        message="Formatting %d followed by words (&quot;configuration&quot;): This should probably be a plural rather than a string"
+        errorLine1="    &lt;string name=&quot;backup_read_summary&quot;>Read %1$d of %2$d configuration fields&lt;/string>"
+        errorLine2="    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/backup_strings.xml"
+            line="4"
+            column="5"/>
+    </issue>
+
+    <issue
+        id="PluralsCandidate"
+        message="Formatting %d followed by words (&quot;fields&quot;): This should probably be a plural rather than a string"
+        errorLine1="    &lt;string name=&quot;backup_loaded_summary&quot;>%1$s · %2$d fields · %3$s&lt;/string>"
+        errorLine2="    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/backup_strings.xml"
+            line="21"
+            column="5"/>
+    </issue>
+
+    <issue
+        id="PluralsCandidate"
+        message="Formatting %d followed by words (&quot;unconnected&quot;): This should probably be a plural rather than a string"
+        errorLine1="    &lt;string name=&quot;balance_wiring_short_notice&quot;>Wiring short pattern: cell %1$d unconnected + cell %2$d normal → %3$dS recognized; upper ghost slots show no data&lt;/string>"
+        errorLine2="    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/balance_strings.xml"
+            line="22"
+            column="5"/>
+    </issue>
+
+    <issue
+        id="PluralsCandidate"
+        message="Formatting %d followed by words (&quot;unused&quot;): This should probably be a plural rather than a string"
+        errorLine1="    &lt;string name=&quot;balance_zero_voltage_cell_notice&quot;>Zero-voltage channel (official JBD wiring): cell %1$d unused → %2$dS recognized; upper slots show no data&lt;/string>"
+        errorLine2="    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/balance_strings.xml"
+            line="23"
+            column="5"/>
+    </issue>
+
+    <issue
+        id="PluralsCandidate"
+        message="Formatting %d followed by words (&quot;voltage&quot;): This should probably be a plural rather than a string"
+        errorLine1="    &lt;string name=&quot;calibration_field_cell_voltage&quot;>Cell %1$d voltage calibration&lt;/string>"
+        errorLine2="    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/calibration_strings.xml"
+            line="6"
+            column="5"/>
+    </issue>
+
+    <issue
+        id="PluralsCandidate"
+        message="Formatting %d followed by words (&quot;temperature&quot;): This should probably be a plural rather than a string"
+        errorLine1="    &lt;string name=&quot;calibration_field_ntc_temperature&quot;>NTC %1$d temperature calibration&lt;/string>"
+        errorLine2="    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/calibration_strings.xml"
+            line="7"
+            column="5"/>
+    </issue>
+
+    <issue
+        id="PluralsCandidate"
+        message="Formatting %d followed by words (&quot;samples&quot;): This should probably be a plural rather than a string"
+        errorLine1="    &lt;string name=&quot;history_chart_description&quot;>History chart: %1$s · %2$s · %3$d samples&lt;/string>"
+        errorLine2="    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/history_strings.xml"
+            line="11"
+            column="5"/>
+    </issue>
+
+    <issue
+        id="PluralsCandidate"
+        message="Formatting %d followed by words (&quot;matched&quot;): This should probably be a plural rather than a string"
+        errorLine1="    &lt;string name=&quot;settings_confirmation_matches&quot;>Post-commit confirmation: %1$d matched&lt;/string>"
+        errorLine2="    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/settings_ui_strings.xml"
+            line="51"
+            column="5"/>
+    </issue>
+
+    <issue
+        id="PluralsCandidate"
+        message="Formatting %d followed by words (&quot;entries&quot;): This should probably be a plural rather than a string"
+        errorLine1="    &lt;string name=&quot;settings_counter_snapshot_available&quot;>BMS error-counter snapshot: %1$d entries captured before commit&lt;/string>"
+        errorLine2="    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/settings_ui_strings.xml"
+            line="54"
+            column="5"/>
+    </issue>
+
+    <issue
+        id="PluralsCandidate"
+        message="Formatting %d followed by words (&quot;seconds&quot;): This should probably be a plural rather than a string"
+        errorLine1="    &lt;string name=&quot;status_reconnecting&quot;>%1$s Reconnecting in %2$d seconds…&lt;/string>"
+        errorLine2="    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/strings.xml"
+            line="84"
+            column="5"/>
+    </issue>
+
+    <issue
+        id="PluralsCandidate"
+        message="Formatting %d followed by words (&quot;device&quot;): This should probably be a plural rather than a string"
+        errorLine1="    &lt;string name=&quot;status_found_devices&quot;>Found %1$d device(s), callbacks %2$d.&lt;/string>"
+        errorLine2="    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/strings.xml"
+            line="159"
+            column="5"/>
+    </issue>
+
+    <issue
+        id="DataExtractionRules"
+        message="The attribute `android:allowBackup` is deprecated from Android 12 and higher and may be removed in future versions. Consider adding the attribute `android:dataExtractionRules` specifying an `@xml` resource which configures cloud backups and device transfers on Android 12 and higher."
+        errorLine1="    &lt;application"
+        errorLine2="    ^">
+        <location
+            file="src/main/AndroidManifest.xml"
+            line="13"
+            column="5"/>
+    </issue>
+
+    <issue
+        id="ObsoleteSdkInt"
+        message="This folder configuration (`v23`) is unnecessary; `minSdkVersion` is 23. Merge all the resources in this folder into `values-night`.">
+        <location
+            file="src/main/res/values-night-v23"/>
+    </issue>
+
+    <issue
+        id="ObsoleteSdkInt"
+        message="This folder configuration (`v23`) is unnecessary; `minSdkVersion` is 23. Merge all the resources in this folder into `values`.">
+        <location
+            file="src/main/res/values-v23"/>
+    </issue>
+
+    <issue
+        id="UseCompoundDrawables"
+        message="This tag and its children can be replaced by one `&lt;TextView/>` and a compound drawable"
+        errorLine1="                    &lt;LinearLayout"
+        errorLine2="                     ~~~~~~~~~~~~">
+        <location
+            file="src/main/res/layout/fragment_overview.xml"
+            line="243"
+            column="22"/>
+    </issue>
+
+    <issue
+        id="UseCompoundDrawables"
+        message="This tag and its children can be replaced by one `&lt;TextView/>` and a compound drawable"
+        errorLine1="                    &lt;LinearLayout"
+        errorLine2="                     ~~~~~~~~~~~~">
+        <location
+            file="src/main/res/layout/fragment_overview.xml"
+            line="358"
+            column="22"/>
+    </issue>
+
+    <issue
+        id="UseCompoundDrawables"
+        message="This tag and its children can be replaced by one `&lt;TextView/>` and a compound drawable"
+        errorLine1="        &lt;LinearLayout"
+        errorLine2="         ~~~~~~~~~~~~">
+        <location
+            file="src/main/res/layout/view_metric_capacity.xml"
+            line="15"
+            column="10"/>
+    </issue>
+
+    <issue
+        id="UseCompoundDrawables"
+        message="This tag and its children can be replaced by one `&lt;TextView/>` and a compound drawable"
+        errorLine1="        &lt;LinearLayout"
+        errorLine2="         ~~~~~~~~~~~~">
+        <location
+            file="src/main/res/layout/view_metric_current.xml"
+            line="15"
+            column="10"/>
+    </issue>
+
+    <issue
+        id="UseCompoundDrawables"
+        message="This tag and its children can be replaced by one `&lt;TextView/>` and a compound drawable"
+        errorLine1="        &lt;LinearLayout"
+        errorLine2="         ~~~~~~~~~~~~">
+        <location
+            file="src/main/res/layout/view_metric_cycles.xml"
+            line="15"
+            column="10"/>
+    </issue>
+
+    <issue
+        id="UseCompoundDrawables"
+        message="This tag and its children can be replaced by one `&lt;TextView/>` and a compound drawable"
+        errorLine1="        &lt;LinearLayout"
+        errorLine2="         ~~~~~~~~~~~~">
+        <location
+            file="src/main/res/layout/view_metric_pack.xml"
+            line="15"
+            column="10"/>
+    </issue>
+
+    <issue
+        id="UseCompoundDrawables"
+        message="This tag and its children can be replaced by one `&lt;TextView/>` and a compound drawable"
+        errorLine1="        &lt;LinearLayout"
+        errorLine2="         ~~~~~~~~~~~~">
+        <location
+            file="src/main/res/layout/view_metric_power.xml"
+            line="15"
+            column="10"/>
+    </issue>
+
+    <issue
+        id="UseCompoundDrawables"
+        message="This tag and its children can be replaced by one `&lt;TextView/>` and a compound drawable"
+        errorLine1="        &lt;LinearLayout"
+        errorLine2="         ~~~~~~~~~~~~">
+        <location
+            file="src/main/res/layout/view_metric_voltage.xml"
+            line="15"
+            column="10"/>
+    </issue>
+
+    <issue
+        id="Overdraw"
+        message="Possible overdraw: Root element paints background `@color/app_bg` with a theme that also paints a background (inferred theme is `@style/AppTheme`)"
+        errorLine1="    android:background=&quot;@color/app_bg&quot;"
+        errorLine2="    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/layout/fragment_backup_restore.xml"
+            line="5"
+            column="5"/>
+    </issue>
+
+    <issue
+        id="Overdraw"
+        message="Possible overdraw: Root element paints background `@color/app_bg` with a theme that also paints a background (inferred theme is `@style/AppTheme`)"
+        errorLine1="    android:background=&quot;@color/app_bg&quot;"
+        errorLine2="    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/layout/fragment_calibration.xml"
+            line="6"
+            column="5"/>
+    </issue>
+
+    <issue
+        id="Overdraw"
+        message="Possible overdraw: Root element paints background `@color/app_bg` with a theme that also paints a background (inferred theme is `@style/AppTheme`)"
+        errorLine1="    android:background=&quot;@color/app_bg&quot;"
+        errorLine2="    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/layout/fragment_settings_group.xml"
+            line="6"
+            column="5"/>
+    </issue>
+
+    <issue
+        id="Overdraw"
+        message="Possible overdraw: Root element paints background `?attr/selectableItemBackground` with a theme that also paints a background (inferred theme is `@style/AppTheme`)"
+        errorLine1="    android:background=&quot;?attr/selectableItemBackground&quot;"
+        errorLine2="    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/layout/row_settings_field.xml"
+            line="4"
+            column="5"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
+        message="The resource `R.string.balance_legend_highest` appears to be unused"
+        errorLine1="    &lt;string name=&quot;balance_legend_highest&quot;>● Highest voltage&lt;/string>"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/balance_strings.xml"
+            line="4"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
+        message="The resource `R.string.balance_legend_lowest` appears to be unused"
+        errorLine1="    &lt;string name=&quot;balance_legend_lowest&quot;>● Lowest voltage&lt;/string>"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/balance_strings.xml"
+            line="5"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
+        message="The resource `R.string.balance_legend_balancing` appears to be unused"
+        errorLine1="    &lt;string name=&quot;balance_legend_balancing&quot;>● Balancing&lt;/string>"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/balance_strings.xml"
+            line="6"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
+        message="The resource `R.color.danger` appears to be unused"
+        errorLine1="    &lt;color name=&quot;danger&quot;>#D32F2F&lt;/color>"
+        errorLine2="           ~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/colors.xml"
+            line="11"
+            column="12"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
+        message="The resource `R.color.surface_elevation_1` appears to be unused"
+        errorLine1="    &lt;color name=&quot;surface_elevation_1&quot;>#FFFFFF&lt;/color>"
+        errorLine2="           ~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/colors.xml"
+            line="13"
+            column="12"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
+        message="The resource `R.color.surface_elevation_4` appears to be unused"
+        errorLine1="    &lt;color name=&quot;surface_elevation_4&quot;>#FFFFFF&lt;/color>"
+        errorLine2="           ~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/colors.xml"
+            line="15"
+            column="12"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
+        message="The resource `R.color.surface_elevation_12` appears to be unused"
+        errorLine1="    &lt;color name=&quot;surface_elevation_12&quot;>#FFFFFF&lt;/color>"
+        errorLine2="           ~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/colors.xml"
+            line="17"
+            column="12"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
+        message="The resource `R.color.surface_elevation_16` appears to be unused"
+        errorLine1="    &lt;color name=&quot;surface_elevation_16&quot;>#FFFFFF&lt;/color>"
+        errorLine2="           ~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/colors.xml"
+            line="18"
+            column="12"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
+        message="The resource `R.color.cell_voltage_normal` appears to be unused"
+        errorLine1="    &lt;color name=&quot;cell_voltage_normal&quot;>#757D8A&lt;/color>"
+        errorLine2="           ~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/colors.xml"
+            line="25"
+            column="12"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
+        message="The resource `R.string.control_planned` appears to be unused"
+        errorLine1="    &lt;string name=&quot;control_planned&quot;>Planned&lt;/string>"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/control_strings.xml"
+            line="20"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
+        message="The resource `R.string.control_future_notice` appears to be unused"
+        errorLine1="    &lt;string name=&quot;control_future_notice&quot;>Write and calibration features will be delivered incrementally in later updates.&lt;/string>"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/control_strings.xml"
+            line="21"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
+        message="The resource `R.dimen.space_2` appears to be unused"
+        errorLine1="    &lt;dimen name=&quot;space_2&quot;>2dp&lt;/dimen>"
+        errorLine2="           ~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/dimens.xml"
+            line="2"
+            column="12"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
+        message="The resource `R.dimen.space_6` appears to be unused"
+        errorLine1="    &lt;dimen name=&quot;space_6&quot;>6dp&lt;/dimen>"
+        errorLine2="           ~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/dimens.xml"
+            line="4"
+            column="12"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
+        message="The resource `R.dimen.space_9` appears to be unused"
+        errorLine1="    &lt;dimen name=&quot;space_9&quot;>9dp&lt;/dimen>"
+        errorLine2="           ~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/dimens.xml"
+            line="6"
+            column="12"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
+        message="The resource `R.dimen.space_10` appears to be unused"
+        errorLine1="    &lt;dimen name=&quot;space_10&quot;>10dp&lt;/dimen>"
+        errorLine2="           ~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/dimens.xml"
+            line="7"
+            column="12"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
+        message="The resource `R.dimen.space_14` appears to be unused"
+        errorLine1="    &lt;dimen name=&quot;space_14&quot;>14dp&lt;/dimen>"
+        errorLine2="           ~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/dimens.xml"
+            line="9"
+            column="12"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
+        message="The resource `R.dimen.space_18` appears to be unused"
+        errorLine1="    &lt;dimen name=&quot;space_18&quot;>18dp&lt;/dimen>"
+        errorLine2="           ~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/dimens.xml"
+            line="11"
+            column="12"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
+        message="The resource `R.dimen.space_72` appears to be unused"
+        errorLine1="    &lt;dimen name=&quot;space_72&quot;>72dp&lt;/dimen>"
+        errorLine2="           ~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/dimens.xml"
+            line="18"
+            column="12"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
+        message="The resource `R.drawable.ic_bluetooth_24` appears to be unused"
+        errorLine1="&lt;vector xmlns:android=&quot;http://schemas.android.com/apk/res/android&quot; android:height=&quot;24dp&quot; android:viewportHeight=&quot;24&quot; android:viewportWidth=&quot;24&quot; android:width=&quot;24dp&quot;>"
+        errorLine2="^">
+        <location
+            file="src/main/res/drawable/ic_bluetooth_24.xml"
+            line="1"
+            column="1"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
+        message="The resource `R.drawable.ic_bluetooth_connected_24` appears to be unused"
+        errorLine1="&lt;vector xmlns:android=&quot;http://schemas.android.com/apk/res/android&quot; android:height=&quot;24dp&quot; android:viewportHeight=&quot;24&quot; android:viewportWidth=&quot;24&quot; android:width=&quot;24dp&quot;>"
+        errorLine2="^">
+        <location
+            file="src/main/res/drawable/ic_bluetooth_connected_24.xml"
+            line="1"
+            column="1"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
+        message="The resource `R.drawable.ic_brightness_4_24` appears to be unused"
+        errorLine1="&lt;vector xmlns:android=&quot;http://schemas.android.com/apk/res/android&quot; android:height=&quot;24dp&quot; android:viewportHeight=&quot;24&quot; android:viewportWidth=&quot;24&quot; android:width=&quot;24dp&quot;>"
+        errorLine2="^">
+        <location
+            file="src/main/res/drawable/ic_brightness_4_24.xml"
+            line="1"
+            column="1"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
+        message="The resource `R.drawable.ic_commit_24` appears to be unused"
+        errorLine1="&lt;vector xmlns:android=&quot;http://schemas.android.com/apk/res/android&quot; android:height=&quot;24dp&quot; android:viewportHeight=&quot;24&quot; android:viewportWidth=&quot;24&quot; android:width=&quot;24dp&quot;>"
+        errorLine2="^">
+        <location
+            file="src/main/res/drawable/ic_commit_24.xml"
+            line="1"
+            column="1"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
+        message="The resource `R.drawable.ic_description_24` appears to be unused"
+        errorLine1="&lt;vector xmlns:android=&quot;http://schemas.android.com/apk/res/android&quot; android:height=&quot;24dp&quot; android:viewportHeight=&quot;24&quot; android:viewportWidth=&quot;24&quot; android:width=&quot;24dp&quot;>"
+        errorLine2="^">
+        <location
+            file="src/main/res/drawable/ic_description_24.xml"
+            line="1"
+            column="1"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
+        message="The resource `R.drawable.ic_fullscreen_24` appears to be unused"
+        errorLine1="&lt;vector xmlns:android=&quot;http://schemas.android.com/apk/res/android&quot; android:height=&quot;24dp&quot; android:viewportHeight=&quot;24&quot; android:viewportWidth=&quot;24&quot; android:width=&quot;24dp&quot;>"
+        errorLine2="^">
+        <location
+            file="src/main/res/drawable/ic_fullscreen_24.xml"
+            line="1"
+            column="1"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
+        message="The resource `R.drawable.ic_fullscreen_exit_24` appears to be unused"
+        errorLine1="&lt;vector xmlns:android=&quot;http://schemas.android.com/apk/res/android&quot; android:height=&quot;24dp&quot; android:viewportHeight=&quot;24&quot; android:viewportWidth=&quot;24&quot; android:width=&quot;24dp&quot;>"
+        errorLine2="^">
+        <location
+            file="src/main/res/drawable/ic_fullscreen_exit_24.xml"
+            line="1"
+            column="1"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
+        message="The resource `R.drawable.ic_github_24` appears to be unused"
+        errorLine1="&lt;vector xmlns:android=&quot;http://schemas.android.com/apk/res/android&quot;"
+        errorLine2="^">
+        <location
+            file="src/main/res/drawable/ic_github_24.xml"
+            line="1"
+            column="1"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
+        message="The resource `R.mipmap.ic_launcher_round` appears to be unused">
+        <location
+            file="src/main/res/mipmap-hdpi/ic_launcher_round.webp"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
+        message="The resource `R.drawable.ic_link_24` appears to be unused"
+        errorLine1="&lt;vector xmlns:android=&quot;http://schemas.android.com/apk/res/android&quot; android:height=&quot;24dp&quot; android:viewportHeight=&quot;24&quot; android:viewportWidth=&quot;24&quot; android:width=&quot;24dp&quot;>"
+        errorLine2="^">
+        <location
+            file="src/main/res/drawable/ic_link_24.xml"
+            line="1"
+            column="1"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
+        message="The resource `R.drawable.ic_location_off_24` appears to be unused"
+        errorLine1="&lt;vector xmlns:android=&quot;http://schemas.android.com/apk/res/android&quot; android:height=&quot;24dp&quot; android:viewportHeight=&quot;24&quot; android:viewportWidth=&quot;24&quot; android:width=&quot;24dp&quot;>"
+        errorLine2="^">
+        <location
+            file="src/main/res/drawable/ic_location_off_24.xml"
+            line="1"
+            column="1"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
+        message="The resource `R.drawable.ic_offline_bolt_24` appears to be unused"
+        errorLine1="&lt;vector xmlns:android=&quot;http://schemas.android.com/apk/res/android&quot; android:height=&quot;24dp&quot; android:viewportHeight=&quot;24&quot; android:viewportWidth=&quot;24&quot; android:width=&quot;24dp&quot;>"
+        errorLine2="^">
+        <location
+            file="src/main/res/drawable/ic_offline_bolt_24.xml"
+            line="1"
+            column="1"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
+        message="The resource `R.drawable.ic_offline_bolt_outline_24` appears to be unused"
+        errorLine1="&lt;vector xmlns:android=&quot;http://schemas.android.com/apk/res/android&quot; android:height=&quot;24dp&quot; android:viewportHeight=&quot;24&quot; android:viewportWidth=&quot;24&quot; android:width=&quot;24dp&quot;>"
+        errorLine2="^">
+        <location
+            file="src/main/res/drawable/ic_offline_bolt_outline_24.xml"
+            line="1"
+            column="1"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
+        message="The resource `R.drawable.ic_palette_24` appears to be unused"
+        errorLine1="&lt;vector xmlns:android=&quot;http://schemas.android.com/apk/res/android&quot; android:height=&quot;24dp&quot; android:viewportHeight=&quot;24&quot; android:viewportWidth=&quot;24&quot; android:width=&quot;24dp&quot;>"
+        errorLine2="^">
+        <location
+            file="src/main/res/drawable/ic_palette_24.xml"
+            line="1"
+            column="1"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
+        message="The resource `R.drawable.ic_translate_24` appears to be unused"
+        errorLine1="&lt;vector xmlns:android=&quot;http://schemas.android.com/apk/res/android&quot; android:height=&quot;24dp&quot; android:viewportHeight=&quot;24&quot; android:viewportWidth=&quot;24&quot; android:width=&quot;24dp&quot;>"
+        errorLine2="^">
+        <location
+            file="src/main/res/drawable/ic_translate_24.xml"
+            line="1"
+            column="1"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
+        message="The resource `R.drawable.ic_widgets_24` appears to be unused"
+        errorLine1="&lt;vector xmlns:android=&quot;http://schemas.android.com/apk/res/android&quot; android:height=&quot;24dp&quot; android:viewportHeight=&quot;24&quot; android:viewportWidth=&quot;24&quot; android:width=&quot;24dp&quot;>"
+        errorLine2="^">
+        <location
+            file="src/main/res/drawable/ic_widgets_24.xml"
+            line="1"
+            column="1"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
+        message="The resource `R.string.development_in_progress` appears to be unused"
+        errorLine1="    &lt;string name=&quot;development_in_progress&quot;>Under development&lt;/string>"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/navigation_strings.xml"
+            line="8"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
+        message="The resource `R.string.bms_sheet_status_saved` appears to be unused"
+        errorLine1="    &lt;string name=&quot;bms_sheet_status_saved&quot;>Registered&lt;/string>"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/product_strings.xml"
+            line="8"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
+        message="The resource `R.string.settings_no_staged_changes` appears to be unused"
+        errorLine1="    &lt;string name=&quot;settings_no_staged_changes&quot;>No staged changes.&lt;/string>"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/settings_ui_strings.xml"
+            line="44"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
+        message="The resource `R.string.settings_no_result` appears to be unused"
+        errorLine1="    &lt;string name=&quot;settings_no_result&quot;>No apply result yet.&lt;/string>"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/settings_ui_strings.xml"
+            line="45"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
+        message="The resource `R.string.settings_value_required` appears to be unused"
+        errorLine1="    &lt;string name=&quot;settings_value_required&quot;>Enter a value.&lt;/string>"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/settings_ui_strings.xml"
+            line="65"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
+        message="The resource `R.string.toolbar_subtitle_local` appears to be unused"
+        errorLine1="    &lt;string name=&quot;toolbar_subtitle_local&quot;>Local BMS monitor&lt;/string>"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/strings.xml"
+            line="4"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
+        message="The resource `R.string.toolbar_devices_subtitle` appears to be unused"
+        errorLine1="    &lt;string name=&quot;toolbar_devices_subtitle&quot;>Battery and display devices&lt;/string>"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/strings.xml"
+            line="6"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
+        message="The resource `R.string.action_open` appears to be unused"
+        errorLine1="    &lt;string name=&quot;action_open&quot;>Open&lt;/string>"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/strings.xml"
+            line="11"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
+        message="The resource `R.string.nav_parameters` appears to be unused"
+        errorLine1="    &lt;string name=&quot;nav_parameters&quot;>Parameters&lt;/string>"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/strings.xml"
+            line="18"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
+        message="The resource `R.string.parameters_title` appears to be unused"
+        errorLine1="    &lt;string name=&quot;parameters_title&quot;>Parameters&lt;/string>"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/strings.xml"
+            line="24"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
+        message="The resource `R.string.parameters_group_connection` appears to be unused"
+        errorLine1="    &lt;string name=&quot;parameters_group_connection&quot;>Connection&lt;/string>"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/strings.xml"
+            line="54"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
+        message="The resource `R.string.parameters_group_identity` appears to be unused"
+        errorLine1="    &lt;string name=&quot;parameters_group_identity&quot;>Battery Info&lt;/string>"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/strings.xml"
+            line="55"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
+        message="The resource `R.string.parameters_group_capacity` appears to be unused"
+        errorLine1="    &lt;string name=&quot;parameters_group_capacity&quot;>Capacity&lt;/string>"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/strings.xml"
+            line="56"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
+        message="The resource `R.string.parameters_group_electrical` appears to be unused"
+        errorLine1="    &lt;string name=&quot;parameters_group_electrical&quot;>Electrical&lt;/string>"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/strings.xml"
+            line="57"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
+        message="The resource `R.string.parameters_group_status` appears to be unused"
+        errorLine1="    &lt;string name=&quot;parameters_group_status&quot;>Status&lt;/string>"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/strings.xml"
+            line="58"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
+        message="The resource `R.string.cell_balancing_suffix` appears to be unused"
+        errorLine1="    &lt;string name=&quot;cell_balancing_suffix&quot;> - BAL&lt;/string>"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/strings.xml"
+            line="121"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
+        message="The resource `R.string.estimate_idle` appears to be unused"
+        errorLine1="    &lt;string name=&quot;estimate_idle&quot;>Idle. No time estimate.&lt;/string>"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/strings.xml"
+            line="140"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
+        message="The resource `R.string.about_version` appears to be unused"
+        errorLine1="    &lt;string name=&quot;about_version&quot;>Version 0.1.0&lt;/string>"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/strings.xml"
+            line="198"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
+        message="The resource `R.string.about_github` appears to be unused"
+        errorLine1="    &lt;string name=&quot;about_github&quot;>GitHub Repository&lt;/string>"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/strings.xml"
+            line="200"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
+        message="The resource `R.string.license_detail_openjbd` appears to be unused"
+        errorLine1="    &lt;string name=&quot;license_detail_openjbd&quot;>OpenJBD is licensed under the MIT License.\n\nCopyright © 2026 KFACBT\n\nPermission is granted, free of charge, to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the software, provided that the copyright notice and permission notice are included in copies or substantial portions of the software.\n\nThe software is provided \&quot;as is\&quot;, without warranty of any kind.&lt;/string>"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/strings.xml"
+            line="220"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
+        message="The resource `R.string.license_detail_compose` appears to be unused"
+        errorLine1="    &lt;string name=&quot;license_detail_compose&quot;>Jetpack Compose is part of AndroidX and is licensed under the Apache License 2.0.\n\nProject: https://developer.android.com/jetpack/compose\nLicense: https://www.apache.org/licenses/LICENSE-2.0&lt;/string>"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/strings.xml"
+            line="221"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
+        message="The resource `R.string.license_detail_material_components` appears to be unused"
+        errorLine1="    &lt;string name=&quot;license_detail_material_components&quot;>Material Components for Android is licensed under the Apache License 2.0.\n\nProject: https://github.com/material-components/material-components-android\nLicense: https://www.apache.org/licenses/LICENSE-2.0&lt;/string>"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/strings.xml"
+            line="222"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
+        message="The resource `R.string.license_detail_navigation` appears to be unused"
+        errorLine1="    &lt;string name=&quot;license_detail_navigation&quot;>Jetpack Navigation Compose is part of AndroidX and is licensed under the Apache License 2.0.\n\nProject: https://developer.android.com/jetpack/compose/navigation\nLicense: https://www.apache.org/licenses/LICENSE-2.0&lt;/string>"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/strings.xml"
+            line="223"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
+        message="The resource `R.string.license_detail_lifecycle` appears to be unused"
+        errorLine1="    &lt;string name=&quot;license_detail_lifecycle&quot;>AndroidX Lifecycle is part of AndroidX and is licensed under the Apache License 2.0.\n\nProject: https://developer.android.com/jetpack/androidx\nLicense: https://www.apache.org/licenses/LICENSE-2.0&lt;/string>"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/strings.xml"
+            line="224"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
+        message="The resource `R.string.license_detail_hilt` appears to be unused"
+        errorLine1="    &lt;string name=&quot;license_detail_hilt&quot;>Hilt (Dagger) is licensed under the Apache License 2.0.\n\nProject: https://dagger.dev/hilt\nLicense: https://www.apache.org/licenses/LICENSE-2.0&lt;/string>"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/strings.xml"
+            line="225"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
+        message="The resource `R.string.license_detail_core_ktx` appears to be unused"
+        errorLine1="    &lt;string name=&quot;license_detail_core_ktx&quot;>AndroidX Core KTX is part of AndroidX and is licensed under the Apache License 2.0.\n\nProject: https://developer.android.com/jetpack/androidx\nLicense: https://www.apache.org/licenses/LICENSE-2.0&lt;/string>"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/strings.xml"
+            line="226"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
+        message="The resource `R.string.license_detail_appcompat` appears to be unused"
+        errorLine1="    &lt;string name=&quot;license_detail_appcompat&quot;>AndroidX AppCompat is part of AndroidX and is licensed under the Apache License 2.0.\n\nProject: https://developer.android.com/jetpack/androidx\nLicense: https://www.apache.org/licenses/LICENSE-2.0&lt;/string>"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/strings.xml"
+            line="227"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
+        message="The resource `R.string.license_detail_datastore` appears to be unused"
+        errorLine1="    &lt;string name=&quot;license_detail_datastore&quot;>AndroidX DataStore is part of AndroidX and is licensed under the Apache License 2.0.\n\nProject: https://developer.android.com/jetpack/androidx\nLicense: https://www.apache.org/licenses/LICENSE-2.0&lt;/string>"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/strings.xml"
+            line="228"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
+        message="The resource `R.string.license_detail_kotlinx_serialization` appears to be unused"
+        errorLine1="    &lt;string name=&quot;license_detail_kotlinx_serialization&quot;>Kotlinx Serialization is licensed under the Apache License 2.0.\n\nProject: https://github.com/Kotlin/kotlinx.serialization\nLicense: https://www.apache.org/licenses/LICENSE-2.0&lt;/string>"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/strings.xml"
+            line="229"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
+        message="The resource `R.string.license_detail_fragment` appears to be unused"
+        errorLine1="    &lt;string name=&quot;license_detail_fragment&quot;>AndroidX Fragment is part of AndroidX and is licensed under the Apache License 2.0.\n\nProject: https://developer.android.com/jetpack/androidx\nLicense: https://www.apache.org/licenses/LICENSE-2.0&lt;/string>"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/strings.xml"
+            line="230"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
+        message="The resource `R.string.license_detail_swiperefreshlayout` appears to be unused"
+        errorLine1="    &lt;string name=&quot;license_detail_swiperefreshlayout&quot;>AndroidX SwipeRefreshLayout is part of AndroidX and is licensed under the Apache License 2.0.\n\nProject: https://developer.android.com/jetpack/androidx\nLicense: https://www.apache.org/licenses/LICENSE-2.0&lt;/string>"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/strings.xml"
+            line="231"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
+        message="The resource `R.dimen.text_body` appears to be unused"
+        errorLine1="    &lt;dimen name=&quot;text_body&quot;>16sp&lt;/dimen>"
+        errorLine2="           ~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/typography.xml"
+            line="13"
+            column="12"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
+        message="The resource `R.dimen.text_label` appears to be unused"
+        errorLine1="    &lt;dimen name=&quot;text_label&quot;>14sp&lt;/dimen>"
+        errorLine2="           ~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/typography.xml"
+            line="14"
+            column="12"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
+        message="The resource `R.dimen.text_caption` appears to be unused"
+        errorLine1="    &lt;dimen name=&quot;text_caption&quot;>12sp&lt;/dimen>"
+        errorLine2="           ~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/typography.xml"
+            line="15"
+            column="12"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
+        message="The resource `R.dimen.text_micro` appears to be unused"
+        errorLine1="    &lt;dimen name=&quot;text_micro&quot;>11sp&lt;/dimen>"
+        errorLine2="           ~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/typography.xml"
+            line="16"
+            column="12"/>
+    </issue>
+
+    <issue
+        id="TooManyViews"
+        message="`fragment_control.xml` has more than 80 views, bad for performance"
+        errorLine1="                        &lt;LinearLayout"
+        errorLine2="                         ~~~~~~~~~~~~">
+        <location
+            file="src/main/res/layout/fragment_control.xml"
+            line="635"
+            column="26"/>
+    </issue>
+
+    <issue
+        id="IconLauncherShape"
+        message="Launcher icon used as round icon did not have a circular shape">
+        <location
+            file="src/main/res/drawable/jbd_app_icon.png"/>
+    </issue>
+
+    <issue
+        id="IconLocation"
+        message="Found bitmap drawable `res/drawable/jbd_app_icon.png` in densityless folder">
+        <location
+            file="src/main/res/drawable/jbd_app_icon.png"/>
+    </issue>
+
+    <issue
+        id="UseKtx"
+        message="Use the KTX extension function `String.toUri` instead?"
+        errorLine1="            startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(REPOSITORY_URL)))"
+        errorLine2="                                                     ~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/kotlin/com/gytxtx/openjbd/AboutActivity.kt"
+            line="51"
+            column="54"/>
+    </issue>
+
+    <issue
+        id="UseKtx"
+        message="Use the KTX extension function `SharedPreferences.edit` instead?"
+        errorLine1="                    prefs.edit().putLong(PREF_REFRESH_INTERVAL_MS, DEFAULT_REFRESH_INTERVAL_MS).apply()"
+        errorLine2="                    ~~~~~~~~~~~~">
+        <location
+            file="src/main/kotlin/com/gytxtx/openjbd/AppSettings.kt"
+            line="65"
+            column="21"/>
+    </issue>
+
+    <issue
+        id="UseKtx"
+        message="Use the KTX extension function `SharedPreferences.edit` instead?"
+        errorLine1="                prefs.edit().putLong(PREF_REFRESH_INTERVAL_MS, parsed).apply()"
+        errorLine2="                ~~~~~~~~~~~~">
+        <location
+            file="src/main/kotlin/com/gytxtx/openjbd/AppSettings.kt"
+            line="68"
+            column="17"/>
+    </issue>
+
+    <issue
+        id="UseKtx"
+        message="Use the KTX extension function `SharedPreferences.edit` instead?"
+        errorLine1="        prefs(context).edit().putLong(PREF_REFRESH_INTERVAL_MS, value).apply()"
+        errorLine2="        ~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/kotlin/com/gytxtx/openjbd/AppSettings.kt"
+            line="81"
+            column="9"/>
+    </issue>
+
+    <issue
+        id="UseKtx"
+        message="Use the KTX extension function `SharedPreferences.edit` instead?"
+        errorLine1="                prefs.edit().putBoolean(PREF_AUTO_CONNECT, enabled).apply()"
+        errorLine2="                ~~~~~~~~~~~~">
+        <location
+            file="src/main/kotlin/com/gytxtx/openjbd/AppSettings.kt"
+            line="92"
+            column="17"/>
+    </issue>
+
+    <issue
+        id="UseKtx"
+        message="Use the KTX extension function `SharedPreferences.edit` instead?"
+        errorLine1="        prefs(context).edit().putBoolean(PREF_AUTO_CONNECT, enabled).apply()"
+        errorLine2="        ~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/kotlin/com/gytxtx/openjbd/AppSettings.kt"
+            line="101"
+            column="9"/>
+    </issue>
+
+    <issue
+        id="UseKtx"
+        message="Use the KTX extension function `SharedPreferences.edit` instead?"
+        errorLine1="            prefs.edit().putString(PREF_THEME, VALUE_SYSTEM).apply()"
+        errorLine2="            ~~~~~~~~~~~~">
+        <location
+            file="src/main/kotlin/com/gytxtx/openjbd/AppSettings.kt"
+            line="109"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="UseKtx"
+        message="Use the KTX extension function `SharedPreferences.edit` instead?"
+        errorLine1="            prefs.edit().putString(PREF_LANGUAGE, VALUE_SYSTEM).apply()"
+        errorLine2="            ~~~~~~~~~~~~">
+        <location
+            file="src/main/kotlin/com/gytxtx/openjbd/AppSettings.kt"
+            line="120"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="UseKtx"
+        message="Use the KTX extension function `ViewGroup.isEmpty` instead?"
+        errorLine1="        issuesList.visibility = if (issuesList.childCount == 0) View.GONE else View.VISIBLE"
+        errorLine2="                                    ~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/kotlin/com/gytxtx/openjbd/settings/BackupRestoreDialogFragment.kt"
+            line="349"
+            column="37"/>
+    </issue>
+
+    <issue
+        id="UseKtx"
+        message="Use the KTX extension function `ViewGroup.isEmpty` instead?"
+        errorLine1="        issuesList.visibility = if (issuesList.childCount == 0) View.GONE else View.VISIBLE"
+        errorLine2="                                    ~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/kotlin/com/gytxtx/openjbd/settings/BackupRestoreDialogFragment.kt"
+            line="349"
+            column="37"/>
+    </issue>
+
+    <issue
+        id="UseKtx"
+        message="Use the KTX extension function `ViewGroup.isEmpty` instead?"
+        errorLine1="        readIssues.visibility = if (readIssues.childCount == 0) View.GONE else View.VISIBLE"
+        errorLine2="                                    ~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/kotlin/com/gytxtx/openjbd/settings/CalibrationDialogFragment.kt"
+            line="267"
+            column="37"/>
+    </issue>
+
+    <issue
+        id="UseKtx"
+        message="Use the KTX extension function `ViewGroup.isEmpty` instead?"
+        errorLine1="        readIssues.visibility = if (readIssues.childCount == 0) View.GONE else View.VISIBLE"
+        errorLine2="                                    ~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/kotlin/com/gytxtx/openjbd/settings/CalibrationDialogFragment.kt"
+            line="267"
+            column="37"/>
+    </issue>
+
+    <issue
+        id="UseKtx"
+        message="Use the KTX extension function `String.toUri` instead?"
+        errorLine1="                Uri.parse(&quot;package:$packageName&quot;)"
+        errorLine2="                ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/kotlin/com/gytxtx/openjbd/DeviceListActivity.kt"
+            line="318"
+            column="17"/>
+    </issue>
+
+    <issue
+        id="UseKtx"
+        message="Use the KTX extension function `Menu.get` instead?"
+        errorLine1="        for (i in 0 until toolbar.menu.size()) toolbar.menu.getItem(i)?.icon?.setTint(getColor(R.color.on_primary))"
+        errorLine2="                                               ~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/kotlin/com/gytxtx/openjbd/MainActivity.kt"
+            line="98"
+            column="48"/>
+    </issue>
+
+    <issue
+        id="UseKtx"
+        message="Use the KTX extension property `Menu.size` instead?"
+        errorLine1="        for (i in 0 until toolbar.menu.size()) toolbar.menu.getItem(i)?.icon?.setTint(getColor(R.color.on_primary))"
+        errorLine2="                          ~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/kotlin/com/gytxtx/openjbd/MainActivity.kt"
+            line="98"
+            column="27"/>
+    </issue>
+
+    <issue
+        id="UseKtx"
+        message="Use the KTX extension function `SharedPreferences.edit` instead?"
+        errorLine1="        AppSettings.prefs(this).edit().putString(AppSettings.PREF_LAST_DEVICE_ADDRESS, address).putString(AppSettings.PREF_LAST_DEVICE_NAME, name ?: address).apply()"
+        errorLine2="        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/kotlin/com/gytxtx/openjbd/MainActivity.kt"
+            line="258"
+            column="9"/>
+    </issue>
+
+    <issue
+        id="UseKtx"
+        message="Use the KTX extension property `View.isVisible` instead?"
+        errorLine1="                reconnectBannerVisible || reconnectBanner.visibility == View.VISIBLE"
+        errorLine2="                                          ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/kotlin/com/gytxtx/openjbd/OverviewFragment.kt"
+            line="125"
+            column="43"/>
+    </issue>
+
+    <issue
+        id="UseKtx"
+        message="Use the KTX extension property `View.isVisible` instead?"
+        errorLine1="            if (reconnectBannerVisible &amp;&amp; reconnectBanner.visibility == View.VISIBLE) return"
+        errorLine2="                                          ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/kotlin/com/gytxtx/openjbd/OverviewFragment.kt"
+            line="355"
+            column="43"/>
+    </issue>
+
+    <issue
+        id="UseKtx"
+        message="Use the KTX extension property `View.isVisible` instead?"
+        errorLine1="                if (settingSwitch != null &amp;&amp; settingSwitch.visibility == View.VISIBLE) settingSwitch.performClick()"
+        errorLine2="                                             ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/kotlin/com/gytxtx/openjbd/SettingsFragment.kt"
+            line="62"
+            column="46"/>
+    </issue>
+
+    <issue
+        id="UseKtx"
+        message="Use the KTX extension function `SharedPreferences.edit` instead?"
+        errorLine1="                settings().edit().putString(AppSettings.PREF_THEME, it).apply(); AppSettings.applyThemePreference(requireContext()); requireActivity().recreate()"
+        errorLine2="                ~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/kotlin/com/gytxtx/openjbd/SettingsFragment.kt"
+            line="76"
+            column="17"/>
+    </issue>
+
+    <issue
+        id="UseKtx"
+        message="Use the KTX extension function `SharedPreferences.edit` instead?"
+        errorLine1="                settings().edit().putString(AppSettings.PREF_LANGUAGE, it).apply(); connectionManager.refreshLocalizedStatus(); requireActivity().recreate()"
+        errorLine2="                ~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/kotlin/com/gytxtx/openjbd/SettingsFragment.kt"
+            line="81"
+            column="17"/>
+    </issue>
+
+    <issue
+        id="UseKtx"
+        message="Use the KTX extension function `SharedPreferences.edit` instead?"
+        errorLine1="                settings().edit().putString(AppSettings.PREF_TEMP_UNIT, it).apply(); renderSettingsRows()"
+        errorLine2="                ~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/kotlin/com/gytxtx/openjbd/SettingsFragment.kt"
+            line="86"
+            column="17"/>
+    </issue>
+
+    <issue
+        id="UseKtx"
+        message="Use the KTX extension function `Int.toDrawable` instead?"
+        errorLine1="        popupWindow.setBackgroundDrawable(ColorDrawable(ctx.getColor(R.color.surface_elevation_8)))"
+        errorLine2="                                          ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/kotlin/com/gytxtx/openjbd/SettingsFragment.kt"
+            line="131"
+            column="43"/>
+    </issue>
+
+    <issue
+        id="UseKtx"
+        message="Use the KTX extension function `ViewGroup.isEmpty` instead?"
+        errorLine1="        readIssues.visibility = if (readIssues.childCount == 0) View.GONE else View.VISIBLE"
+        errorLine2="                                    ~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/kotlin/com/gytxtx/openjbd/settings/SettingsGroupDialogFragment.kt"
+            line="254"
+            column="37"/>
+    </issue>
+
+    <issue
+        id="UseKtx"
+        message="Use the KTX extension function `ViewGroup.isEmpty` instead?"
+        errorLine1="        readIssues.visibility = if (readIssues.childCount == 0) View.GONE else View.VISIBLE"
+        errorLine2="                                    ~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/kotlin/com/gytxtx/openjbd/settings/SettingsGroupDialogFragment.kt"
+            line="254"
+            column="37"/>
+    </issue>
+
+    <issue
+        id="UseKtx"
+        message="Use the KTX extension function `SharedPreferences.edit` instead?"
+        errorLine1="        prefs.edit().putLong(CONSENT_PREFIX + identity.fingerprint, System.currentTimeMillis()).apply()"
+        errorLine2="        ~~~~~~~~~~~~">
+        <location
+            file="src/main/kotlin/com/gytxtx/openjbd/maintenance/WriteAuthorization.kt"
+            line="76"
+            column="9"/>
+    </issue>
+
+    <issue
+        id="UseKtx"
+        message="Use the KTX extension function `SharedPreferences.edit` instead?"
+        errorLine1="        prefs.edit().remove(CONSENT_PREFIX + identity.fingerprint).apply()"
+        errorLine2="        ~~~~~~~~~~~~">
+        <location
+            file="src/main/kotlin/com/gytxtx/openjbd/maintenance/WriteAuthorization.kt"
+            line="82"
+            column="9"/>
+    </issue>
+
+</issues>
