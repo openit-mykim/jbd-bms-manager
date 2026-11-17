@@ -113,6 +113,10 @@ class SettingsGroupDialogFragment : DialogFragment() {
             mosLiveDischarge = liveStatus.findViewById(R.id.mos_live_discharge_status)
             (accessModeView.parent as ViewGroup).addView(liveStatus, 0)
             renderMosLiveStatus(bmsRepository.getSnapshot())
+            // MOS is edited from the live FET state alone (#30): 0xE1 is not read on open.
+            refreshButton.visibility = View.GONE
+            accessModeView.visibility = View.GONE
+            lastUpdatedView.visibility = View.GONE
         }
 
         toolbar.setTitle(SettingsDisplay.groupTitleResId(group))
@@ -136,7 +140,10 @@ class SettingsGroupDialogFragment : DialogFragment() {
         if (group == SettingsGroup.MOS) {
             viewLifecycleOwner.lifecycleScope.launch {
                 viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
-                    bmsRepository.uiState.collect(::renderMosLiveStatus)
+                    bmsRepository.uiState.collect { state ->
+                        renderMosLiveStatus(state)
+                        render(latestState)
+                    }
                 }
             }
         }
@@ -161,8 +168,31 @@ class SettingsGroupDialogFragment : DialogFragment() {
     }
 
     private fun readGroup() {
+        if (group == SettingsGroup.MOS) return
         if (!applying) repository.readGroups(listOf(group))
     }
+
+    private fun liveMosState(): MosLiveState? = bmsRepository.getSnapshot().basicInfo?.let { info ->
+        MosStateMapping.liveState(info.chargeEnabled, info.dischargeEnabled, info.protectionState)
+    }
+
+    /**
+     * MOS does not run a settings read, so the settings state's connection flag can be stale
+     * there; the live BMS link is authoritative for it.
+     */
+    private fun isNotConnected(state: SettingsState): Boolean =
+        if (group == SettingsGroup.MOS) !bmsRepository.getSnapshot().connected else state.notConnected
+
+    /** Values the screen edits against: live FET state for MOS, the last register read otherwise. */
+    private fun currentValues(section: SettingsSectionState): Map<SettingField, FieldValue> =
+        if (group == SettingsGroup.MOS) MosStateMapping.liveValues(liveMosState()) else section.values
+
+    private fun isFieldEditable(field: SettingField, section: SettingsSectionState): Boolean =
+        if (group == SettingsGroup.MOS) {
+            currentValues(section).containsKey(field)
+        } else {
+            SettingsDisplay.isEditable(field, section.accessMode, section.values, section.registerErrors)
+        }
 
     private fun render(state: SettingsState) {
         val section = state.sections.getValue(group)
@@ -181,9 +211,10 @@ class SettingsGroupDialogFragment : DialogFragment() {
         refreshButton.isEnabled = !section.loading && !applying
 
         val notice = SettingsDisplay.readOnlyNotice(
-            state.notConnected,
-            section.accessMode,
-            section.values.isNotEmpty()
+            isNotConnected(state),
+            // MOS writes open their own factory session; only the live state gates them.
+            if (group == SettingsGroup.MOS) SettingsAccessMode.FACTORY else section.accessMode,
+            currentValues(section).isNotEmpty()
         )
         readOnlyNotice.visibility = if (notice == null) View.GONE else View.VISIBLE
         notice?.let { readOnlyNotice.setText(SettingsDisplay.readOnlyNoticeResId(it)) }
@@ -195,8 +226,8 @@ class SettingsGroupDialogFragment : DialogFragment() {
         renderResult()
 
         val canApply = stagedValues.isNotEmpty() &&
-            section.accessMode == SettingsAccessMode.FACTORY &&
-            !section.loading && !applying && !state.notConnected
+            (group == SettingsGroup.MOS || section.accessMode == SettingsAccessMode.FACTORY) &&
+            !section.loading && !applying && !isNotConnected(state)
         applyButton.isEnabled = canApply
         clearAllButton.isEnabled = stagedValues.isNotEmpty() && !applying
     }
@@ -205,24 +236,20 @@ class SettingsGroupDialogFragment : DialogFragment() {
         state: SettingsState,
         section: SettingsSectionState
     ) {
-        if (state.notConnected) {
+        if (isNotConnected(state)) {
             stagedValues.clear()
             return
         }
+        val current = currentValues(section)
         stagedValues.entries.removeAll { (field, raw) ->
-            !SettingsDisplay.isEditable(
-                field,
-                section.accessMode,
-                section.values,
-                section.registerErrors
-            ) || section.values[field]?.raw == raw
+            !isFieldEditable(field, section) || current[field]?.raw == raw
         }
     }
 
     private fun renderReadIssues(state: SettingsState, section: SettingsSectionState) {
         readIssues.removeAllViews()
         state.lastError?.takeIf {
-            it.isNotBlank() && !applying && lastResult == null && !state.notConnected &&
+            it.isNotBlank() && !applying && lastResult == null && !isNotConnected(state) &&
                 section.values.isEmpty() && section.registerErrors.isEmpty()
         }?.let { error ->
             addIssueLine(
@@ -256,6 +283,7 @@ class SettingsGroupDialogFragment : DialogFragment() {
 
     private fun renderFields(state: SettingsState, section: SettingsSectionState) {
         fieldsList.removeAllViews()
+        val current = currentValues(section)
         groupFields.forEach { field ->
             val row = layoutInflater.inflate(R.layout.row_settings_field, fieldsList, false)
             val label = row.findViewById<TextView>(R.id.settings_field_label)
@@ -264,7 +292,7 @@ class SettingsGroupDialogFragment : DialogFragment() {
             val chevron = row.findViewById<ImageView>(R.id.settings_field_chevron)
             label.setText(SettingsDisplay.fieldLabelResId(field))
 
-            val fieldValue = section.values[field]
+            val fieldValue = current[field]
             val resolvedValue = fieldValue?.let {
                 resolveDisplay(SettingsDisplay.displayValue(field, it.raw))
             }
@@ -280,12 +308,7 @@ class SettingsGroupDialogFragment : DialogFragment() {
             error.visibility = if (registerError == null) View.GONE else View.VISIBLE
             if (registerError != null) error.text = registerErrorText(registerError)
 
-            val editable = SettingsDisplay.isEditable(
-                field,
-                section.accessMode,
-                section.values,
-                section.registerErrors
-            ) && !state.notConnected && !applying
+            val editable = isFieldEditable(field, section) && !isNotConnected(state) && !applying
             row.isEnabled = editable
             row.isClickable = editable
             row.isFocusable = editable
@@ -418,7 +441,7 @@ class SettingsGroupDialogFragment : DialogFragment() {
                 }
 
                 val candidateRaw = (candidate as SettingsInputResult.Valid).rawValue
-                val mergedValues = section.values.mapValues { it.value.raw } +
+                val mergedValues = currentValues(section).mapValues { it.value.raw } +
                     stagedValues + (field to candidateRaw)
                 val validation = validateField(field, candidateRaw, mergedValues)
                 val validationMessage = SettingsDisplay.validationMessage(
@@ -443,8 +466,9 @@ class SettingsGroupDialogFragment : DialogFragment() {
 
     private fun renderStaged(section: SettingsSectionState) {
         stagedList.removeAllViews()
+        val current = currentValues(section)
         stagedValues.forEach { (field, newRaw) ->
-            val oldRaw = section.values.getValue(field).raw
+            val oldRaw = current[field]?.raw ?: return@forEach
             val row = LinearLayout(requireContext()).apply {
                 orientation = LinearLayout.HORIZONTAL
                 gravity = android.view.Gravity.CENTER_VERTICAL
@@ -475,10 +499,12 @@ class SettingsGroupDialogFragment : DialogFragment() {
     private fun showApplyConfirmation() {
         val section = latestState.sections.getValue(group)
         if (stagedValues.isEmpty() || applying) return
-        val summaries = stagedValues.map { (field, raw) ->
+        val current = currentValues(section)
+        val summaries = stagedValues.mapNotNull { (field, raw) ->
+            val oldRaw = current[field]?.raw ?: return@mapNotNull null
             SettingsDisplay.buildChangeSummary(
                 field,
-                section.values.getValue(field).raw,
+                oldRaw,
                 raw,
                 ::getString
             )
@@ -501,18 +527,8 @@ class SettingsGroupDialogFragment : DialogFragment() {
 
     private fun applyChanges() {
         val section = latestState.sections.getValue(group)
-        val currentRaws = section.values.mapValues { it.value.raw }
-        val mosLiveState = if (group == SettingsGroup.MOS) {
-            bmsRepository.getSnapshot().basicInfo?.let { info ->
-                MosLiveState(
-                    fetState = (if (info.chargeEnabled) 1 else 0) or
-                        (if (info.dischargeEnabled) 2 else 0),
-                    protectionActive = info.protectionState != 0
-                )
-            }
-        } else {
-            null
-        }
+        val currentRaws = currentValues(section).mapValues { it.value.raw }
+        val mosLiveState = if (group == SettingsGroup.MOS) liveMosState() else null
         val changes = stagedValues.map { (field, rawValue) ->
             FieldChange(field, rawValue, currentRaws, mosLiveState)
         }
@@ -529,7 +545,7 @@ class SettingsGroupDialogFragment : DialogFragment() {
                 result.outcome is WriteSessionOutcome.Applied
             ) {
                 stagedValues.clear()
-                repository.readGroups(listOf(group))
+                readGroup()
             }
             render(latestState)
         }
