@@ -1,8 +1,24 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-  Mobile dev standard 5.7.2: the only text sizes allowed on screen.
-  Display 28 / Title 22 / Heading 18 / Body 16 / Label 14 / Caption 12 / Micro 11 (sp).
-  Material defaults outside this list (Headline3 48, Headline5 24, Headline6 20) are
+  Mobile dev standard 5.7.2: the only text sizes allowed on screen, each with its line height
+  and letter spacing. This file is the single definition; every app text appearance points at
+  one step (scripts/check-design-tokens.py enforces it).
+
+  step     size   line height (x size)   letter spacing
+  Display  28sp   40sp (1.43)            0em
+  Title    22sp   32sp (1.45)            0em
+  Heading  18sp   26sp (1.44)            0em
+  Body     16sp   24sp (1.50)            0em
+  Label    14sp   20sp (1.43)            0em
+  Caption  12sp   18sp (1.50)            0em
+  Micro    11sp   16sp (1.45)            0em
+
+  Line height is 1.4-1.6x the size and in sp so it follows the system font scale. Letter
+  spacing is 0 for every step (Korean: 0 to -0.2); it replaces Material's positive Latin
+  tracking (e.g. Body1 +0.03em, Caption +0.03em). Line height is applied by MaterialTextView,
+  which the MaterialComponents theme inflates for every TextView, on all API levels.
+
+  Material defaults outside the size list (Headline3 48, Headline5 24, Headline6 20) are
   overridden in styles by scripts/apply-product-overlay.py. Documented exception: the
   landscape dashboard's large numerals (docs/mobile-standard-compliance.md).
 -->
@@ -14,4 +30,60 @@
     <dimen name="text_label">14sp</dimen>
     <dimen name="text_caption">12sp</dimen>
     <dimen name="text_micro">11sp</dimen>
+
+    <dimen name="text_display_line">40sp</dimen>
+    <dimen name="text_title_line">32sp</dimen>
+    <dimen name="text_heading_line">26sp</dimen>
+    <dimen name="text_body_line">24sp</dimen>
+    <dimen name="text_label_line">20sp</dimen>
+    <dimen name="text_caption_line">18sp</dimen>
+    <dimen name="text_micro_line">16sp</dimen>
+
+    <item name="text_display_tracking" format="float" type="dimen">0</item>
+    <item name="text_title_tracking" format="float" type="dimen">0</item>
+    <item name="text_heading_tracking" format="float" type="dimen">0</item>
+    <item name="text_body_tracking" format="float" type="dimen">0</item>
+    <item name="text_label_tracking" format="float" type="dimen">0</item>
+    <item name="text_caption_tracking" format="float" type="dimen">0</item>
+    <item name="text_micro_tracking" format="float" type="dimen">0</item>
+
+    <!--
+      Scale appearances for layouts that used Material type-scale styles directly
+      (TextAppearance.MaterialComponents.* or ?attr/textAppearance*). The parent keeps the
+      Material weight; size, line height and spacing come from the step above.
+    -->
+    <style name="TextAppearance.OpenJbd.Subtitle1" parent="TextAppearance.MaterialComponents.Subtitle1">
+        <item name="android:textSize">@dimen/text_body</item>
+        <item name="android:lineHeight">@dimen/text_body_line</item>
+        <item name="lineHeight">@dimen/text_body_line</item>
+        <item name="android:letterSpacing">@dimen/text_body_tracking</item>
+    </style>
+
+    <style name="TextAppearance.OpenJbd.Subtitle2" parent="TextAppearance.MaterialComponents.Subtitle2">
+        <item name="android:textSize">@dimen/text_label</item>
+        <item name="android:lineHeight">@dimen/text_label_line</item>
+        <item name="lineHeight">@dimen/text_label_line</item>
+        <item name="android:letterSpacing">@dimen/text_label_tracking</item>
+    </style>
+
+    <style name="TextAppearance.OpenJbd.Body1" parent="TextAppearance.MaterialComponents.Body1">
+        <item name="android:textSize">@dimen/text_body</item>
+        <item name="android:lineHeight">@dimen/text_body_line</item>
+        <item name="lineHeight">@dimen/text_body_line</item>
+        <item name="android:letterSpacing">@dimen/text_body_tracking</item>
+    </style>
+
+    <style name="TextAppearance.OpenJbd.Body2" parent="TextAppearance.MaterialComponents.Body2">
+        <item name="android:textSize">@dimen/text_label</item>
+        <item name="android:lineHeight">@dimen/text_label_line</item>
+        <item name="lineHeight">@dimen/text_label_line</item>
+        <item name="android:letterSpacing">@dimen/text_label_tracking</item>
+    </style>
+
+    <style name="TextAppearance.OpenJbd.Caption" parent="TextAppearance.MaterialComponents.Caption">
+        <item name="android:textSize">@dimen/text_caption</item>
+        <item name="android:lineHeight">@dimen/text_caption_line</item>
+        <item name="lineHeight">@dimen/text_caption_line</item>
+        <item name="android:letterSpacing">@dimen/text_caption_tracking</item>
+    </style>
 </resources>
