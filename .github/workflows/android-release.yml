@@ -100,22 +100,71 @@ jobs:
           path: upstream-src/app/build/reports/tests/
           if-no-files-found: ignore
 
-      - name: Build debug APK
+      - name: Android lint (new findings fail; upstream findings are in lint-baseline.xml)
         working-directory: upstream-src
-        run: ./gradlew assembleDebug
+        run: ./gradlew lintDebug
+
+      - name: Upload lint report
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: lint-report
+          path: upstream-src/app/build/reports/lint-results-debug.html
+          if-no-files-found: ignore
+
+      - name: Restore release keystore (fixed signing key, issue #9)
+        env:
+          KEYSTORE_B64: ${{ secrets.JBD_RELEASE_KEYSTORE_B64 }}
+        run: |
+          if [ -z "${KEYSTORE_B64}" ]; then
+            # Fork PRs get no secrets. main must never fall back to debug signing.
+            if [ "${GITHUB_REF}" = "refs/heads/main" ]; then
+              echo "::error::JBD_RELEASE_KEYSTORE_B64 secret missing; refusing to publish a debug-signed release."
+              exit 1
+            fi
+            echo "::warning::No release keystore secret; this check build is debug-signed and is not published."
+            echo "SIGNED_RELEASE=false" >> "$GITHUB_ENV"
+            exit 0
+          fi
+          umask 077
+          printf '%s' "${KEYSTORE_B64}" | base64 -d > "${RUNNER_TEMP}/release.p12"
+          echo "JBD_RELEASE_KEYSTORE_FILE=${RUNNER_TEMP}/release.p12" >> "$GITHUB_ENV"
+          echo "SIGNED_RELEASE=true" >> "$GITHUB_ENV"
+
+      - name: Build release APK
+        working-directory: upstream-src
+        env:
+          JBD_RELEASE_STORE_PASSWORD: ${{ secrets.JBD_RELEASE_STORE_PASSWORD }}
+          JBD_RELEASE_KEY_ALIAS: ${{ secrets.JBD_RELEASE_KEY_ALIAS }}
+        run: |
+          if [ "${SIGNED_RELEASE}" = "true" ]; then
+            ./gradlew assembleRelease
+            echo "BUILT_APK=upstream-src/app/build/outputs/apk/release/app-release.apk" >> "$GITHUB_ENV"
+          else
+            ./gradlew assembleDebug
+            echo "BUILT_APK=upstream-src/app/build/outputs/apk/debug/app-debug.apk" >> "$GITHUB_ENV"
+          fi
+
+      - name: Remove release keystore
+        if: always()
+        run: rm -f "${RUNNER_TEMP}/release.p12"
 
       - name: Prepare distributable APK
         run: |
           mkdir -p dist
-          cp upstream-src/app/build/outputs/apk/debug/app-debug.apk "dist/${APK_NAME}"
+          cp "${BUILT_APK}" "dist/${APK_NAME}"
           # Write the digest with a bare file name so `sha256sum -c` works
           # from the download directory.
           (cd dist && sha256sum "${APK_NAME}" > "${APK_NAME}.sha256")
 
       - name: Release guard (credentials, signing)
-        # Blocking for credentials. Debug signing is a documented exception until
-        # production signing is decided (issue #9, docs/mobile-standard-compliance.md).
-        run: bash manager/scripts/release-guard.sh "dist/${APK_NAME}" --allow-debug-signing | tee dist/release-guard.txt
+        # Blocking for credentials and for debug signing. Only an unpublished check build
+        # without access to the signing secret may be debug-signed.
+        run: |
+          allow=""
+          if [ "${SIGNED_RELEASE}" != "true" ]; then allow="--allow-debug-signing"; fi
+          bash manager/scripts/release-guard.sh "dist/${APK_NAME}" ${allow} | tee dist/release-guard.txt
+          exit "${PIPESTATUS[0]}"
 
       - name: Upload APK artifact
         uses: actions/upload-artifact@v7
@@ -134,7 +183,7 @@ jobs:
             echo "::error::Missing manager/release-notes/${RELEASE_TAG}.md"; exit 1; }
 
       - name: Publish GitHub release
-        if: github.ref == 'refs/heads/main'
+        if: github.ref == 'refs/heads/main' && env.SIGNED_RELEASE == 'true'
         env:
           GH_TOKEN: ${{ github.token }}
         run: |

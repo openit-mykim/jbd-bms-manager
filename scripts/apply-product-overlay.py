@@ -163,6 +163,53 @@ def add_upstream_attribution(root: Path) -> None:
     )
 
 
+GRADLE_ANDROID_TAIL = """    buildFeatures {
+        compose = true
+    }
+}
+"""
+GRADLE_ANDROID_TAIL_WITH_SIGNING = """    buildFeatures {
+        compose = true
+    }
+
+    val releaseKeystore = System.getenv("JBD_RELEASE_KEYSTORE_FILE")?.takeIf { it.isNotBlank() }
+    signingConfigs {
+        if (releaseKeystore != null) {
+            create("release") {
+                storeFile = file(releaseKeystore)
+                storeType = "PKCS12"
+                storePassword = System.getenv("JBD_RELEASE_STORE_PASSWORD")
+                keyAlias = System.getenv("JBD_RELEASE_KEY_ALIAS")
+                // PKCS12 keystores use the store password for the key as well.
+                keyPassword = System.getenv("JBD_RELEASE_STORE_PASSWORD")
+            }
+        }
+    }
+
+    buildTypes {
+        release {
+            isMinifyEnabled = false
+            if (releaseKeystore != null) {
+                signingConfig = signingConfigs.getByName("release")
+            }
+        }
+    }
+
+    testOptions {
+        // Robolectric screen tests (issue #9) need merged resources and the manifest.
+        unitTests.isIncludeAndroidResources = true
+    }
+
+    lint {
+        // Upstream OpenJBD findings are frozen in the baseline; new findings fail the build.
+        baseline = file("lint-baseline.xml")
+        abortOnError = true
+        checkDependencies = false
+    }
+}
+"""
+
+
 def main() -> None:
     if len(sys.argv) != 2:
         raise SystemExit("usage: apply-product-overlay.py <OpenJBD source dir>")
@@ -187,6 +234,21 @@ def main() -> None:
     # Whole-line matches: a substring match of "versionCode = 1" would also hit "= 16".
     replace_line_required(gradle, r"^(\s*)versionCode = \d+$", rf"\g<1>versionCode = {VERSION_CODE}")
     replace_line_required(gradle, r'^(\s*)versionName = "[^"]*"$', rf'\g<1>versionName = "{VERSION_NAME}"')
+    # Fixed release signing (issue #9). The keystore never lives in the repository: CI decodes
+    # it from GitHub Secrets and passes paths/passwords through the environment. Without
+    # JBD_RELEASE_KEYSTORE_FILE the release variant stays unsigned, and the release guard blocks it.
+    replace_required(gradle, GRADLE_ANDROID_TAIL, GRADLE_ANDROID_TAIL_WITH_SIGNING)
+    # Screen tests run on the JVM with Robolectric + Hilt testing (issue #9).
+    replace_required(
+        gradle,
+        "    testImplementation(libs.kotlinx.coroutines.test)\n",
+        "    testImplementation(libs.kotlinx.coroutines.test)\n"
+        '    testImplementation("org.robolectric:robolectric:4.18")\n'
+        '    testImplementation("androidx.test:core-ktx:1.7.0")\n'
+        '    testImplementation("androidx.test.ext:junit-ktx:1.3.0")\n'
+        '    testImplementation("com.google.dagger:hilt-android-testing:2.60.1")\n'
+        "    kspTest(libs.hilt.compiler)\n",
+    )
 
     strings = root / "app" / "src" / "main" / "res" / "values" / "strings.xml"
     replace_required(strings, '<string name="app_name">OpenJBD MVP</string>', '<string name="app_name">JBD BMS Manager</string>')
@@ -266,6 +328,63 @@ def main() -> None:
     replace_required(layout_dir / "activity_about.xml", '                    android:lineSpacingExtra="3dp"\n', "")
 
     normalize_layout_spacing(root / "app" / "src" / "main" / "res" / "layout")
+
+    # Upstream launched repeatOnLifecycle from onStart, which stacks one more collector on
+    # every start (lint RepeatOnLifecycleWrongUsage). Collect once from onCreate / onViewCreated.
+    kotlin_dir = root / "app" / "src" / "main" / "kotlin" / "com" / "gytxtx" / "openjbd"
+    dashboard = kotlin_dir / "DashboardActivity.kt"
+    replace_required(
+        dashboard,
+        """        SystemBars.applyFullscreen(this)
+        lifecycleScope.launch {
+            repeatOnLifecycle(androidx.lifecycle.Lifecycle.State.STARTED) {
+                repository.uiState.collect { render(it) }
+            }
+        }
+""",
+        "        SystemBars.applyFullscreen(this)\n",
+    )
+    replace_required(
+        dashboard,
+        "        render(repository.getSnapshot())\n    }\n",
+        """        render(repository.getSnapshot())
+        lifecycleScope.launch {
+            repeatOnLifecycle(androidx.lifecycle.Lifecycle.State.STARTED) {
+                repository.uiState.collect { render(it) }
+            }
+        }
+    }
+""",
+    )
+    settings = kotlin_dir / "SettingsFragment.kt"
+    replace_required(
+        settings,
+        """    override fun onStart() {
+        super.onStart()
+        lifecycleScope.launch {
+            repeatOnLifecycle(androidx.lifecycle.Lifecycle.State.STARTED) {
+                repository.uiState.collect { connected = it.connected }
+            }
+        }
+    }
+
+    override fun onStop() = super.onStop()
+""",
+        "",
+    )
+    replace_required(
+        settings,
+        "        connected = repository.getSnapshot().connected\n        renderSettingsRows()\n    }\n",
+        """        connected = repository.getSnapshot().connected
+        renderSettingsRows()
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewLifecycleOwner.repeatOnLifecycle(androidx.lifecycle.Lifecycle.State.STARTED) {
+                repository.uiState.collect { connected = it.connected }
+            }
+        }
+    }
+""",
+    )
 
     # Upstream's Parameters page was split into Detail (user) and Control diagnostics
     # (technician); nothing references it any more, so it is not shipped.
