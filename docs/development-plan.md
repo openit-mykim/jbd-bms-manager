@@ -1,10 +1,12 @@
 # Development Plan
 
-> **Status (2026-11-16):** Phases 1-6 are implemented in `v0.1.1`; physical hardware validation is tracked in issue #23. Remaining work is tracked in #1 (upstream history merge), #9 (signing, lint, UI regression tests) and #24 (multi-BMS). `PROJECT_STATUS.md` is the canonical status.
+> **Status (2026-11-16):** Phases 1-6 are implemented in `v0.1.1`; physical hardware validation is tracked in issue #23. #9, #24, #30 and #31 are done in `v0.1.3`; #1 (upstream history merge) was closed by decision D023. `PROJECT_STATUS.md` is the canonical status.
 
 This plan is the execution roadmap for Hermes and Paseo workers. Work should proceed phase by phase unless a blocker requires a temporary research branch.
 
 ## Phase 0 — Baseline import and repository bootstrap
+
+> **Status (2026-11-17):** done with the pinned-baseline + overlay model. The history-merge task below was dropped by decision D023 (`docs/decision-log.md`).
 
 Goal: establish a reproducible, traceable OpenJBD-derived codebase without losing this repository's project documentation.
 

@@ -105,7 +105,7 @@ This repository was created independently rather than with GitHub's native Fork 
 
 For reproducible release builds, GitHub Actions checks out the pinned OpenJBD commit, applies this repository's product overlay, runs unit tests and Android lint, builds the release APK signed with the fixed release key, and publishes the APK as a GitHub release asset.
 
-See `docs/upstream-sync.md`, `scripts/bootstrap-upstream.sh`, `scripts/apply-product-overlay.py`, and `docs/release-process.md`.
+See `docs/upstream-sync.md`, `scripts/apply-product-overlay.py`, and `docs/release-process.md`.
 
 ## Current project state
 
