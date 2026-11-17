@@ -28,7 +28,7 @@ LINE_HEIGHT_RATIO = (1.4, 1.6)
 MAX_NEGATIVE_TRACKING_SP = 0.2  # standard 5.7.2: Korean letter spacing 0 to -0.2
 TRANSLATIONS = ("values-ko", "values-zh-rCN")
 STYLE = re.compile(r'<style name="([^"]+)"(?:\s+parent="([^"]*)")?\s*(?:/>|>(.*?)</style>)', re.S)
-ITEM = re.compile(r'<item name="([^"]+)">\s*([^<]*?)\s*</item>')
+ITEM = re.compile(r'<item name="([^"]+)"[^>]*>\s*([^<]*?)\s*</item>')
 SPACING_ATTR = re.compile(r'android:(?:layout_)?(?:margin|padding)\w*="([^"]+)"')
 
 

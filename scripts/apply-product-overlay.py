@@ -96,6 +96,10 @@ TEXT_APPEARANCE_STEPS = {
 
 def pin_text_appearance_steps(styles: Path) -> None:
     text = styles.read_text(encoding="utf-8")
+    if "xmlns:tools=" not in text:
+        if text.count("<resources>") != 1:
+            raise RuntimeError(f"Expected one bare <resources> element in {styles}")
+        text = text.replace("<resources>", '<resources xmlns:tools="http://schemas.android.com/tools">')
     for style, step in TEXT_APPEARANCE_STEPS.items():
         pattern = re.compile(r'(<style name="TextAppearance\.OpenJbd\.' + re.escape(style) + r'" parent="[^"]+")(\s*/>|>)')
         matches = pattern.findall(text)
@@ -103,7 +107,9 @@ def pin_text_appearance_steps(styles: Path) -> None:
             raise RuntimeError(f"Expected exactly one TextAppearance.OpenJbd.{style} in {styles}, found {len(matches)}")
         items = (
             f'\n        <item name="android:textSize">@dimen/text_{step}</item>'
-            f'\n        <item name="android:lineHeight">@dimen/text_{step}_line</item>'
+            # android:lineHeight is API 28+ on plain TextView; MaterialTextView applies it (and the
+            # Material lineHeight attr below) on every API level, so lint's NewApi is suppressed.
+            f'\n        <item name="android:lineHeight" tools:targetApi="28">@dimen/text_{step}_line</item>'
             f'\n        <item name="lineHeight">@dimen/text_{step}_line</item>'
             f'\n        <item name="android:letterSpacing">@dimen/text_{step}_tracking</item>'
         )

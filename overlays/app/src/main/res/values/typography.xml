@@ -22,7 +22,7 @@
   overridden in styles by scripts/apply-product-overlay.py. Documented exception: the
   landscape dashboard's large numerals (docs/mobile-standard-compliance.md).
 -->
-<resources>
+<resources xmlns:tools="http://schemas.android.com/tools">
     <dimen name="text_display">28sp</dimen>
     <dimen name="text_title">22sp</dimen>
     <dimen name="text_heading">18sp</dimen>
@@ -54,35 +54,35 @@
     -->
     <style name="TextAppearance.OpenJbd.Subtitle1" parent="TextAppearance.MaterialComponents.Subtitle1">
         <item name="android:textSize">@dimen/text_body</item>
-        <item name="android:lineHeight">@dimen/text_body_line</item>
+        <item name="android:lineHeight" tools:targetApi="28">@dimen/text_body_line</item>
         <item name="lineHeight">@dimen/text_body_line</item>
         <item name="android:letterSpacing">@dimen/text_body_tracking</item>
     </style>
 
     <style name="TextAppearance.OpenJbd.Subtitle2" parent="TextAppearance.MaterialComponents.Subtitle2">
         <item name="android:textSize">@dimen/text_label</item>
-        <item name="android:lineHeight">@dimen/text_label_line</item>
+        <item name="android:lineHeight" tools:targetApi="28">@dimen/text_label_line</item>
         <item name="lineHeight">@dimen/text_label_line</item>
         <item name="android:letterSpacing">@dimen/text_label_tracking</item>
     </style>
 
     <style name="TextAppearance.OpenJbd.Body1" parent="TextAppearance.MaterialComponents.Body1">
         <item name="android:textSize">@dimen/text_body</item>
-        <item name="android:lineHeight">@dimen/text_body_line</item>
+        <item name="android:lineHeight" tools:targetApi="28">@dimen/text_body_line</item>
         <item name="lineHeight">@dimen/text_body_line</item>
         <item name="android:letterSpacing">@dimen/text_body_tracking</item>
     </style>
 
     <style name="TextAppearance.OpenJbd.Body2" parent="TextAppearance.MaterialComponents.Body2">
         <item name="android:textSize">@dimen/text_label</item>
-        <item name="android:lineHeight">@dimen/text_label_line</item>
+        <item name="android:lineHeight" tools:targetApi="28">@dimen/text_label_line</item>
         <item name="lineHeight">@dimen/text_label_line</item>
         <item name="android:letterSpacing">@dimen/text_label_tracking</item>
     </style>
 
     <style name="TextAppearance.OpenJbd.Caption" parent="TextAppearance.MaterialComponents.Caption">
         <item name="android:textSize">@dimen/text_caption</item>
-        <item name="android:lineHeight">@dimen/text_caption_line</item>
+        <item name="android:lineHeight" tools:targetApi="28">@dimen/text_caption_line</item>
         <item name="lineHeight">@dimen/text_caption_line</item>
         <item name="android:letterSpacing">@dimen/text_caption_tracking</item>
     </style>
