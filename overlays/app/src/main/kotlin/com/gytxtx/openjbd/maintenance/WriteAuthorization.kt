@@ -3,6 +3,8 @@ package com.gytxtx.openjbd.maintenance
 import android.content.Context
 import android.util.Log
 import com.gytxtx.openjbd.data.BmsRepository
+import com.gytxtx.openjbd.registry.BmsDeviceRegistry
+import com.gytxtx.openjbd.registry.DeviceTargetCheck
 import com.gytxtx.openjbd.settings.SettingsWriteAuthorizer
 import com.gytxtx.openjbd.settings.WriteSessionAudit
 import com.gytxtx.openjbd.settings.WriteSessionResult
@@ -22,7 +24,8 @@ import kotlinx.coroutines.flow.asStateFlow
 @Singleton
 class WriteAuthorization @Inject constructor(
     @ApplicationContext context: Context,
-    private val repository: BmsRepository
+    private val repository: BmsRepository,
+    private val registry: BmsDeviceRegistry
 ) : SettingsWriteAuthorizer {
     private val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
     private val resolver = MaintenanceCapabilityResolver(LocalCompatibilityTable.EMPTY)
@@ -84,6 +87,10 @@ class WriteAuthorization @Inject constructor(
         _version.value += 1
     }
 
+    /** D022: is the connected BMS the registered BMS the user explicitly selected? */
+    fun targetCheck(identity: DeviceIdentity? = currentIdentity()): DeviceTargetCheck.Result =
+        DeviceTargetCheck.check(registry.selected, identity)
+
     override fun authorize(): WriteDecision {
         val identity = currentIdentity()
         return WritePolicy.decide(
@@ -91,7 +98,8 @@ class WriteAuthorization @Inject constructor(
             unlocked = unlocked,
             identity = identity,
             verifiedProfile = identity != null && isVerifiedProfile(identity),
-            consented = identity != null && hasConsent(identity)
+            consented = identity != null && hasConsent(identity),
+            targetMatches = targetCheck(identity) == DeviceTargetCheck.Result.MATCH
         )
     }
 

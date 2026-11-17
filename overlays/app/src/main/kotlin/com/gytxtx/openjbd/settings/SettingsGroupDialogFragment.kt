@@ -39,6 +39,7 @@ import kotlinx.coroutines.launch
 
 @AndroidEntryPoint
 class SettingsGroupDialogFragment : DialogFragment() {
+    @Inject lateinit var deviceRegistry: com.gytxtx.openjbd.registry.BmsDeviceRegistry
     @Inject lateinit var repository: SettingsRepository
     @Inject lateinit var bmsRepository: BmsRepository
 
@@ -515,7 +516,10 @@ class SettingsGroupDialogFragment : DialogFragment() {
         } else {
             ""
         }
-        val message = summaries.joinToString("\n") + "\n\n" +
+        // Design "Maintenance safety": repeat the target BMS identity next to the summary.
+        val target = deviceRegistry.selected?.let { getString(R.string.write_confirm_target, it.displayName, it.address) }
+            ?: getString(R.string.control_target_no_selection)
+        val message = target + "\n\n" + summaries.joinToString("\n") + "\n\n" +
             getString(R.string.settings_confirm_warning) + groupWarning + "\n\n" +
             getString(R.string.settings_confirm_rule)
         MaterialAlertDialogBuilder(requireContext())

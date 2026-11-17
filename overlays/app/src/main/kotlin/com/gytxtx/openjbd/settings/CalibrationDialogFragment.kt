@@ -40,6 +40,7 @@ import kotlinx.coroutines.launch
 
 @AndroidEntryPoint
 class CalibrationDialogFragment : DialogFragment() {
+    @Inject lateinit var deviceRegistry: com.gytxtx.openjbd.registry.BmsDeviceRegistry
     @Inject lateinit var settingsRepository: SettingsRepository
     @Inject lateinit var bmsRepository: BmsRepository
 
@@ -486,7 +487,10 @@ class CalibrationDialogFragment : DialogFragment() {
         val summaries = stagedValues.map { (field, raw) ->
             changeSummary(field, section.values[field]?.raw, raw)
         }
-        val message = summaries.joinToString("\n") + "\n\n" +
+        // Design "Maintenance safety": repeat the target BMS identity next to the summary.
+        val target = deviceRegistry.selected?.let { getString(R.string.write_confirm_target, it.displayName, it.address) }
+            ?: getString(R.string.control_target_no_selection)
+        val message = target + "\n\n" + summaries.joinToString("\n") + "\n\n" +
             getString(R.string.settings_confirm_warning) + "\n\n" +
             getString(R.string.settings_confirm_rule) + "\n\n" +
             getString(R.string.calibration_confirm_line)

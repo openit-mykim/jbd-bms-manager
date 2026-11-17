@@ -31,6 +31,7 @@ import javax.inject.Inject
 class ControlFragment : Fragment() {
     @Inject lateinit var repository: BmsRepository
     @Inject lateinit var writeAuthorization: WriteAuthorization
+    @Inject lateinit var deviceRegistry: com.gytxtx.openjbd.registry.BmsDeviceRegistry
 
     private lateinit var writePermissionStatus: TextView
     private lateinit var writePermissionButton: MaterialButton
@@ -38,6 +39,8 @@ class ControlFragment : Fragment() {
     private lateinit var unlockedContent: View
     private lateinit var targetName: TextView
     private lateinit var targetAddress: TextView
+    private lateinit var targetStatus: TextView
+    private var serviceRecordCount: Int? = null
     private lateinit var diagnosticsPanel: LinearLayout
     private lateinit var diagnosticsEmpty: TextView
     private lateinit var diagnosticsSectionContainers: Map<ControlDiagnosticsSectionType, View>
@@ -55,6 +58,7 @@ class ControlFragment : Fragment() {
         unlockedContent = view.findViewById(R.id.control_unlocked_content)
         targetName = view.findViewById(R.id.control_target_name)
         targetAddress = view.findViewById(R.id.control_target_address)
+        targetStatus = view.findViewById(R.id.control_target_status)
         writePermissionStatus = view.findViewById(R.id.control_write_permission_status)
         writePermissionButton = view.findViewById(R.id.control_write_permission_button)
         diagnosticsPanel = view.findViewById(R.id.control_diagnostics_panel)
@@ -123,8 +127,17 @@ class ControlFragment : Fragment() {
         viewLifecycleOwner.lifecycleScope.launch {
             viewLifecycleOwner.repeatOnLifecycle(androidx.lifecycle.Lifecycle.State.STARTED) {
                 writeAuthorization.version.collect {
+                    refreshServiceRecordCount()
                     renderGateState()
                     renderWritePermission()
+                }
+            }
+        }
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewLifecycleOwner.repeatOnLifecycle(androidx.lifecycle.Lifecycle.State.STARTED) {
+                deviceRegistry.state.collect {
+                    refreshServiceRecordCount()
+                    renderTarget(repository.getSnapshot())
                 }
             }
         }
@@ -215,33 +228,48 @@ class ControlFragment : Fragment() {
             .show()
     }
 
+    /**
+     * Target card: the explicitly selected registered BMS (alias + address). When a BMS is
+     * connected but is not that device, or its identity differs from the registered one, the
+     * card says so: writes and restores are refused at the repository layer (D022).
+     */
     private fun renderTarget(snapshot: BmsUiState) {
-        val connectedName = snapshot.deviceName?.takeIf { it.isNotBlank() }
-        val connectedAddress = snapshot.deviceAddress?.takeIf { it.isNotBlank() }
-        val prefs = AppSettings.prefs(requireContext())
-        val savedAddress = prefs.getString(AppSettings.PREF_LAST_DEVICE_ADDRESS, "")
-            .orEmpty()
-            .takeIf { it.isNotBlank() }
-        val savedName = prefs.getString(AppSettings.PREF_LAST_DEVICE_NAME, savedAddress)
-            .orEmpty()
-            .takeIf { it.isNotBlank() }
-
-        val name: String
-        val address: String?
-        if (snapshot.connected && (connectedName != null || connectedAddress != null)) {
-            name = connectedName ?: connectedAddress!!
-            address = connectedAddress
-        } else if (savedAddress != null) {
-            name = savedName ?: savedAddress
-            address = savedAddress
-        } else {
-            name = getString(R.string.bms_selector_disconnected)
-            address = null
+        if (!::targetStatus.isInitialized) return
+        val selected = deviceRegistry.selected
+        targetName.setTextIfChanged(selected?.displayName ?: getString(R.string.bms_selector_disconnected))
+        targetAddress.visibility = if (selected == null) View.GONE else View.VISIBLE
+        if (selected != null) {
+            val records = serviceRecordCount
+            targetAddress.setTextIfChanged(
+                if (records == null) selected.address
+                else getString(R.string.control_target_address_records, selected.address, records)
+            )
         }
+        val statusRes = if (!snapshot.connected) null else when (writeAuthorization.targetCheck()) {
+            com.gytxtx.openjbd.registry.DeviceTargetCheck.Result.MATCH,
+            com.gytxtx.openjbd.registry.DeviceTargetCheck.Result.IDENTITY_UNREAD -> null
+            com.gytxtx.openjbd.registry.DeviceTargetCheck.Result.NO_SELECTION -> R.string.control_target_no_selection
+            com.gytxtx.openjbd.registry.DeviceTargetCheck.Result.ADDRESS_MISMATCH -> R.string.control_target_address_mismatch
+            com.gytxtx.openjbd.registry.DeviceTargetCheck.Result.MODEL_UNREAD -> R.string.control_target_model_unread
+            com.gytxtx.openjbd.registry.DeviceTargetCheck.Result.MODEL_MISMATCH -> R.string.control_target_model_mismatch
+        }
+        targetStatus.visibility = if (statusRes == null) View.GONE else View.VISIBLE
+        if (statusRes != null) targetStatus.setTextIfChanged(getString(statusRes))
+    }
 
-        targetName.setTextIfChanged(name)
-        targetAddress.visibility = if (address == null) View.GONE else View.VISIBLE
-        if (address != null) targetAddress.setTextIfChanged(address)
+    /** Phase D: calibration / service records (audit entries) of the selected BMS only. */
+    private fun refreshServiceRecordCount() {
+        val key = deviceRegistry.selected?.address
+        val count = key?.let { selectedKey ->
+            runCatching {
+                com.gytxtx.openjbd.registry.DeviceServiceRecords
+                    .forDevice(writeAuthorization.auditLog.entries(), selectedKey).size
+            }.getOrNull()
+        }
+        if (count != serviceRecordCount) {
+            serviceRecordCount = count
+            if (::targetStatus.isInitialized) renderTarget(repository.getSnapshot())
+        }
     }
 
     private fun renderDiagnostics(snapshot: BmsUiState) {

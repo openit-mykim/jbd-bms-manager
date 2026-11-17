@@ -136,45 +136,49 @@ A4:C1:38:xx:xx:01
 
 Future backups, service history and calibration records are keyed to the registered BMS/device fingerprint.
 
-## Current implementation shell
+## Current implementation (Phase A–D, issue #24)
 
-The current release still persists only the last device from the OpenJBD baseline. Therefore the executable UI must not pretend that a true multi-device registry already exists.
+Status: implemented in code (D022); hardware validation pending (`PROJECT_STATUS.md` §3, NOT HARDWARE VERIFIED).
 
-Current behavior:
+- left app-bar button: no registered device → BLE discovery; otherwise the registered-device sheet
+- sheet rows: signal dot, alias, address, `선택됨` marker, state text and RSSI; `편집` → rename / remove
+- `신호 확인` runs a 4 s scan only while the sheet is open; `+ 새 BMS 검색` opens discovery, and choosing a result registers and selects it
+- tapping a row: cancel reconnect → disconnect → select → connect; top-right text shows the alias of the connected registered BMS
+- Control target card, every write confirmation and the backup screen show the selected BMS; a mismatch is stated in the card and writes are refused (`TARGET_MISMATCH`)
+- history chart, `이력 삭제`, saved backups and service-record count follow the selected BMS
 
-- top-right text is read-only connection status/name
-- left app-bar button is the single BMS-management entry point
-- no saved device: open BLE search immediately
-- saved device: show it as the current registered-device row
-- tapping the saved row reconnects it
-- `+ 새 BMS 검색` opens BLE discovery
-- no fake devices and no fake RSSI values
+Code: `overlays/app/src/main/kotlin/com/gytxtx/openjbd/registry/` (`BmsRegistry`, `BmsDeviceRegistry`, `BmsReachability`, `ReachabilityScanner`, `DeviceTargetCheck`, `DeviceRecords`), `history/SqliteHistoryStore.kt` (schema v2), `maintenance/WritePolicy.kt`.
 
-When the persistent registry is implemented, the same BMS-management screen expands from one saved row to the full registered-device list without changing the navigation model.
+Implementation notes that refine the model above:
+
+- `id` is the normalized MAC address; `deviceFingerprint` is the learned BMS model (address + model is the target identity). Firmware is stored but changes are handled by D020 consent, not by the target check.
+- `lastSeenAt` / `lastRssi` are kept in memory for the latest scan only (no stale RSSI after restart); `autoReconnect` stays the app-wide setting and applies to the selected device only.
+- `notes` is not implemented.
+- Deferred: cross-device configuration cloning (restore is same-device only), an in-app "accept new identity" flow (re-register instead), per-device audit-log bounds (the log stays globally bounded at 2 000 entries).
 
 ## Implementation phases
 
-### Phase A — unified device-management shell
+### Phase A — unified device-management shell (done)
 
 - one left-side BMS management entry point
 - read-only top-right connection status/name
 - no saved device → discovery
 - saved device → saved list + new-device search
 
-### Phase B — persistent registry
+### Phase B — persistent registry (done)
 
 - multiple registered devices
 - aliases
 - selected-device persistence
 - add/remove/rename workflows
 
-### Phase C — scan state
+### Phase C — scan state (done)
 
 - short scan for reachability/RSSI
 - green/gray state
 - explicit red failure state
 
-### Phase D — device-scoped data
+### Phase D — device-scoped data (done)
 
 - monitoring history per BMS
 - configuration backup per BMS

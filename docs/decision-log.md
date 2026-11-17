@@ -219,6 +219,23 @@ Evidence/reason: 2026-11-16 review findings; conservative choice because the ack
 
 Migration impact: none for users; settings safety rules (PROJECT_STATUS section 1) unchanged.
 
+## D022 — Multi-BMS registry, device-scoped data and target identity check
+
+Old decision: D015 defined the single device-management entry point, but the app persisted only the last connected device (OpenJBD `last_device_address/name`); history, backups and write permission were not tied to an explicitly selected BMS.
+
+New decision (issue #24, `docs/multi-bms-design.md` Phase B–D):
+
+- **Registry**: registered BMS devices persist locally (`bms_registry` preferences, versioned JSON). The registry key is the normalized BLE address; each entry has an alias (≤ 32 characters, rejected rather than truncated; blank falls back to the advertised name), the advertised name, registration / last-connection time and the learned identity (BMS model, firmware). Exactly one device may be selected; removing the selected device leaves nothing selected (no silent switch). Only the selected device is auto-connected at startup or auto-reconnected.
+- **Identity**: the target identity is `address + BMS model`. The model is learned on first connection where it is read (trust on first use) and is never overwritten automatically; a later different model at the same address is a mismatch until the user removes and re-registers the device. Firmware is recorded but is not part of the target check, because firmware-bound write consent is already enforced by D020.
+- **Write / restore gate**: `WritePolicy` gains `DenyReason.TARGET_MISMATCH`. `WriteAuthorization.authorize()` — the existing repository-layer gate every write session (settings, calibration, MOS, restore) passes — now also requires `DeviceTargetCheck` = `MATCH` (selected device present, connected address equal, model equal once learned, model read once learned). Any other result is fail-closed: no frame is sent. D020 (unlock + verified profile or consent) and the write sequence are unchanged.
+- **Restore**: a backup can only be restored onto the BMS it was exported from (backup address = selected device, and backup model ≠ registered model blocks). Cross-device configuration cloning is intentionally not supported.
+- **Device-scoped data**: history samples carry the device key (`history.db` v2, primary key `(device, ts)`, 70 000-sample cap per device). Every export also keeps a copy under `files/backups/<device>/` (20 per device). Calibration / service records are the D020 audit entries, already bound to address and fingerprint, and are shown per selected device. Removing a device deletes its history only; saved backups and the audit log are kept.
+- **Reachability**: a 4-second scan with the JBD service filter runs only on explicit request in the BMS management sheet and stops when the sheet closes. Green = connected or seen in the latest scan (with RSSI), gray = not seen / connecting, red = explicit connection failure of that device (`INVALID_DEVICE`, `CONNECTION_FAILED`, service/characteristic/notification failures, `ERROR`, `PARSE_ERROR`). Out of range is never red. Scan results are memory-only.
+
+Evidence/reason: safety principle of #24 — monitoring state, backups, calibration records and writes always belong to exactly one real BMS the user explicitly selected. The repository-layer gate already guarantees "no frame on deny", so adding the target check there covers every write path without touching BLE connection internals (#30).
+
+Migration impact: on first start the legacy `last_device_address/name` becomes the first registered and selected BMS. `history.db` v1 → v2 assigns all existing samples to that device; without a legacy device, on any other version change, or if the migration fails, the history table is recreated (disposable cache, no crash). The legacy preference keys keep mirroring the selected device so an older APK installed over this one still reconnects. No BMS write behaviour changes for a single registered device.
+
 ## Change rule
 
 If a future PR changes one of these decisions materially, update this file in the same PR with:

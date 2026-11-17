@@ -66,6 +66,38 @@ class HistoryRecorderTest {
     }
 
     @Test
+    fun sampleIsKeyedToTheConnectedDevice() = runTest {
+        val store = FakeHistoryStore()
+        val repository = BmsRepository().apply {
+            update(snapshot(connected = true, basicInfo = basicInfo()).copy(deviceAddress = "a4:c1:38:00:00:01"))
+        }
+        val recorder = recorder(repository, store)
+
+        recorder.start(backgroundScope)
+        advanceTimeBy(TEST_SAMPLE_INTERVAL)
+        runCurrent()
+
+        assertEquals(listOf("A4:C1:38:00:00:01"), store.deviceKeys)
+        assertEquals(1, store.query("A4:C1:38:00:00:01", 0L, Long.MAX_VALUE).size)
+        assertTrue(store.query("A4:C1:38:00:00:02", 0L, Long.MAX_VALUE).isEmpty())
+    }
+
+    @Test
+    fun snapshotWithoutValidAddressIsNotStored() = runTest {
+        val store = FakeHistoryStore()
+        val repository = BmsRepository().apply {
+            update(snapshot(connected = true, basicInfo = basicInfo()).copy(deviceAddress = null))
+        }
+        val recorder = recorder(repository, store)
+
+        recorder.start(backgroundScope)
+        advanceTimeBy(TEST_SAMPLE_INTERVAL)
+        runCurrent()
+
+        assertTrue(store.samples.isEmpty())
+    }
+
+    @Test
     fun missingCellVoltagesStoreNullDelta() = runTest {
         val store = FakeHistoryStore()
         val repository = BmsRepository().apply {
@@ -253,22 +285,27 @@ class HistoryRecorderTest {
         private val appendFailure: Exception? = null
     ) : HistoryStore {
         val samples = mutableListOf<HistorySample>()
+        val deviceKeys = mutableListOf<String>()
         val pruneCutoffs = mutableListOf<Long>()
         var appendAttempts = 0
 
-        override suspend fun append(sample: HistorySample) {
+        override suspend fun append(deviceKey: String, sample: HistorySample) {
             appendAttempts += 1
             appendFailure?.let { throw it }
+            deviceKeys += deviceKey
             samples += sample
         }
 
-        override suspend fun query(fromMillis: Long, toMillis: Long): List<HistorySample> =
-            samples.filter { it.timestampMillis in fromMillis..toMillis }
+        override suspend fun query(deviceKey: String, fromMillis: Long, toMillis: Long): List<HistorySample> =
+            samples.filterIndexed { i, it -> deviceKeys[i] == deviceKey && it.timestampMillis in fromMillis..toMillis }
 
         override suspend fun pruneBefore(cutoffMillis: Long): Int {
             pruneCutoffs += cutoffMillis
             val before = samples.size
-            samples.removeAll { it.timestampMillis < cutoffMillis }
+            val kept = samples.indices.filter { samples[it].timestampMillis >= cutoffMillis }
+                .map { samples[it] to deviceKeys[it] }
+            samples.clear(); deviceKeys.clear()
+            kept.forEach { (sample, key) -> samples += sample; deviceKeys += key }
             return before - samples.size
         }
 
@@ -276,7 +313,14 @@ class HistoryRecorderTest {
 
         override suspend fun latestTimestamp(): Long? = samples.maxOfOrNull { it.timestampMillis }
 
-        override suspend fun clear() = samples.clear()
+        override suspend fun clearDevice(deviceKey: String) {
+            val keep = samples.indices.filter { deviceKeys[it] != deviceKey }
+            val kept = keep.map { samples[it] to deviceKeys[it] }
+            samples.clear(); deviceKeys.clear()
+            kept.forEach { (sample, key) -> samples += sample; deviceKeys += key }
+        }
+
+        override suspend fun clear() { samples.clear(); deviceKeys.clear() }
     }
 
     private companion object {
