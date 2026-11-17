@@ -103,7 +103,7 @@ Upstream project:
 
 This repository was created independently rather than with GitHub's native Fork button. Local clones should treat OpenJBD as the `upstream` remote.
 
-For reproducible release builds, GitHub Actions checks out the pinned OpenJBD commit, applies this repository's product overlay, runs unit tests, builds the debug APK, and publishes the APK as a GitHub release asset.
+For reproducible release builds, GitHub Actions checks out the pinned OpenJBD commit, applies this repository's product overlay, runs unit tests and Android lint, builds the release APK signed with the fixed release key, and publishes the APK as a GitHub release asset.
 
 See `docs/upstream-sync.md`, `scripts/bootstrap-upstream.sh`, `scripts/apply-product-overlay.py`, and `docs/release-process.md`.
 
@@ -127,7 +127,7 @@ See `PROJECT_STATUS.md` and `docs/development-plan.md` for the live execution st
 
 ## Installation
 
-Download the latest release APK from the repository **Releases** page. The package is a debug-signed build (`v0.1.2`) intended for direct testing, not Play Store distribution.
+Download the latest release APK from the repository **Releases** page. Since `v0.1.3` the APK is signed with a fixed release key (certificate SHA-256 `bf948e45…573fae`), so later versions install as updates. Coming from `v0.1.2` or older (debug-signed), uninstall once before installing. It is not distributed through the Play Store.
 
 Android may require permission to install apps from the browser or file manager used to open the APK.
 

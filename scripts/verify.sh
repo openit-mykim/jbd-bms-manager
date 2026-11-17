@@ -38,7 +38,7 @@ fi
 
 cd "$build_dir"
 chmod +x ./gradlew
-./gradlew testDebugUnitTest
+./gradlew testDebugUnitTest lintDebug
 if [[ "${1:-}" != "--tests-only" ]]; then
   ./gradlew assembleDebug
   echo "APK: $build_dir/app/build/outputs/apk/debug/app-debug.apk"

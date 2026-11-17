@@ -324,4 +324,6 @@
     <string name="settings_field_dsg_under_temp_release">放电低温恢复</string>
     <string name="settings_field_design_capacity">设计容量</string>
     <string name="setting_language_ko">韩语</string>
+    <string name="about_item_upstream_source">原始项目：OpenJBD</string>
+    <string name="about_item_upstream_source_subtitle">MIT 许可证 · © 2026 KFACBT</string>
 </resources>

@@ -10,6 +10,7 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import com.google.android.material.progressindicator.LinearProgressIndicator
+import com.google.android.material.textview.MaterialTextView
 import com.gytxtx.openjbd.balance.BalanceCellDiagnostic
 import com.gytxtx.openjbd.balance.BalanceCellDiagnostics
 import com.gytxtx.openjbd.balance.BalanceReadoutResolver
@@ -283,7 +284,7 @@ class BalanceFragment : Fragment() {
         val listParent = cellList.parent as? LinearLayout ?: return
         if (listParent.findViewWithTag<TextView>(BADGE_LEGEND_TAG) != null) return
         val cellListIndex = listParent.indexOfChild(cellList)
-        val badgeLegend = TextView(requireContext()).apply {
+        val badgeLegend = MaterialTextView(requireContext()).apply {
             tag = BADGE_LEGEND_TAG
             setText(R.string.balance_badge_legend)
             setTextAppearance(R.style.TextAppearance_OpenJbd_Supporting)

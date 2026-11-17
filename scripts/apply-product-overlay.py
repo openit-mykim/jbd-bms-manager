@@ -74,6 +74,142 @@ def normalize_layout_spacing(layout_dir: Path) -> None:
             layout.write_text(updated, encoding="utf-8")
 
 
+# Mobile dev standard 5.7.2: the typography step (values/typography.xml) of every upstream
+# OpenJbd text appearance. Styles inheriting from one of these (DeviceStatus, StatusValue)
+# inherit its step. Dashboard* styles are the documented large-numeral exception.
+TEXT_APPEARANCE_STEPS = {
+    "EmptyTitle": "title",
+    "EmptyBody": "body",
+    "Status": "label",
+    "MetricLabel": "caption",
+    "MetricValue": "heading",
+    "PrimaryMetricValue": "display",
+    "Supporting": "caption",
+    "CellLabel": "label",
+    "CellValue": "body",
+    "AboutTitle": "title",
+    "AboutBody": "body",
+    "ListItemTitle": "body",
+    "ListItemSubtitle": "label",
+}
+
+
+def pin_text_appearance_steps(styles: Path) -> None:
+    text = styles.read_text(encoding="utf-8")
+    if "xmlns:tools=" not in text:
+        if text.count("<resources>") != 1:
+            raise RuntimeError(f"Expected one bare <resources> element in {styles}")
+        text = text.replace("<resources>", '<resources xmlns:tools="http://schemas.android.com/tools">')
+    for style, step in TEXT_APPEARANCE_STEPS.items():
+        pattern = re.compile(r'(<style name="TextAppearance\.OpenJbd\.' + re.escape(style) + r'" parent="[^"]+")(\s*/>|>)')
+        matches = pattern.findall(text)
+        if len(matches) != 1:
+            raise RuntimeError(f"Expected exactly one TextAppearance.OpenJbd.{style} in {styles}, found {len(matches)}")
+        items = (
+            f'\n        <item name="android:textSize">@dimen/text_{step}</item>'
+            # android:lineHeight is API 28+ on plain TextView; MaterialTextView applies it (and the
+            # Material lineHeight attr below) on every API level, so lint's NewApi is suppressed.
+            f'\n        <item name="android:lineHeight" tools:targetApi="28">@dimen/text_{step}_line</item>'
+            f'\n        <item name="lineHeight">@dimen/text_{step}_line</item>'
+            f'\n        <item name="android:letterSpacing">@dimen/text_{step}_tracking</item>'
+        )
+        # A self-closing style (e.g. Status) is opened up so it can carry the items.
+        text = pattern.sub(
+            lambda m: m.group(1) + ">" + items + ("\n    </style>" if m.group(2).strip() == "/>" else ""),
+            text,
+        )
+    styles.write_text(text, encoding="utf-8")
+
+
+def add_upstream_attribution(root: Path) -> None:
+    upstream_url = f"https://github.com/{VERSION['upstreamRepo']}"
+    layout = root / "app" / "src" / "main" / "res" / "layout" / "activity_about.xml"
+    replace_required(
+        layout,
+        '                <include\n                    android:id="@+id/item_source_code"\n                    layout="@layout/row_about_list_item" />\n',
+        '                <include\n                    android:id="@+id/item_source_code"\n                    layout="@layout/row_about_list_item" />\n\n'
+        '                <include\n                    android:id="@+id/item_upstream_source"\n                    layout="@layout/row_about_list_item" />\n',
+    )
+    about = root / "app" / "src" / "main" / "kotlin" / "com" / "gytxtx" / "openjbd" / "AboutActivity.kt"
+    replace_required(
+        about,
+        "            getString(R.string.about_item_source_code),\n            null,\n",
+        '            getString(R.string.about_item_source_code),\n            REPOSITORY_URL.removePrefix("https://"),\n',
+    )
+    replace_required(
+        about,
+        "        sourceCodeItem.setOnClickListener {\n"
+        "            startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(REPOSITORY_URL)))\n"
+        "        }\n",
+        "        sourceCodeItem.setOnClickListener {\n"
+        "            startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(REPOSITORY_URL)))\n"
+        "        }\n\n"
+        "        val upstreamItem = findViewById<View>(R.id.item_upstream_source)\n"
+        "        bindListItem(\n"
+        "            upstreamItem,\n"
+        "            R.drawable.ic_github_24,\n"
+        "            getString(R.string.about_item_upstream_source),\n"
+        "            getString(R.string.about_item_upstream_source_subtitle),\n"
+        "            true\n"
+        "        )\n"
+        "        upstreamItem.setOnClickListener {\n"
+        "            startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(UPSTREAM_REPOSITORY_URL)))\n"
+        "        }\n",
+    )
+    replace_line_required(
+        about,
+        r'^(\s*)private const val REPOSITORY_URL = "https://github\.com/openit-mykim/jbd-bms-manager"$',
+        r'\g<0>' + f'\n\\g<1>private const val UPSTREAM_REPOSITORY_URL = "{upstream_url}"',
+    )
+
+
+GRADLE_ANDROID_TAIL = """    buildFeatures {
+        compose = true
+    }
+}
+"""
+GRADLE_ANDROID_TAIL_WITH_SIGNING = """    buildFeatures {
+        compose = true
+    }
+
+    val releaseKeystore = System.getenv("JBD_RELEASE_KEYSTORE_FILE")?.takeIf { it.isNotBlank() }
+    signingConfigs {
+        if (releaseKeystore != null) {
+            create("release") {
+                storeFile = file(releaseKeystore)
+                storeType = "PKCS12"
+                storePassword = System.getenv("JBD_RELEASE_STORE_PASSWORD")
+                keyAlias = System.getenv("JBD_RELEASE_KEY_ALIAS")
+                // PKCS12 keystores use the store password for the key as well.
+                keyPassword = System.getenv("JBD_RELEASE_STORE_PASSWORD")
+            }
+        }
+    }
+
+    buildTypes {
+        release {
+            isMinifyEnabled = false
+            if (releaseKeystore != null) {
+                signingConfig = signingConfigs.getByName("release")
+            }
+        }
+    }
+
+    testOptions {
+        // Robolectric screen tests (issue #9) need merged resources and the manifest.
+        unitTests.isIncludeAndroidResources = true
+    }
+
+    lint {
+        // Upstream OpenJBD findings are frozen in the baseline; new findings fail the build.
+        baseline = file("lint-baseline.xml")
+        abortOnError = true
+        checkDependencies = false
+    }
+}
+"""
+
+
 def main() -> None:
     if len(sys.argv) != 2:
         raise SystemExit("usage: apply-product-overlay.py <OpenJBD source dir>")
@@ -98,6 +234,21 @@ def main() -> None:
     # Whole-line matches: a substring match of "versionCode = 1" would also hit "= 16".
     replace_line_required(gradle, r"^(\s*)versionCode = \d+$", rf"\g<1>versionCode = {VERSION_CODE}")
     replace_line_required(gradle, r'^(\s*)versionName = "[^"]*"$', rf'\g<1>versionName = "{VERSION_NAME}"')
+    # Fixed release signing (issue #9). The keystore never lives in the repository: CI decodes
+    # it from GitHub Secrets and passes paths/passwords through the environment. Without
+    # JBD_RELEASE_KEYSTORE_FILE the release variant stays unsigned, and the release guard blocks it.
+    replace_required(gradle, GRADLE_ANDROID_TAIL, GRADLE_ANDROID_TAIL_WITH_SIGNING)
+    # Screen tests run on the JVM with Robolectric + Hilt testing (issue #9).
+    replace_required(
+        gradle,
+        "    testImplementation(libs.kotlinx.coroutines.test)\n",
+        "    testImplementation(libs.kotlinx.coroutines.test)\n"
+        '    testImplementation("org.robolectric:robolectric:4.18")\n'
+        '    testImplementation("androidx.test:core-ktx:1.7.0")\n'
+        '    testImplementation("androidx.test.ext:junit-ktx:1.3.0")\n'
+        '    testImplementation("com.google.dagger:hilt-android-testing:2.60.1")\n'
+        "    kspTest(libs.hilt.compiler)\n",
+    )
 
     strings = root / "app" / "src" / "main" / "res" / "values" / "strings.xml"
     replace_required(strings, '<string name="app_name">OpenJBD MVP</string>', '<string name="app_name">JBD BMS Manager</string>')
@@ -156,22 +307,84 @@ def main() -> None:
     # Core Android 16 fix: removing the edge-to-edge opt-out must never silently no-op.
     replace_required(styles, '        <item name="android:windowOptOutEdgeToEdgeEnforcement">true</item>\n', "")
 
-    # Mobile dev standard 5.7.2: only 11/12/14/16/18/22/28 sp. Material parents outside the
-    # list (Headline3 48, Headline5 24, Headline6 20) get an explicit size from typography.xml.
-    for style, parent, size in (
-        ("EmptyTitle", "Headline5", "text_title"),
-        ("AboutTitle", "Headline5", "text_title"),
-        ("MetricValue", "Headline6", "text_heading"),
-        ("PrimaryMetricValue", "Headline3", "text_display"),
-    ):
-        opening = f'<style name="TextAppearance.OpenJbd.{style}" parent="TextAppearance.MaterialComponents.{parent}">'
-        replace_required(
-            styles,
-            opening,
-            opening + f'\n        <item name="android:textSize">@dimen/{size}</item>',
-        )
+    # Mobile dev standard 5.7.2: only 11/12/14/16/18/22/28 sp, each with its line height and
+    # letter spacing (values/typography.xml). Every upstream app text appearance is pinned to
+    # one step, which also replaces Material parents outside the list (Headline3 48,
+    # Headline5 24, Headline6 20). Dashboard numerals are the documented exception.
+    pin_text_appearance_steps(styles)
+    # Section titles and the settings menu row used Material type-scale styles directly.
+    replace_required(
+        styles,
+        '<item name="android:textAppearance">@style/TextAppearance.MaterialComponents.Subtitle1</item>',
+        '<item name="android:textAppearance">@style/TextAppearance.OpenJbd.Subtitle1</item>',
+    )
+    layout_dir = root / "app" / "src" / "main" / "res" / "layout"
+    replace_required(
+        layout_dir / "row_setting_menu_item.xml",
+        'android:textAppearance="@style/TextAppearance.MaterialComponents.Body1"',
+        'android:textAppearance="@style/TextAppearance.OpenJbd.Body1"',
+    )
+    # The About body's ad-hoc extra spacing would fight the step's line height.
+    replace_required(layout_dir / "activity_about.xml", '                    android:lineSpacingExtra="3dp"\n', "")
 
     normalize_layout_spacing(root / "app" / "src" / "main" / "res" / "layout")
+
+    # Upstream launched repeatOnLifecycle from onStart, which stacks one more collector on
+    # every start (lint RepeatOnLifecycleWrongUsage). Collect once from onCreate / onViewCreated.
+    kotlin_dir = root / "app" / "src" / "main" / "kotlin" / "com" / "gytxtx" / "openjbd"
+    dashboard = kotlin_dir / "DashboardActivity.kt"
+    replace_required(
+        dashboard,
+        """        SystemBars.applyFullscreen(this)
+        lifecycleScope.launch {
+            repeatOnLifecycle(androidx.lifecycle.Lifecycle.State.STARTED) {
+                repository.uiState.collect { render(it) }
+            }
+        }
+""",
+        "        SystemBars.applyFullscreen(this)\n",
+    )
+    replace_required(
+        dashboard,
+        "        render(repository.getSnapshot())\n    }\n",
+        """        render(repository.getSnapshot())
+        lifecycleScope.launch {
+            repeatOnLifecycle(androidx.lifecycle.Lifecycle.State.STARTED) {
+                repository.uiState.collect { render(it) }
+            }
+        }
+    }
+""",
+    )
+    settings = kotlin_dir / "SettingsFragment.kt"
+    replace_required(
+        settings,
+        """    override fun onStart() {
+        super.onStart()
+        lifecycleScope.launch {
+            repeatOnLifecycle(androidx.lifecycle.Lifecycle.State.STARTED) {
+                repository.uiState.collect { connected = it.connected }
+            }
+        }
+    }
+
+    override fun onStop() = super.onStop()
+""",
+        "",
+    )
+    replace_required(
+        settings,
+        "        connected = repository.getSnapshot().connected\n        renderSettingsRows()\n    }\n",
+        """        connected = repository.getSnapshot().connected
+        renderSettingsRows()
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewLifecycleOwner.repeatOnLifecycle(androidx.lifecycle.Lifecycle.State.STARTED) {
+                repository.uiState.collect { connected = it.connected }
+            }
+        }
+    }
+""",
+    )
 
     # Upstream's Parameters page was split into Detail (user) and Control diagnostics
     # (technician); nothing references it any more, so it is not shipped.
@@ -201,6 +414,11 @@ def main() -> None:
 
     for path in (root / "app" / "src" / "main").rglob("*.kt"):
         replace_optional(path, "https://github.com/gytxtx/OpenJBD", "https://github.com/openit-mykim/jbd-bms-manager")
+
+    # The bulk replacement above points "Source code" at this project; the original OpenJBD
+    # project (MIT, Copyright (c) 2026 KFACBT) keeps its own attribution link right below it.
+    # Applied after the bulk replacement so the upstream URL is not rewritten.
+    add_upstream_attribution(root)
 
     marker = root / "JBD_BMS_MANAGER_BUILD.txt"
     marker.write_text(

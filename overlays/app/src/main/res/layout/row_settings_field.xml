@@ -36,7 +36,7 @@
             android:layout_height="wrap_content"
             android:paddingTop="@dimen/space_4"
             android:textColor="@color/error"
-            android:textAppearance="@style/TextAppearance.MaterialComponents.Caption"
+            android:textAppearance="@style/TextAppearance.OpenJbd.Caption"
             android:visibility="gone" />
     </LinearLayout>
 
